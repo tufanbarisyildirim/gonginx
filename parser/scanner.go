@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"gotest.tools/v3/assert/cmp"
 	"io"
 	"unicode"
 )
@@ -19,17 +20,21 @@ const (
 	closeBrace
 	semiColon
 	comment
+	symbol
+	regex
 )
 
 var (
 	tokenName = map[TokenType]string{
-		quotedString: "quoted string",
-		eof:          "end of file",
+		quotedString: "quotedString",
+		eof:          "eof",
 		keyword:      "keyword",
-		openBrace:    "open brace",
-		closeBrace:   "close brace",
-		semiColon:    "semi colon",
+		openBrace:    "openBrace",
+		closeBrace:   "closeBrace",
+		semiColon:    "semiColon",
 		comment:      "comment",
+		symbol:       "symbol",
+		regex:        "regex",
 	}
 )
 
@@ -38,27 +43,47 @@ func (tt TokenType) String() string {
 }
 
 type Token struct {
-	Type    TokenType
-	Literal string
-	Line    int
-	Column  int
+	Type      TokenType
+	Literal   string
+	Line      int
+	LineEnd   int
+	Column    int
+	ColumnEnd int
 }
 
 func (t Token) String() string {
-	return fmt.Sprintf("{%s:%s}", t.Type, t.Literal)
+	return fmt.Sprintf("{Type: %s,Literal:\"%s\", Line:%d,LineEnd:%d,Column:%d,ColumnEnd:%d}", t.Type, t.Literal, t.Line, t.LineEnd, t.Column, t.ColumnEnd)
 }
 
-var (
-	tokenEof        = Token{Type: eof}
-	tokenEol        = Token{Type: eol}
-	tokenOpenBrace  = Token{Type: openBrace, Literal: "{"}
-	tokenCloseBrace = Token{Type: closeBrace, Literal: "}"}
-	tokenSemiColon  = Token{Type: semiColon, Literal: ";"}
-)
+func (t Token) Lit(literal string) Token {
+	t.Literal = literal
+	return t
+}
+
+func (t Token) EqualTo(t2 interface{}, a cmp.Comparison) bool {
+	return t.Type == t2.(Token).Type || t.Literal == t2.(Token).Literal
+}
+
+type Tokens []Token
+
+func (ts Tokens) EqualTo(ts2 interface{}) bool {
+	ts22 := ts2.([]Token)
+	if len(ts) != len(ts22) {
+		return false
+	}
+	for i, t := range ts {
+		if t.Type != ts22[i].Type || t.Literal != ts22[i].Literal {
+			return false
+		}
+	}
+	return true
+}
 
 type Scanner struct {
 	reader *bufio.Reader
+	file   string
 	line   int
+	column int
 	Latest Token
 }
 
@@ -97,28 +122,22 @@ reToken:
 		s.skipWhitespace()
 		goto reToken
 	case isEof(ch):
-		return tokenEof
+		return s.NewToken(eof).Lit(string(s.read()))
 	case ch == ';':
-		s.read()
-		return tokenSemiColon
+		return s.NewToken(semiColon).Lit(string(s.read()))
 	case ch == '{':
-		s.read()
-		return tokenOpenBrace
+		return s.NewToken(openBrace).Lit(string(s.read()))
 	case ch == '}':
-		s.read()
-		return tokenCloseBrace
+		return s.NewToken(closeBrace).Lit(string(s.read()))
 	case ch == '#':
 		return s.scanComment()
-	case isLetter(ch):
-		return s.scanKeyword()
 	case isQuote(ch):
 		return s.scanQuotedString(ch)
+	case isNotSpace(ch):
+		return s.scanKeyword()
 	}
 
-	return Token{
-		Type:    TokenType(ch),
-		Literal: string(s.read()),
-	}
+	return s.NewToken(symbol).Lit(string(s.read()))
 }
 
 func (s *Scanner) Peek() rune {
@@ -151,6 +170,14 @@ func (s *Scanner) readUntil(until runeCheck) string {
 	}
 
 	return buf.String()
+}
+
+func (s *Scanner) NewToken(tokenType TokenType) Token {
+	return Token{
+		Type:   tokenType,
+		Line:   s.line,
+		Column: s.column,
+	}
 }
 
 func (s *Scanner) readUntilWith(until runeCheck) string {
@@ -196,11 +223,11 @@ func (s *Scanner) skipEndOfLine() {
 }
 
 func (s *Scanner) scanComment() Token {
-	return Token{
-		Type:    comment,
-		Literal: s.readUntil(isEndOfLine),
-		Line:    s.line,
-	}
+	return s.NewToken(comment).Lit(s.readUntil(isEndOfLine))
+}
+
+func (s *Scanner) scanRegex() Token {
+	return s.NewToken(regex).Lit(s.readUntil(isSpace))
 }
 
 /**
@@ -210,8 +237,9 @@ func (s *Scanner) scanComment() Token {
 \t – To add tab space.
 \r – For carriage return.
 */
-func (s *Scanner) scanQuotedString(delimiter rune) (tok Token) {
+func (s *Scanner) scanQuotedString(delimiter rune) Token {
 	var buf bytes.Buffer
+	tok := s.NewToken(quotedString)
 	s.read() //consume delimiter
 	for {
 		ch := s.read()
@@ -243,23 +271,16 @@ func (s *Scanner) scanQuotedString(delimiter rune) (tok Token) {
 		buf.WriteRune(ch)
 	}
 
-	tok = Token{
-		Type:    quotedString,
-		Literal: buf.String(),
-	}
-	return tok
+	return tok.Lit(buf.String())
 }
 
-func (s *Scanner) scanKeyword() (tok Token) {
-	word := s.readUntil(isKeywordTerminator)
-	return Token{
-		Type:    keyword,
-		Literal: word,
-	}
+func (s *Scanner) scanKeyword() Token {
+	return s.NewToken(keyword).Lit(s.readUntil(isKeywordTerminator))
 }
 
 func (s *Scanner) unread() {
 	_ = s.reader.UnreadRune()
+	s.column--
 }
 
 func (s *Scanner) read() rune {
@@ -267,14 +288,26 @@ func (s *Scanner) read() rune {
 	if err != nil {
 		return rune(eof)
 	}
+
 	if ch == '\n' {
+		s.column = 1
 		s.line++
+	} else {
+		s.column++
 	}
 	return ch
 }
 
 func isQuote(ch rune) bool {
 	return ch == '"' || ch == '\'' || ch == '`'
+}
+
+func isRegexDelimiter(ch rune) bool {
+	return ch == '/'
+}
+
+func isNotSpace(ch rune) bool {
+	return !isSpace(ch)
 }
 
 func isKeywordTerminator(ch rune) bool {
@@ -299,4 +332,8 @@ func isEndOfLine(ch rune) bool {
 
 func isLetter(ch rune) bool {
 	return ch == '_' || unicode.IsLetter(ch)
+}
+
+func isWordStart(ch rune) bool {
+	return isLetter(ch) || unicode.IsDigit(ch)
 }
