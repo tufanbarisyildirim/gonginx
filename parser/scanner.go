@@ -20,7 +20,7 @@ const (
 	closeBrace
 	semiColon
 	comment
-	symbol
+	unknown
 	regex
 )
 
@@ -33,7 +33,7 @@ var (
 		closeBrace:   "closeBrace",
 		semiColon:    "semiColon",
 		comment:      "comment",
-		symbol:       "symbol",
+		unknown:      "unknown",
 		regex:        "regex",
 	}
 )
@@ -43,16 +43,14 @@ func (tt TokenType) String() string {
 }
 
 type Token struct {
-	Type      TokenType
-	Literal   string
-	Line      int
-	LineEnd   int
-	Column    int
-	ColumnEnd int
+	Type    TokenType
+	Literal string
+	Line    int
+	Column  int
 }
 
 func (t Token) String() string {
-	return fmt.Sprintf("{Type: %s,Literal:\"%s\", Line:%d,LineEnd:%d,Column:%d,ColumnEnd:%d}", t.Type, t.Literal, t.Line, t.LineEnd, t.Column, t.ColumnEnd)
+	return fmt.Sprintf("{Type: %s,Literal:\"%s\", Line:%d,Column:%d}", t.Type, t.Literal, t.Line, t.Column)
 }
 
 func (t Token) Lit(literal string) Token {
@@ -137,7 +135,7 @@ reToken:
 		return s.scanKeyword()
 	}
 
-	return s.NewToken(symbol).Lit(string(s.read()))
+	return s.NewToken(unknown).Lit(string(s.read())) //that should never happen :)
 }
 
 func (s *Scanner) Peek() rune {
