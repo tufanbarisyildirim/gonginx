@@ -26,7 +26,7 @@ server { # simple reverse-proxy
   }
 `).All()
 
-	var actual = []Token{
+	var actual = Tokens{
 		{Type: keyword, Literal: "server", Line: 2, Column: 1},
 		{Type: openBrace, Literal: "{", Line: 2, Column: 8},
 		{Type: comment, Literal: "# simple reverse-proxy", Line: 2, Column: 10},
@@ -68,6 +68,7 @@ server { # simple reverse-proxy
 	expect, err := json.Marshal(actual)
 	assert.NilError(t, err)
 
+	assert.Assert(t, tokens.EqualTo(actual))
 	assert.Equal(t, string(tokenString), string(expect))
 	assert.Equal(t, len(tokens), len(actual))
 }

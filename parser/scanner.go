@@ -65,7 +65,7 @@ func (t Token) EqualTo(t2 interface{}, a cmp.Comparison) bool {
 type Tokens []Token
 
 func (ts Tokens) EqualTo(ts2 interface{}) bool {
-	ts22 := ts2.([]Token)
+	ts22 := ts2.(Tokens)
 	if len(ts) != len(ts22) {
 		return false
 	}
@@ -100,7 +100,7 @@ func (s *Scanner) Scan() Token {
 	return s.Latest
 }
 
-func (s *Scanner) All() []Token {
+func (s *Scanner) All() Tokens {
 	tokens := make([]Token, 0)
 	for {
 		v := s.Scan()
