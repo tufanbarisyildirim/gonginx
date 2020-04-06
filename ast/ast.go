@@ -5,22 +5,18 @@ type Node interface {
 	String() string
 }
 
-type Command interface {
-	Node
-	commandNode()
-}
-
 type Block interface {
 	Node
-	GetStatemtns() []Block
-	GetCommands() []Command
-	blockNode()
+}
+
+
+type Directive interface {
+	Node
+	Block
 }
 
 type Config struct {
-	Block
-	Blocks   []Block
-	Commands []Command
+	Directives []Directive
 }
 
 //  nginx blocks
