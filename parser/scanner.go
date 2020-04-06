@@ -55,9 +55,9 @@ reToken:
 	case ch == ';':
 		return s.NewToken(token.SEMICOLON).Lit(string(s.read()))
 	case ch == '{':
-		return s.NewToken(token.OPEN_BRACE).Lit(string(s.read()))
+		return s.NewToken(token.OpenBrace).Lit(string(s.read()))
 	case ch == '}':
-		return s.NewToken(token.CLOSE_BRACE).Lit(string(s.read()))
+		return s.NewToken(token.CloseBrace).Lit(string(s.read()))
 	case ch == '#':
 		return s.scanComment()
 	case isQuote(ch):
@@ -168,7 +168,7 @@ func (s *Scanner) scanRegex() token.Token {
 */
 func (s *Scanner) scanQuotedString(delimiter rune) token.Token {
 	var buf bytes.Buffer
-	tok := s.NewToken(token.QUOTED_STRING)
+	tok := s.NewToken(token.QuotedString)
 	s.read() //consume delimiter
 	for {
 		ch := s.read()

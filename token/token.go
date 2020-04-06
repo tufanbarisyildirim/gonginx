@@ -11,9 +11,9 @@ const (
 	EOF TokenType = iota
 	EOL
 	KEYWORD
-	QUOTED_STRING
-	OPEN_BRACE
-	CLOSE_BRACE
+	QuotedString
+	OpenBrace
+	CloseBrace
 	SEMICOLON
 	COMMENT
 	UNKNOWN
@@ -22,15 +22,15 @@ const (
 
 var (
 	tokenName = map[TokenType]string{
-		QUOTED_STRING: "QUOTED_STRING",
-		EOF:           "EOF",
-		KEYWORD:       "KEYWORD",
-		OPEN_BRACE:    "OPEN_BRACE",
-		CLOSE_BRACE:   "CLOSE_BRACE",
-		SEMICOLON:     "SEMI_COLON",
-		COMMENT:       "comment",
-		UNKNOWN:       "unknown",
-		REGEX:         "regex",
+		QuotedString: "QUOTED_STRING",
+		EOF:          "EOF",
+		KEYWORD:      "KEYWORD",
+		OpenBrace:    "OPEN_BRACE",
+		CloseBrace:   "CLOSE_BRACE",
+		SEMICOLON:    "SEMI_COLON",
+		COMMENT:      "COMMENT",
+		UNKNOWN:      "UNKNOWN",
+		REGEX:        "REGEX",
 	}
 )
 
