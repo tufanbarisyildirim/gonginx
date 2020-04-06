@@ -2,7 +2,6 @@ package token
 
 import (
 	"fmt"
-	"gotest.tools/v3/assert/cmp"
 )
 
 type TokenType int
@@ -54,8 +53,8 @@ func (t Token) Lit(literal string) Token {
 	return t
 }
 
-func (t Token) EqualTo(t2 interface{}, a cmp.Comparison) bool {
-	return t.Type == t2.(Token).Type || t.Literal == t2.(Token).Literal
+func (t Token) EqualTo(t2 Token) bool {
+	return t.Type == t2.Type || t.Literal == t2.Literal
 }
 
 type Tokens []Token
@@ -66,7 +65,7 @@ func (ts Tokens) EqualTo(ts2 interface{}) bool {
 		return false
 	}
 	for i, t := range ts {
-		if t.Type != ts22[i].Type || t.Literal != ts22[i].Literal {
+		if !t.EqualTo(ts22[i]) {
 			return false
 		}
 	}
