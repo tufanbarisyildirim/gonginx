@@ -14,6 +14,8 @@ func NewParser(lexer *Lexer) *Parser {
 	}
 	parser.nextToken()
 	parser.nextToken()
+
+	return parser
 }
 
 func (p *Parser) nextToken() {

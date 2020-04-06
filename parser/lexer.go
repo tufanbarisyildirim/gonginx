@@ -55,11 +55,13 @@ reToken:
 	case ch == ';':
 		return s.NewToken(token.Semicolon).Lit(string(s.read()))
 	case ch == '{':
-		return s.NewToken(token.OpenBrace).Lit(string(s.read()))
+		return s.NewToken(token.BlockStart).Lit(string(s.read()))
 	case ch == '}':
-		return s.NewToken(token.CloseBrace).Lit(string(s.read()))
+		return s.NewToken(token.BlockEnd).Lit(string(s.read()))
 	case ch == '#':
 		return s.scanComment()
+	case ch == '$':
+		return s.scanVariable()
 	case isQuote(ch):
 		return s.scanQuotedString(ch)
 	case isNotSpace(ch):
@@ -205,6 +207,11 @@ func (s *Lexer) scanQuotedString(delimiter rune) token.Token {
 
 func (s *Lexer) scanKeyword() token.Token {
 	return s.NewToken(token.Keyword).Lit(s.readUntil(isKeywordTerminator))
+}
+
+
+func (s *Lexer) scanVariable() token.Token {
+	return s.NewToken(token.Variable).Lit(s.readUntil(isKeywordTerminator))
 }
 
 func (s *Lexer) unread() {

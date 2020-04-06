@@ -12,7 +12,7 @@ type Command interface {
 
 type Block interface {
 	Node
-	GetBlocks() []Block
+	GetStatemtns() []Block
 	GetCommands() []Command
 	blockNode()
 }

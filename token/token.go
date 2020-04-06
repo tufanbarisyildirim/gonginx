@@ -11,8 +11,9 @@ const (
 	Eol
 	Keyword
 	QuotedString
-	OpenBrace
-	CloseBrace
+	Variable
+	BlockStart
+	BlockEnd
 	Semicolon
 	Comment
 	Illegal
@@ -24,9 +25,10 @@ var (
 		QuotedString: "QuotedString",
 		Eof:          "Eof",
 		Keyword:      "Keyword",
-		OpenBrace:    "OPEN_BRACE",
-		CloseBrace:   "CLOSE_BRACE",
-		Semicolon:    "SEMI_COLON",
+		Variable:     "Variable",
+		BlockStart:   "BlockStart",
+		BlockEnd:     "BlockEnd",
+		Semicolon:    "Semicolon",
 		Comment:      "Comment",
 		Illegal:      "Illegal",
 		Regex:        "Regex",
