@@ -59,13 +59,12 @@ func (t Token) EqualTo(t2 Token) bool {
 
 type Tokens []Token
 
-func (ts Tokens) EqualTo(ts2 interface{}) bool {
-	ts22 := ts2.(Tokens)
-	if len(ts) != len(ts22) {
+func (ts Tokens) EqualTo(tokens Tokens) bool {
+	if len(ts) != len(tokens) {
 		return false
 	}
 	for i, t := range ts {
-		if !t.EqualTo(ts22[i]) {
+		if !t.EqualTo(tokens[i]) {
 			return false
 		}
 	}
