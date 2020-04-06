@@ -4,41 +4,41 @@ import (
 	"fmt"
 )
 
-type TokenType int
+type Type int
 
 const (
-	EOF TokenType = iota
-	EOL
-	KEYWORD
+	Eof Type = iota
+	Eol
+	Keyword
 	QuotedString
 	OpenBrace
 	CloseBrace
-	SEMICOLON
-	COMMENT
-	UNKNOWN
-	REGEX
+	Semicolon
+	Comment
+	Illegal
+	Regex
 )
 
 var (
-	tokenName = map[TokenType]string{
-		QuotedString: "QUOTED_STRING",
-		EOF:          "EOF",
-		KEYWORD:      "KEYWORD",
+	tokenName = map[Type]string{
+		QuotedString: "QuotedString",
+		Eof:          "Eof",
+		Keyword:      "Keyword",
 		OpenBrace:    "OPEN_BRACE",
 		CloseBrace:   "CLOSE_BRACE",
-		SEMICOLON:    "SEMI_COLON",
-		COMMENT:      "COMMENT",
-		UNKNOWN:      "UNKNOWN",
-		REGEX:        "REGEX",
+		Semicolon:    "SEMI_COLON",
+		Comment:      "Comment",
+		Illegal:      "Illegal",
+		Regex:        "Regex",
 	}
 )
 
-func (tt TokenType) String() string {
+func (tt Type) String() string {
 	return tokenName[tt]
 }
 
 type Token struct {
-	Type    TokenType
+	Type    Type
 	Literal string
 	Line    int
 	Column  int
@@ -69,4 +69,8 @@ func (ts Tokens) EqualTo(tokens Tokens) bool {
 		}
 	}
 	return true
+}
+
+func (t Token) is(typ Type) bool {
+	return t.Type == typ
 }

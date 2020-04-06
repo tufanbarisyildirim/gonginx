@@ -8,7 +8,7 @@ import (
 	"unicode"
 )
 
-type Scanner struct {
+type Lexer struct {
 	reader *bufio.Reader
 	file   string
 	line   int
@@ -16,26 +16,26 @@ type Scanner struct {
 	Latest token.Token
 }
 
-func Parse(content string) *Scanner {
-	return NewScanner(bytes.NewBuffer([]byte(content)))
+func Parse(content string) *Lexer {
+	return NewLexer(bytes.NewBuffer([]byte(content)))
 }
 
-func NewScanner(r io.Reader) *Scanner {
-	return &Scanner{
+func NewLexer(r io.Reader) *Lexer {
+	return &Lexer{
 		reader: bufio.NewReader(r),
 	}
 }
 
-func (s *Scanner) Scan() token.Token {
+func (s *Lexer) Scan() token.Token {
 	s.Latest = s.getNextToken()
 	return s.Latest
 }
 
-func (s *Scanner) All() token.Tokens {
+func (s *Lexer) All() token.Tokens {
 	tokens := make([]token.Token, 0)
 	for {
 		v := s.Scan()
-		if v.Type == token.EOF || v.Type == -1 {
+		if v.Type == token.Eof || v.Type == -1 {
 			break
 		}
 		tokens = append(tokens, v)
@@ -43,7 +43,7 @@ func (s *Scanner) All() token.Tokens {
 	return tokens
 }
 
-func (s *Scanner) getNextToken() token.Token {
+func (s *Lexer) getNextToken() token.Token {
 reToken:
 	ch := s.Peek()
 	switch {
@@ -51,9 +51,9 @@ reToken:
 		s.skipWhitespace()
 		goto reToken
 	case isEof(ch):
-		return s.NewToken(token.EOF).Lit(string(s.read()))
+		return s.NewToken(token.Eof).Lit(string(s.read()))
 	case ch == ';':
-		return s.NewToken(token.SEMICOLON).Lit(string(s.read()))
+		return s.NewToken(token.Semicolon).Lit(string(s.read()))
 	case ch == '{':
 		return s.NewToken(token.OpenBrace).Lit(string(s.read()))
 	case ch == '}':
@@ -66,16 +66,16 @@ reToken:
 		return s.scanKeyword()
 	}
 
-	return s.NewToken(token.UNKNOWN).Lit(string(s.read())) //that should never happen :)
+	return s.NewToken(token.Illegal).Lit(string(s.read())) //that should never happen :)
 }
 
-func (s *Scanner) Peek() rune {
+func (s *Lexer) Peek() rune {
 	r := s.read()
 	s.unread()
 	return r
 }
 
-func (s *Scanner) PeekPrev() rune {
+func (s *Lexer) PeekPrev() rune {
 	s.unread()
 	r := s.read()
 	return r
@@ -83,7 +83,7 @@ func (s *Scanner) PeekPrev() rune {
 
 type runeCheck func(rune) bool
 
-func (s *Scanner) readUntil(until runeCheck) string {
+func (s *Lexer) readUntil(until runeCheck) string {
 	var buf bytes.Buffer
 	buf.WriteRune(s.read())
 
@@ -101,7 +101,7 @@ func (s *Scanner) readUntil(until runeCheck) string {
 	return buf.String()
 }
 
-func (s *Scanner) NewToken(tokenType token.TokenType) token.Token {
+func (s *Lexer) NewToken(tokenType token.Type) token.Token {
 	return token.Token{
 		Type:   tokenType,
 		Line:   s.line,
@@ -109,7 +109,7 @@ func (s *Scanner) NewToken(tokenType token.TokenType) token.Token {
 	}
 }
 
-func (s *Scanner) readUntilWith(until runeCheck) string {
+func (s *Lexer) readUntilWith(until runeCheck) string {
 	var buf bytes.Buffer
 	buf.WriteRune(s.read())
 
@@ -126,7 +126,7 @@ func (s *Scanner) readUntilWith(until runeCheck) string {
 	return buf.String()
 }
 
-func (s *Scanner) readWhile(while runeCheck) string {
+func (s *Lexer) readWhile(while runeCheck) string {
 	var buf bytes.Buffer
 	buf.WriteRune(s.read())
 
@@ -143,20 +143,20 @@ func (s *Scanner) readWhile(while runeCheck) string {
 	return buf.String()
 }
 
-func (s *Scanner) skipWhitespace() {
+func (s *Lexer) skipWhitespace() {
 	s.readWhile(isSpace)
 }
 
-func (s *Scanner) skipEndOfLine() {
+func (s *Lexer) skipEndOfLine() {
 	s.readUntilWith(isEndOfLine)
 }
 
-func (s *Scanner) scanComment() token.Token {
-	return s.NewToken(token.COMMENT).Lit(s.readUntil(isEndOfLine))
+func (s *Lexer) scanComment() token.Token {
+	return s.NewToken(token.Comment).Lit(s.readUntil(isEndOfLine))
 }
 
-func (s *Scanner) scanRegex() token.Token {
-	return s.NewToken(token.REGEX).Lit(s.readUntil(isSpace))
+func (s *Lexer) scanRegex() token.Token {
+	return s.NewToken(token.Regex).Lit(s.readUntil(isSpace))
 }
 
 /**
@@ -166,14 +166,14 @@ func (s *Scanner) scanRegex() token.Token {
 \t – To add tab space.
 \r – For carriage return.
 */
-func (s *Scanner) scanQuotedString(delimiter rune) token.Token {
+func (s *Lexer) scanQuotedString(delimiter rune) token.Token {
 	var buf bytes.Buffer
 	tok := s.NewToken(token.QuotedString)
 	s.read() //consume delimiter
 	for {
 		ch := s.read()
 
-		if ch == rune(token.EOF) {
+		if ch == rune(token.Eof) {
 			panic("unexpected end of file while scanning a string, maybe an unclosed quote?")
 		}
 
@@ -203,19 +203,19 @@ func (s *Scanner) scanQuotedString(delimiter rune) token.Token {
 	return tok.Lit(buf.String())
 }
 
-func (s *Scanner) scanKeyword() token.Token {
-	return s.NewToken(token.KEYWORD).Lit(s.readUntil(isKeywordTerminator))
+func (s *Lexer) scanKeyword() token.Token {
+	return s.NewToken(token.Keyword).Lit(s.readUntil(isKeywordTerminator))
 }
 
-func (s *Scanner) unread() {
+func (s *Lexer) unread() {
 	_ = s.reader.UnreadRune()
 	s.column--
 }
 
-func (s *Scanner) read() rune {
+func (s *Lexer) read() rune {
 	ch, _, err := s.reader.ReadRune()
 	if err != nil {
-		return rune(token.EOF)
+		return rune(token.Eof)
 	}
 
 	if ch == '\n' {
@@ -252,7 +252,7 @@ func isSpace(ch rune) bool {
 }
 
 func isEof(ch rune) bool {
-	return ch == rune(token.EOF)
+	return ch == rune(token.Eof)
 }
 
 func isEndOfLine(ch rune) bool {
