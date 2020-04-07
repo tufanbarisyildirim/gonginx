@@ -3,11 +3,13 @@ package parser
 import (
 	"bufio"
 	"bytes"
-	"github.com/tufanbarisyildirim/gonginx/token"
 	"io"
 	"unicode"
+
+	"github.com/tufanbarisyildirim/gonginx/token"
 )
 
+//Lexer is the main tokenizer
 type Lexer struct {
 	reader *bufio.Reader
 	file   string
@@ -16,21 +18,25 @@ type Lexer struct {
 	Latest token.Token
 }
 
+//Parse initializes a Lexer from string conetnt
 func Parse(content string) *Lexer {
 	return NewLexer(bytes.NewBuffer([]byte(content)))
 }
 
+//NewLexer initilizes a Lexer from a reader
 func NewLexer(r io.Reader) *Lexer {
 	return &Lexer{
 		reader: bufio.NewReader(r),
 	}
 }
 
+//Scan gives you next token
 func (s *Lexer) Scan() token.Token {
 	s.Latest = s.getNextToken()
 	return s.Latest
 }
 
+//All scans all token and returns them as a slice
 func (s *Lexer) All() token.Tokens {
 	tokens := make([]token.Token, 0)
 	for {
@@ -50,7 +56,7 @@ reToken:
 	case isSpace(ch):
 		s.skipWhitespace()
 		goto reToken
-	case isEof(ch):
+	case isEOF(ch):
 		return s.NewToken(token.Eof).Lit(string(s.read()))
 	case ch == ';':
 		return s.NewToken(token.Semicolon).Lit(string(s.read()))
@@ -71,12 +77,14 @@ reToken:
 	return s.NewToken(token.Illegal).Lit(string(s.read())) //that should never happen :)
 }
 
+//Peek returns nexr rune without consuming it
 func (s *Lexer) Peek() rune {
 	r := s.read()
 	s.unread()
 	return r
 }
 
+//PeekPrev returns review rune withouy actually seeking index to back
 func (s *Lexer) PeekPrev() rune {
 	s.unread()
 	r := s.read()
@@ -90,7 +98,7 @@ func (s *Lexer) readUntil(until runeCheck) string {
 	buf.WriteRune(s.read())
 
 	for {
-		if ch := s.read(); isEof(ch) {
+		if ch := s.read(); isEOF(ch) {
 			break
 		} else if until(ch) {
 			s.unread()
@@ -103,6 +111,7 @@ func (s *Lexer) readUntil(until runeCheck) string {
 	return buf.String()
 }
 
+//NewToken creates a new Token with its line and column
 func (s *Lexer) NewToken(tokenType token.Type) token.Token {
 	return token.Token{
 		Type:   tokenType,
@@ -116,7 +125,7 @@ func (s *Lexer) readUntilWith(until runeCheck) string {
 	buf.WriteRune(s.read())
 
 	for {
-		if ch := s.read(); isEof(ch) {
+		if ch := s.read(); isEOF(ch) {
 			break
 		} else if until(ch) {
 			buf.WriteRune(ch)
@@ -209,7 +218,6 @@ func (s *Lexer) scanKeyword() token.Token {
 	return s.NewToken(token.Keyword).Lit(s.readUntil(isKeywordTerminator))
 }
 
-
 func (s *Lexer) scanVariable() token.Token {
 	return s.NewToken(token.Variable).Lit(s.readUntil(isKeywordTerminator))
 }
@@ -258,7 +266,7 @@ func isSpace(ch rune) bool {
 	return ch == ' ' || ch == '\t' || isEndOfLine(ch)
 }
 
-func isEof(ch rune) bool {
+func isEOF(ch rune) bool {
 	return ch == rune(token.Eof)
 }
 

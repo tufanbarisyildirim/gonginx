@@ -2,9 +2,10 @@ package parser
 
 import (
 	"encoding/json"
+	"testing"
+
 	"github.com/tufanbarisyildirim/gonginx/token"
 	"gotest.tools/v3/assert"
-	"testing"
 )
 
 func TestScanner_Set(t *testing.T) {

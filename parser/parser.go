@@ -2,12 +2,14 @@ package parser
 
 import "github.com/tufanbarisyildirim/gonginx/token"
 
+//Parser is an nginx config parser
 type Parser struct {
 	lexer          *Lexer
 	currentToken   token.Token
 	followingToken token.Token
 }
 
+//NewParser initilizes a new Parser
 func NewParser(lexer *Lexer) *Parser {
 	parser := &Parser{
 		lexer: lexer,
