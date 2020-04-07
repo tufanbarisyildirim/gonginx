@@ -9,8 +9,8 @@ import (
 	"github.com/tufanbarisyildirim/gonginx/token"
 )
 
-//Lexer is the main tokenizer
-type Lexer struct {
+//lexer is the main tokenizer
+type lexer struct {
 	reader *bufio.Reader
 	file   string
 	line   int
@@ -18,29 +18,29 @@ type Lexer struct {
 	Latest token.Token
 }
 
-//Parse initializes a Lexer from string conetnt
-func Parse(content string) *Lexer {
-	return NewLexer(bytes.NewBuffer([]byte(content)))
+//parse initializes a lexer from string conetnt
+func parse(content string) *lexer {
+	return newLexer(bytes.NewBuffer([]byte(content)))
 }
 
-//NewLexer initilizes a Lexer from a reader
-func NewLexer(r io.Reader) *Lexer {
-	return &Lexer{
+//newLexer initilizes a lexer from a reader
+func newLexer(r io.Reader) *lexer {
+	return &lexer{
 		reader: bufio.NewReader(r),
 	}
 }
 
 //Scan gives you next token
-func (s *Lexer) Scan() token.Token {
+func (s *lexer) scan() token.Token {
 	s.Latest = s.getNextToken()
 	return s.Latest
 }
 
 //All scans all token and returns them as a slice
-func (s *Lexer) All() token.Tokens {
+func (s *lexer) all() token.Tokens {
 	tokens := make([]token.Token, 0)
 	for {
-		v := s.Scan()
+		v := s.scan()
 		if v.Type == token.Eof || v.Type == -1 {
 			break
 		}
@@ -49,7 +49,7 @@ func (s *Lexer) All() token.Tokens {
 	return tokens
 }
 
-func (s *Lexer) getNextToken() token.Token {
+func (s *lexer) getNextToken() token.Token {
 reToken:
 	ch := s.Peek()
 	switch {
@@ -78,14 +78,14 @@ reToken:
 }
 
 //Peek returns nexr rune without consuming it
-func (s *Lexer) Peek() rune {
+func (s *lexer) Peek() rune {
 	r := s.read()
 	s.unread()
 	return r
 }
 
 //PeekPrev returns review rune withouy actually seeking index to back
-func (s *Lexer) PeekPrev() rune {
+func (s *lexer) PeekPrev() rune {
 	s.unread()
 	r := s.read()
 	return r
@@ -93,7 +93,7 @@ func (s *Lexer) PeekPrev() rune {
 
 type runeCheck func(rune) bool
 
-func (s *Lexer) readUntil(until runeCheck) string {
+func (s *lexer) readUntil(until runeCheck) string {
 	var buf bytes.Buffer
 	buf.WriteRune(s.read())
 
@@ -112,7 +112,7 @@ func (s *Lexer) readUntil(until runeCheck) string {
 }
 
 //NewToken creates a new Token with its line and column
-func (s *Lexer) NewToken(tokenType token.Type) token.Token {
+func (s *lexer) NewToken(tokenType token.Type) token.Token {
 	return token.Token{
 		Type:   tokenType,
 		Line:   s.line,
@@ -120,7 +120,7 @@ func (s *Lexer) NewToken(tokenType token.Type) token.Token {
 	}
 }
 
-func (s *Lexer) readUntilWith(until runeCheck) string {
+func (s *lexer) readUntilWith(until runeCheck) string {
 	var buf bytes.Buffer
 	buf.WriteRune(s.read())
 
@@ -137,7 +137,7 @@ func (s *Lexer) readUntilWith(until runeCheck) string {
 	return buf.String()
 }
 
-func (s *Lexer) readWhile(while runeCheck) string {
+func (s *lexer) readWhile(while runeCheck) string {
 	var buf bytes.Buffer
 	buf.WriteRune(s.read())
 
@@ -154,19 +154,19 @@ func (s *Lexer) readWhile(while runeCheck) string {
 	return buf.String()
 }
 
-func (s *Lexer) skipWhitespace() {
+func (s *lexer) skipWhitespace() {
 	s.readWhile(isSpace)
 }
 
-func (s *Lexer) skipEndOfLine() {
+func (s *lexer) skipEndOfLine() {
 	s.readUntilWith(isEndOfLine)
 }
 
-func (s *Lexer) scanComment() token.Token {
+func (s *lexer) scanComment() token.Token {
 	return s.NewToken(token.Comment).Lit(s.readUntil(isEndOfLine))
 }
 
-func (s *Lexer) scanRegex() token.Token {
+func (s *lexer) scanRegex() token.Token {
 	return s.NewToken(token.Regex).Lit(s.readUntil(isSpace))
 }
 
@@ -177,7 +177,7 @@ func (s *Lexer) scanRegex() token.Token {
 \t – To add tab space.
 \r – For carriage return.
 */
-func (s *Lexer) scanQuotedString(delimiter rune) token.Token {
+func (s *lexer) scanQuotedString(delimiter rune) token.Token {
 	var buf bytes.Buffer
 	tok := s.NewToken(token.QuotedString)
 	s.read() //consume delimiter
@@ -214,20 +214,20 @@ func (s *Lexer) scanQuotedString(delimiter rune) token.Token {
 	return tok.Lit(buf.String())
 }
 
-func (s *Lexer) scanKeyword() token.Token {
+func (s *lexer) scanKeyword() token.Token {
 	return s.NewToken(token.Keyword).Lit(s.readUntil(isKeywordTerminator))
 }
 
-func (s *Lexer) scanVariable() token.Token {
+func (s *lexer) scanVariable() token.Token {
 	return s.NewToken(token.Variable).Lit(s.readUntil(isKeywordTerminator))
 }
 
-func (s *Lexer) unread() {
+func (s *lexer) unread() {
 	_ = s.reader.UnreadRune()
 	s.column--
 }
 
-func (s *Lexer) read() rune {
+func (s *lexer) read() rune {
 	ch, _, err := s.reader.ReadRune()
 	if err != nil {
 		return rune(token.Eof)

@@ -4,13 +4,13 @@ import "github.com/tufanbarisyildirim/gonginx/token"
 
 //Parser is an nginx config parser
 type Parser struct {
-	lexer          *Lexer
+	lexer          *lexer
 	currentToken   token.Token
 	followingToken token.Token
 }
 
 //NewParser initilizes a new Parser
-func NewParser(lexer *Lexer) *Parser {
+func NewParser(lexer *lexer) *Parser {
 	parser := &Parser{
 		lexer: lexer,
 	}
@@ -22,7 +22,7 @@ func NewParser(lexer *Lexer) *Parser {
 
 func (p *Parser) nextToken() {
 	p.currentToken = p.followingToken
-	p.followingToken = p.lexer.Scan()
+	p.followingToken = p.lexer.scan()
 }
 
 func (p *Parser) curTokenIs(t token.Type) bool {

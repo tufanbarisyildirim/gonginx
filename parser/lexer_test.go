@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/tufanbarisyildirim/gonginx/token"
 	"gotest.tools/v3/assert"
+	"github.com/tufanbarisyildirim/gonginx/token"
 )
 
 func TestScanner_Set(t *testing.T) {
-	tokens := Parse(`
+	tokens := parse(`
 server { # simple reverse-proxy
     listen       80;
     server_name  gonginx.com www.gonginx.com;
@@ -27,7 +27,7 @@ server { # simple reverse-proxy
       proxy_set_header   X-Real-IP        $remote_addr;
     }
   }
-`).All()
+`).all()
 
 	var actual = token.Tokens{
 		{Type: token.Keyword, Literal: "server", Line: 2, Column: 1},
