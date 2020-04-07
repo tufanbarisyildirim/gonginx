@@ -5,32 +5,30 @@ type Node interface {
 	String() string
 }
 
-type Block interface {
+type Directive struct {
 	Node
+	Name       string
+	Parameters []string
 }
 
-
-type Directive interface {
+type Context interface {
 	Node
-	Block
+	ParentContext() Context
+	Directives() []Directive
 }
 
 type Config struct {
 	Directives []Directive
 }
 
-//  nginx blocks
+type ServerDirective struct {
+	//ports, binding ip addresses, ip versions
+	//ssl conf
+	//locations
+	//servername
+}
 
-//	events {
-//  	worker_connections  4096;  ## Default: 1024
-//	}
-//
-//	http {
-//  	server { # php/fastcgi
-//    	location {
-//    	}
-//  }
-//
-//  upstream {
-//  }
-//}
+type LocationDirective struct {
+	MatchModifier string
+	LocationMatch string
+}
