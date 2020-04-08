@@ -51,7 +51,7 @@ func (s *lexer) all() token.Tokens {
 
 func (s *lexer) getNextToken() token.Token {
 reToken:
-	ch := s.Peek()
+	ch := s.peek()
 	switch {
 	case isSpace(ch):
 		s.skipWhitespace()
@@ -78,14 +78,14 @@ reToken:
 }
 
 //Peek returns nexr rune without consuming it
-func (s *lexer) Peek() rune {
+func (s *lexer) peek() rune {
 	r := s.read()
 	s.unread()
 	return r
 }
 
-//PeekPrev returns review rune withouy actually seeking index to back
-func (s *lexer) PeekPrev() rune {
+//peekPrev returns review rune withouy actually seeking index to back
+func (s *lexer) peekPrev() rune {
 	s.unread()
 	r := s.read()
 	return r
@@ -189,7 +189,7 @@ func (s *lexer) scanQuotedString(delimiter rune) token.Token {
 		}
 
 		if ch == '\\' {
-			if needsEscape(s.Peek(), delimiter) {
+			if needsEscape(s.peek(), delimiter) {
 				switch s.read() {
 				case 'n':
 					buf.WriteRune('\n')
