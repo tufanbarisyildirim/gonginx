@@ -32,3 +32,5 @@ func (p *Parser) curTokenIs(t token.Type) bool {
 func (p *Parser) followingTokenIs(t token.Type) bool {
 	return p.followingToken.Type == t
 }
+
+func (p *Parser) parseBlock()

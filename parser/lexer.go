@@ -18,8 +18,8 @@ type lexer struct {
 	Latest token.Token
 }
 
-//parse initializes a lexer from string conetnt
-func parse(content string) *lexer {
+//lex initializes a lexer from string conetnt
+func lex(content string) *lexer {
 	return newLexer(bytes.NewBuffer([]byte(content)))
 }
 

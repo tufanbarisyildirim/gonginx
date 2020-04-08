@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"testing"
 
-	"gotest.tools/v3/assert"
 	"github.com/tufanbarisyildirim/gonginx/token"
+	"gotest.tools/v3/assert"
 )
 
-func TestScanner_Set(t *testing.T) {
-	tokens := parse(`
+func TestScanner_Lex(t *testing.T) {
+	tokens := lex(`
 server { # simple reverse-proxy
     listen       80;
     server_name  gonginx.com www.gonginx.com;
