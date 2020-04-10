@@ -1,8 +1,7 @@
 package config
 
-//Directive represents nginx directive
+//Directive represents any nginx directive
 type Directive struct {
-	Node
-	Name       string
-	Parameters []string
 }
+
+func (d *Directive) directiveStatement() {}
