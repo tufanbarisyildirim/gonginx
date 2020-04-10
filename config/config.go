@@ -1,7 +1,6 @@
 package config
 
 import (
-	"bytes"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -9,30 +8,18 @@ import (
 
 //Config  represents a whole config file.
 type Config struct {
-	FilePath   string
-	Statements []Statement
+	Block
+	FilePath string
 }
 
 //ToString return config as string
 func (c *Config) ToString() string {
-	return string(c.ToByteArray())
+	return c.Block.ToString()
 }
 
 //ToByteArray return config as byte array
 func (c *Config) ToByteArray() []byte {
-	var buf bytes.Buffer
-
-	for _, statement := range c.Statements {
-		buf.WriteString(statement.ToString())
-		buf.WriteString("\n")
-	}
-
-	return buf.Bytes()
-}
-
-//TokenLiteral returns the first token of config
-func (c *Config) TokenLiteral() string {
-	return ""
+	return c.Block.ToByteArray()
 }
 
 //SaveToFile save config to a file

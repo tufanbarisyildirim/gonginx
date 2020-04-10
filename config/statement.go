@@ -3,7 +3,6 @@ package config
 //Statement represents any statement
 type Statement interface {
 	ToString() string
-	TokenLiteral() string
 }
 
 //DirectiveStatement represents directives
@@ -12,10 +11,10 @@ type DirectiveStatement interface {
 	directiveStatement()
 }
 
-//BlockStatement represents blocks
-type BlockStatement interface {
+//ContextStatement represents blocks
+type ContextStatement interface {
 	Statement
-	blockStatement()
+	contextStatement()
 }
 
 //FileStatement a statement that saves its own file

@@ -53,10 +53,14 @@ func (p *Parser) followingTokenIs(t token.Type) bool {
 	return p.followingToken.Type == t
 }
 
-//Parse parses a config and returns an AST
-func (p *Parser) Parse() *config.Config {
-	c := &config.Config{
-		FilePath: p.lexer.file,
+//ParseBlock parse a block statement
+func (p *Parser) ParseBlock(name string) *config.Block {
+	if name == "" {
+		name = "main"
+	}
+	context := &config.Block{
+		Context:    name,
+		Statements: make([]config.Statement, 0),
 	}
 
 parsingloop:
@@ -65,53 +69,41 @@ parsingloop:
 		case p.curTokenIs(token.Eof):
 			break parsingloop
 		case p.curTokenIs(token.Keyword):
-			switch p.currentToken.Literal {
-			case "events":
-				//parse event context
-				p.nextToken()
-				//c.Statements = append(c.Statements, p.parseEvents())
-				break
-			case "http":
-				//parse http context
-				break
-			case "server":
-				//parser server context
-				break
-			case "location":
-				//parse location context
-				break
-			case "types":
-				//parse mime types
-				break
-			case "upstream":
-				//parse upstream context
-				break
-			case "include":
-				//parse all files match include statement
-				c.Statements = append(c.Statements, p.parseInclude())
-				break
-			default:
-				//parse unknown directive
-				break
+			if p.followingTokenIs(token.BlockStart) {
+				context.Statements = append(context.Statements, p.ParseBlock(p.currentToken.Literal))
+			} else {
+				context.Statements = append(context.Statements, p.parseDirective())
 			}
 			break
 		}
-
 	}
 
-	return c
+	return context
 }
 
 func (p *Parser) parseInclude() *config.Include {
 	include := &config.Include{}
-	include.Token = p.currentToken
-	include.IncludePath = p.followingToken.String()
-
-	p.nextToken() // read include
-	p.nextToken() // read path
+	p.nextToken() //path
+	include.IncludePath = p.currentToken.Literal
+	// path
 	if !p.curTokenIs(token.Semicolon) {
 		panic("expected semicolon after include path")
 	}
 
 	return include
+}
+
+func (p *Parser) parseDirective() *config.Directive {
+	d := &config.Directive{
+		Name: p.currentToken.Literal,
+	}
+	for p.nextToken(); !p.curTokenIs(token.Eof) && !p.curTokenIs(token.Semicolon); p.nextToken() {
+		d.Parameters = append(d.Parameters, p.currentToken.Literal)
+	}
+
+	if !p.curTokenIs(token.Semicolon) {
+		panic("expected semicolon after include path")
+	}
+
+	return d
 }

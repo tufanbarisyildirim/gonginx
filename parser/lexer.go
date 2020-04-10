@@ -26,6 +26,7 @@ func lex(content string) *lexer {
 //newLexer initilizes a lexer from a reader
 func newLexer(r io.Reader) *lexer {
 	return &lexer{
+		line:   1,
 		reader: bufio.NewReader(r),
 	}
 }
@@ -79,15 +80,15 @@ reToken:
 
 //Peek returns nexr rune without consuming it
 func (s *lexer) peek() rune {
-	r := s.read()
-	s.unread()
+	r, _, _ := s.reader.ReadRune()
+	_ = s.reader.UnreadRune()
 	return r
 }
 
 //peekPrev returns review rune withouy actually seeking index to back
 func (s *lexer) peekPrev() rune {
-	s.unread()
-	r := s.read()
+	_ = s.reader.UnreadRune()
+	r, _, _ := s.reader.ReadRune()
 	return r
 }
 
@@ -98,13 +99,12 @@ func (s *lexer) readUntil(until runeCheck) string {
 	buf.WriteRune(s.read())
 
 	for {
-		if ch := s.read(); isEOF(ch) {
+		if ch := s.peek(); isEOF(ch) {
 			break
 		} else if until(ch) {
-			s.unread()
 			break
 		} else {
-			buf.WriteRune(ch)
+			buf.WriteRune(s.read())
 		}
 	}
 
@@ -142,11 +142,9 @@ func (s *lexer) readWhile(while runeCheck) string {
 	buf.WriteRune(s.read())
 
 	for {
-		ch := s.read()
-		if while(ch) {
-			buf.WriteRune(ch)
+		if ch := s.peek(); while(ch) {
+			buf.WriteRune(s.read())
 		} else {
-			s.unread()
 			break
 		}
 	}

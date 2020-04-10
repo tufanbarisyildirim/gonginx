@@ -3,17 +3,12 @@ package config
 import (
 	"testing"
 
-	"github.com/tufanbarisyildirim/gonginx/token"
 	"gotest.tools/v3/assert"
 )
 
 func TestConfig_IncludeToString(t *testing.T) {
 
 	include := &Include{
-		Token: token.Token{
-			Type:    token.Keyword,
-			Literal: "include",
-		},
 		IncludePath: "/etc/nginx/conf.d/*.conf",
 	}
 	assert.Equal(t, "include /etc/nginx/conf.d/*.conf;", include.ToString())
