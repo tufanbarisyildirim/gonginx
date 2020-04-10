@@ -35,10 +35,12 @@ var (
 	}
 )
 
+//String convert a token to string as it should be written
 func (tt Type) String() string {
 	return tokenName[tt]
 }
 
+//Token represents a config token
 type Token struct {
 	Type    Type
 	Literal string
@@ -47,20 +49,24 @@ type Token struct {
 }
 
 func (t Token) String() string {
-	return fmt.Sprintf("{Type: %s,Literal:\"%s\", Line:%d,Column:%d}", t.Type, t.Literal, t.Line, t.Column)
+	return fmt.Sprintf("{Type: %s,Literal:\"%s\",Line:%d,Column:%d}", t.Type, t.Literal, t.Line, t.Column)
 }
 
+//Lit set literal string
 func (t Token) Lit(literal string) Token {
 	t.Literal = literal
 	return t
 }
 
+//EqualTo check equality
 func (t Token) EqualTo(t2 Token) bool {
-	return t.Type == t2.Type || t.Literal == t2.Literal
+	return t.Type == t2.Type && t.Literal == t2.Literal
 }
 
+//Tokens list of token
 type Tokens []Token
 
+//EqualTo check Tokens equality of token list
 func (ts Tokens) EqualTo(tokens Tokens) bool {
 	if len(ts) != len(tokens) {
 		return false
@@ -73,6 +79,7 @@ func (ts Tokens) EqualTo(tokens Tokens) bool {
 	return true
 }
 
-func (t Token) is(typ Type) bool {
+//Is check type of a token
+func (t Token) Is(typ Type) bool {
 	return t.Type == typ
 }
