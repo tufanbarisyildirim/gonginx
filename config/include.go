@@ -8,7 +8,7 @@ import (
 
 //Include include structure
 type Include struct {
-	token       token.Token
+	Token       token.Token
 	IncludePath string
 	Config
 }
@@ -22,7 +22,7 @@ func (i *Include) ToString() string {
 
 //TokenLiteral return "include"
 func (i *Include) TokenLiteral() string {
-	return i.token.Literal
+	return i.Token.Literal
 }
 
 //SaveToFile saves include to its own file

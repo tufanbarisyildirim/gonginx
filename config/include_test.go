@@ -8,8 +8,9 @@ import (
 )
 
 func TestConfig_IncludeToString(t *testing.T) {
+
 	include := &Include{
-		token: token.Token{
+		Token: token.Token{
 			Type:    token.Keyword,
 			Literal: "include",
 		},

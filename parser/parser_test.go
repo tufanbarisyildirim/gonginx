@@ -13,9 +13,8 @@ func TestParser_CurrFollow(t *testing.T) {
 	}
 	`
 
-	p := NewParser(lex(conf))
+	p := NewStringParser(conf)
 	//assert.Assert(t, tokens, 1)
 	assert.Assert(t, p.curTokenIs(token.Keyword))
 	assert.Assert(t, p.followingTokenIs(token.BlockStart))
 }
-

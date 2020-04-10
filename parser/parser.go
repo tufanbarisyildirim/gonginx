@@ -1,6 +1,9 @@
 package parser
 
 import (
+	"bufio"
+	"os"
+
 	"github.com/tufanbarisyildirim/gonginx/config"
 	"github.com/tufanbarisyildirim/gonginx/token"
 )
@@ -12,8 +15,22 @@ type Parser struct {
 	followingToken token.Token
 }
 
-//NewParser initilizes a new Parser
-func NewParser(lexer *lexer) *Parser {
+//NewStringParser parses nginx conf from string
+func NewStringParser(str string) *Parser {
+	return NewParserFromLexer(lex(str))
+}
+
+//NewParser create new parser
+func NewParser(filePath string) (*Parser, error) {
+	f, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	return NewParserFromLexer(newLexer(bufio.NewReader(f))), nil
+}
+
+//NewParserFromLexer initilizes a new Parser
+func NewParserFromLexer(lexer *lexer) *Parser {
 	parser := &Parser{
 		lexer: lexer,
 	}
@@ -52,6 +69,7 @@ parsingloop:
 			case "events":
 				//parse event context
 				p.nextToken()
+				//c.Statements = append(c.Statements, p.parseEvents())
 				break
 			case "http":
 				//parse http context
@@ -70,6 +88,7 @@ parsingloop:
 				break
 			case "include":
 				//parse all files match include statement
+				c.Statements = append(c.Statements, p.parseInclude())
 				break
 			default:
 				//parse unknown directive
@@ -81,4 +100,18 @@ parsingloop:
 	}
 
 	return c
+}
+
+func (p *Parser) parseInclude() *config.Include {
+	include := &config.Include{}
+	include.Token = p.currentToken
+	include.IncludePath = p.followingToken.String()
+
+	p.nextToken() // read include
+	p.nextToken() // read path
+	if !p.curTokenIs(token.Semicolon) {
+		panic("expected semicolon after include path")
+	}
+
+	return include
 }
