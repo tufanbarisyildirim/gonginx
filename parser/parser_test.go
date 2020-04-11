@@ -43,6 +43,13 @@ func TestParser_UnendedInclude(t *testing.T) {
 	`)).Parse()
 }
 
+func TestParser_ParseFromFile(t *testing.T) {
+	_, err := NewParser("../full-example/nginx.conf")
+	assert.NilError(t, err)
+	_, err2 := NewParser("../full-example/nginx.conf-not-found")
+	assert.ErrorContains(t, err2, "no such file or directory")
+}
+
 func TestParser_MultiParamDirecive(t *testing.T) {
 
 	NewParserFromLexer(
