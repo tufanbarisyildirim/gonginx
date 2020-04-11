@@ -28,3 +28,40 @@ func TestParser_Include(t *testing.T) {
 	_, ok := c.Statements[0].(config.IncludeStatement) //we expect the first statement to be an include
 	assert.Assert(t, ok)
 }
+
+func TestParser_UnendedInclude(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The code did not panic")
+		}
+	}()
+
+	NewParserFromLexer(
+		lex(`
+	server { 
+	include /but/no/semicolon {}
+	`)).Parse()
+}
+
+func TestParser_MultiParamDirecive(t *testing.T) {
+
+	NewParserFromLexer(
+		lex(`
+	server { 
+	a_directive has multi params /and/ends;
+	`)).Parse()
+}
+
+func TestParser_UnendedMultiParams(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The code did not panic")
+		}
+	}()
+
+	NewParserFromLexer(
+		lex(`
+	server { 
+	a_driective with mutli params /but/no/semicolon/to/panic }
+	`)).Parse()
+}
