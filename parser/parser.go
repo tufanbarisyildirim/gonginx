@@ -93,7 +93,7 @@ func (p *Parser) parseBlock() *config.Block {
 parsingloop:
 	for {
 		switch {
-		case p.curTokenIs(token.Eof):
+		case p.curTokenIs(token.EOF):
 			break parsingloop
 		case p.curTokenIs(token.Keyword):
 			context.Statements = append(context.Statements, p.parseStatement())
@@ -133,9 +133,8 @@ func (p *Parser) parseStatement() config.Statement {
 		d.Block = p.parseBlock()
 		if _, ok := p.blockConverters[d.Name]; ok {
 			return p.blockConverters[d.Name](d)
-		} else {
-			return d
 		}
+		return d
 	}
 
 	panic(fmt.Errorf("unexpected token %s (%s) on line %d, column %d", p.currentToken.Type.String(), p.currentToken.Literal, p.currentToken.Line, p.currentToken.Column))

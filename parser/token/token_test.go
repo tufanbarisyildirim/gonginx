@@ -19,7 +19,7 @@ func TestType_String(t *testing.T) {
 		},
 		{
 			name: "Eof",
-			tt:   Eof,
+			tt:   EOF,
 			want: "Eof",
 		},
 		{

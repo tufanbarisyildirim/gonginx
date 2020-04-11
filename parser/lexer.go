@@ -41,7 +41,7 @@ func (s *lexer) all() token.Tokens {
 	tokens := make([]token.Token, 0)
 	for {
 		v := s.scan()
-		if v.Type == token.Eof || v.Type == -1 {
+		if v.Type == token.EOF || v.Type == -1 {
 			break
 		}
 		tokens = append(tokens, v)
@@ -57,7 +57,7 @@ reToken:
 		s.skipWhitespace()
 		goto reToken
 	case isEOF(ch):
-		return s.NewToken(token.Eof).Lit(string(s.read()))
+		return s.NewToken(token.EOF).Lit(string(s.read()))
 	case ch == ';':
 		return s.NewToken(token.Semicolon).Lit(string(s.read()))
 	case ch == '{':
@@ -147,7 +147,7 @@ func (s *lexer) scanQuotedString(delimiter rune) token.Token {
 	for {
 		ch := s.read()
 
-		if ch == rune(token.Eof) {
+		if ch == rune(token.EOF) {
 			panic("unexpected end of file while scanning a string, maybe an unclosed quote?")
 		}
 
@@ -188,7 +188,7 @@ func (s *lexer) scanVariable() token.Token {
 func (s *lexer) read() rune {
 	ch, _, err := s.reader.ReadRune()
 	if err != nil {
-		return rune(token.Eof)
+		return rune(token.EOF)
 	}
 
 	if ch == '\n' {
@@ -217,7 +217,7 @@ func isSpace(ch rune) bool {
 }
 
 func isEOF(ch rune) bool {
-	return ch == rune(token.Eof)
+	return ch == rune(token.EOF)
 }
 
 func isEndOfLine(ch rune) bool {

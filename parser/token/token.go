@@ -4,26 +4,38 @@ import (
 	"fmt"
 )
 
+//Type Token.Type
 type Type int
 
 const (
-	Eof Type = iota
+	//EOF end of file
+	EOF Type = iota
+	//Eol end of line
 	Eol
+	//Keyword any keyword
 	Keyword
+	//QuotedString Quoted String
 	QuotedString
+	//Variable any $variabl
 	Variable
+	//BlockStart {
 	BlockStart
+	//BlockEnd }
 	BlockEnd
+	//Semicolon ;
 	Semicolon
+	//Comment #comment
 	Comment
+	//Illegal a token that should never happen
 	Illegal
+	//Regex any reg expression
 	Regex
 )
 
 var (
 	tokenName = map[Type]string{
 		QuotedString: "QuotedString",
-		Eof:          "Eof",
+		EOF:          "Eof",
 		Keyword:      "Keyword",
 		Variable:     "Variable",
 		BlockStart:   "BlockStart",

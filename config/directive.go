@@ -18,7 +18,6 @@ func (d *Directive) directiveStatement() {}
 func (d *Directive) ToString() string {
 	if d.Block == nil {
 		return fmt.Sprintf("%s %s;", d.Name, strings.Join(d.Parameters, " "))
-	} else {
-		return fmt.Sprintf("%s %s {\n%s\n}", d.Name, strings.Join(d.Parameters, " "), d.Block.ToString())
 	}
+	return fmt.Sprintf("%s %s {\n%s\n}", d.Name, strings.Join(d.Parameters, " "), d.Block.ToString())
 }
