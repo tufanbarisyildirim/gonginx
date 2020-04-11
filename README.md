@@ -1,8 +1,7 @@
 # Gonginx
-Gonginx is an Nginx configuration parser helps you to manipulate your nginx config using golang.
+![reportcard](https://goreportcard.com/badge/github.com/tufanbarisyildirim/gonginx)
 
-## TODO
-[ ] coming soon, there is no roadmap and/or todolist yet
+Gonginx is an Nginx configuration parser helps you to manipulate your nginx config using golang.
 
 ## Limitations
 -- a list is coming soon, but it will support most of core functions of nginx
