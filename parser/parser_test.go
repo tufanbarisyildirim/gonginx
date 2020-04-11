@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/tufanbarisyildirim/gonginx/config"
-	"github.com/tufanbarisyildirim/gonginx/token"
+	"github.com/tufanbarisyildirim/gonginx/parser/token"
 	"gotest.tools/v3/assert"
 )
 
@@ -16,7 +16,6 @@ func TestParser_CurrFollow(t *testing.T) {
 	p := NewStringParser(conf)
 	//assert.Assert(t, tokens, 1)
 	assert.Assert(t, p.curTokenIs(token.Keyword))
-	assert.Assert(t, p.followingTokenIs(token.BlockStart))
 	assert.Assert(t, p.followingTokenIs(token.BlockStart))
 }
 

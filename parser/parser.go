@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/tufanbarisyildirim/gonginx/config"
-	"github.com/tufanbarisyildirim/gonginx/token"
+	"github.com/tufanbarisyildirim/gonginx/parser/token"
 )
 
 //Parser is an nginx config parser
