@@ -11,12 +11,6 @@ type DirectiveStatement interface {
 	directiveStatement()
 }
 
-//ContextStatement represents blocks
-type ContextStatement interface {
-	Statement
-	contextStatement()
-}
-
 //FileStatement a statement that saves its own file
 type FileStatement interface {
 	Statement

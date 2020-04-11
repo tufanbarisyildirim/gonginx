@@ -23,6 +23,7 @@ func (c *Config) ToByteArray() []byte {
 }
 
 //SaveToFile save config to a file
+//TODO: add custom file / folder path support
 func (c *Config) SaveToFile() error {
 	//wrilte file
 	dirPath := filepath.Dir(c.FilePath)
@@ -32,5 +33,22 @@ func (c *Config) SaveToFile() error {
 			return err
 		}
 	}
-	return ioutil.WriteFile(c.FilePath, c.ToByteArray(), 0644)
+
+	//write main file
+	err := ioutil.WriteFile(c.FilePath, c.ToByteArray(), 0644)
+	if err != nil {
+		return err
+	}
+
+	//write sub files (inlude /file/path)
+	for _, statement := range c.Block.Statements {
+		if fs, ok := statement.(FileStatement); ok {
+			err := fs.SaveToFile()
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }

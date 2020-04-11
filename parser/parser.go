@@ -2,6 +2,7 @@ package parser
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 
 	"github.com/tufanbarisyildirim/gonginx/config"
@@ -54,12 +55,9 @@ func (p *Parser) followingTokenIs(t token.Type) bool {
 }
 
 //ParseBlock parse a block statement
-func (p *Parser) ParseBlock(name string) *config.Block {
-	if name == "" {
-		name = "main"
-	}
+func (p *Parser) ParseBlock() *config.Block {
+
 	context := &config.Block{
-		Context:    name,
 		Statements: make([]config.Statement, 0),
 	}
 
@@ -69,11 +67,7 @@ parsingloop:
 		case p.curTokenIs(token.Eof):
 			break parsingloop
 		case p.curTokenIs(token.Keyword):
-			if p.followingTokenIs(token.BlockStart) {
-				context.Statements = append(context.Statements, p.ParseBlock(p.currentToken.Literal))
-			} else {
-				context.Statements = append(context.Statements, p.parseDirective())
-			}
+			context.Statements = append(context.Statements, p.parseStatement())
 			break
 		}
 	}
@@ -90,20 +84,34 @@ func (p *Parser) parseInclude() *config.Include {
 		panic("expected semicolon after include path")
 	}
 
+	//TODO: start sub parsing here, detect all files from include path
+	//		support wildcards, include all matching files
+
 	return include
 }
 
-func (p *Parser) parseDirective() *config.Directive {
+func (p *Parser) parseStatement() config.Statement {
 	d := &config.Directive{
 		Name: p.currentToken.Literal,
 	}
-	for p.nextToken(); !p.curTokenIs(token.Eof) && !p.curTokenIs(token.Semicolon); p.nextToken() {
+
+	switch d.Name {
+	case "include":
+		return p.parseInclude()
+	}
+
+	for p.nextToken(); !p.curTokenIs(token.Eof) && p.curTokenIs(token.Keyword); p.nextToken() {
 		d.Parameters = append(d.Parameters, p.currentToken.Literal)
 	}
 
-	if !p.curTokenIs(token.Semicolon) {
-		panic("expected semicolon after include path")
+	if p.curTokenIs(token.Semicolon) {
+		return d
 	}
 
-	return d
+	if p.curTokenIs(token.BlockStart) {
+		d.Block = p.ParseBlock()
+		return d
+	}
+
+	panic(fmt.Errorf("unexpected token %s : %s ", p.currentToken.Type.String(), p.currentToken.Literal))
 }

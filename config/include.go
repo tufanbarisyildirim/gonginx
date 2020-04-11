@@ -7,7 +7,7 @@ import (
 //Include include structure
 type Include struct {
 	IncludePath string
-	Config
+	*Config
 }
 
 func (i *Include) includeStatement() {}

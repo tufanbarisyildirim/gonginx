@@ -1,10 +1,11 @@
 package config
 
-import "bytes"
+import (
+	"bytes"
+)
 
 //Block a block statement
 type Block struct {
-	Context    string
 	Statements []Statement
 }
 
