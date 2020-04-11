@@ -29,7 +29,7 @@ server { # simple reverse-proxy
   }
 include /etc/nginx/conf.d/*.conf;
 directive "with a quoted string\t \r\n \\ with some escaped thing s\" good.";
-`).all()
+#also cmment right before eof`).all()
 
 	var expect = token.Tokens{
 		{Type: token.Keyword, Literal: "server", Line: 2, Column: 1},
@@ -77,6 +77,7 @@ directive "with a quoted string\t \r\n \\ with some escaped thing s\" good.";
 		{Type: token.Keyword, Literal: "directive", Line: 20, Column: 1},
 		{Type: token.QuotedString, Literal: "with a quoted string\t \r\n \\ with some escaped thing s\" good.", Line: 20, Column: 11},
 		{Type: token.Semicolon, Literal: ";", Line: 20, Column: 77},
+		{Type: token.Comment, Literal: "#also cmment right before eof", Line: 21, Column: 1},
 	}
 	//assert.Equal(t, actual, 1)
 	tokenString, err := json.Marshal(actual)
@@ -88,4 +89,21 @@ directive "with a quoted string\t \r\n \\ with some escaped thing s\" good.";
 	assert.Assert(t, actual.EqualTo(expect))
 	assert.Equal(t, string(tokenString), string(expectJSON))
 	assert.Equal(t, len(actual), len(expect))
+}
+
+func panicFunc() {
+
+}
+
+func TestScanner_LexPanicUnclosedQuote(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The code did not panic")
+		}
+	}()
+
+	lex(`
+	server { 
+	directive "with an unclosed quote \t \r\n \\ with some escaped thing s\" good.;
+	`).all()
 }
