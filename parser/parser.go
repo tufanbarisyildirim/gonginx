@@ -11,9 +11,12 @@ import (
 
 //Parser is an nginx config parser
 type Parser struct {
-	lexer          *lexer
-	currentToken   token.Token
-	followingToken token.Token
+	lexer               *lexer
+	currentToken        token.Token
+	followingToken      token.Token
+	statementParsers    map[string]func() config.Statement
+	blockConverters     map[string]func(*config.Directive) config.Statement
+	directiveConverters map[string]func(*config.Directive) config.Statement
 }
 
 //NewStringParser parses nginx conf from string
@@ -37,6 +40,24 @@ func NewParserFromLexer(lexer *lexer) *Parser {
 	}
 	parser.nextToken()
 	parser.nextToken()
+
+	parser.statementParsers = map[string]func() config.Statement{
+		"include": func() config.Statement {
+			return parser.parseInclude()
+		},
+	}
+
+	parser.blockConverters = map[string]func(*config.Directive) config.Statement{
+		"location": func(directive *config.Directive) config.Statement {
+			return parser.parseLocation(directive)
+		},
+	}
+
+	parser.directiveConverters = map[string]func(*config.Directive) config.Statement{
+		"server": func(directive *config.Directive) config.Statement {
+			return parser.parseUpstreamServer(directive)
+		},
+	}
 
 	return parser
 }
@@ -84,6 +105,42 @@ parsingloop:
 	return context
 }
 
+func (p *Parser) parseStatement() config.Statement {
+	d := &config.Directive{
+		Name: p.currentToken.Literal,
+	}
+
+	//if we have a special parser for the directive, we use it.
+	if _, ok := p.statementParsers[d.Name]; ok {
+		return p.statementParsers[d.Name]()
+	}
+
+	//parse parameters until the end.
+	for p.nextToken(); p.curTokenIs(token.Keyword); p.nextToken() {
+		d.Parameters = append(d.Parameters, p.currentToken.Literal)
+	}
+
+	//if we find a semicolon it is a directive, we will check directive converters
+	if p.curTokenIs(token.Semicolon) {
+		if _, ok := p.directiveConverters[d.Name]; ok {
+			return p.directiveConverters[d.Name](d)
+		}
+		return d
+	}
+
+	//ok, it does not end with a semicolon but a block starts, we will convert that block if we have a converter
+	if p.curTokenIs(token.BlockStart) {
+		d.Block = p.parseBlock()
+		if _, ok := p.blockConverters[d.Name]; ok {
+			return p.blockConverters[d.Name](d)
+		} else {
+			return d
+		}
+	}
+
+	panic(fmt.Errorf("unexpected token %s (%s) on line %d, column %d", p.currentToken.Type.String(), p.currentToken.Literal, p.currentToken.Line, p.currentToken.Column))
+}
+
 func (p *Parser) parseInclude() *config.Include {
 	include := &config.Include{}
 	p.nextToken() //include
@@ -101,28 +158,37 @@ func (p *Parser) parseInclude() *config.Include {
 	return include
 }
 
-func (p *Parser) parseStatement() config.Statement {
-	d := &config.Directive{
-		Name: p.currentToken.Literal,
+func (p *Parser) parseLocation(directive *config.Directive) *config.Location {
+	location := &config.Location{
+		Modifier: "",
+		Match:    "",
+		Block:    directive.Block,
 	}
 
-	switch d.Name {
-	case "include":
-		return p.parseInclude()
+	if len(directive.Parameters) == 0 {
+		panic("no enough parameter for location")
 	}
 
-	for p.nextToken(); !p.curTokenIs(token.Eof) && p.curTokenIs(token.Keyword); p.nextToken() {
-		d.Parameters = append(d.Parameters, p.currentToken.Literal)
+	if len(directive.Parameters) == 1 {
+		location.Match = directive.Parameters[0]
+		return location
+	} else if len(directive.Parameters) == 2 {
+		location.Modifier = directive.Parameters[0]
+		location.Match = directive.Parameters[1]
+		return location
 	}
 
-	if p.curTokenIs(token.Semicolon) {
-		return d
+	panic("too many arguments for location directive")
+}
+
+func (p *Parser) parseUpstreamServer(directive *config.Directive) *config.UpstreamServer {
+	upstreamServer := &config.UpstreamServer{
+		Directive: directive,
 	}
 
-	if p.curTokenIs(token.BlockStart) {
-		d.Block = p.parseBlock()
-		return d
-	}
+	//TODO: param 1 should be the server, with port.
+	//others should be parsed as key=value
+	//some of them line down, etc are sub directives or arguments.
 
-	panic(fmt.Errorf("unexpected token %s : %s ", p.currentToken.Type.String(), p.currentToken.Literal))
+	return upstreamServer
 }
