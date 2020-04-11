@@ -28,6 +28,7 @@ server { # simple reverse-proxy
     }
   }
 include /etc/nginx/conf.d/*.conf;
+directive "with a quoted string\t \r\n \\ with some escaped thing s\" good.";
 `).all()
 
 	var expect = token.Tokens{
@@ -73,6 +74,9 @@ include /etc/nginx/conf.d/*.conf;
 		{Type: token.Keyword, Literal: "include", Line: 19, Column: 1},
 		{Type: token.Keyword, Literal: "/etc/nginx/conf.d/*.conf", Line: 19, Column: 9},
 		{Type: token.Semicolon, Literal: ";", Line: 19, Column: 33},
+		{Type: token.Keyword, Literal: "directive", Line: 20, Column: 1},
+		{Type: token.QuotedString, Literal: "with a quoted string\t \r\n \\ with some escaped thing s\" good.", Line: 20, Column: 11},
+		{Type: token.Semicolon, Literal: ";", Line: 20, Column: 77},
 	}
 	//assert.Equal(t, actual, 1)
 	tokenString, err := json.Marshal(actual)

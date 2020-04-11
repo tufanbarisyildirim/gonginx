@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"io"
-	"unicode"
 
 	"github.com/tufanbarisyildirim/gonginx/parser/token"
 )
@@ -71,24 +70,15 @@ reToken:
 		return s.scanVariable()
 	case isQuote(ch):
 		return s.scanQuotedString(ch)
-	case isNotSpace(ch):
+	default:
 		return s.scanKeyword()
 	}
-
-	return s.NewToken(token.Illegal).Lit(string(s.read())) //that should never happen :)
 }
 
 //Peek returns nexr rune without consuming it
 func (s *lexer) peek() rune {
 	r, _, _ := s.reader.ReadRune()
 	_ = s.reader.UnreadRune()
-	return r
-}
-
-//peekPrev returns review rune withouy actually seeking index to back
-func (s *lexer) peekPrev() rune {
-	_ = s.reader.UnreadRune()
-	r, _, _ := s.reader.ReadRune()
 	return r
 }
 
@@ -120,23 +110,6 @@ func (s *lexer) NewToken(tokenType token.Type) token.Token {
 	}
 }
 
-func (s *lexer) readUntilWith(until runeCheck) string {
-	var buf bytes.Buffer
-	buf.WriteRune(s.read())
-
-	for {
-		if ch := s.read(); isEOF(ch) {
-			break
-		} else if until(ch) {
-			buf.WriteRune(ch)
-			break
-		} else {
-			buf.WriteRune(ch)
-		}
-	}
-	return buf.String()
-}
-
 func (s *lexer) readWhile(while runeCheck) string {
 	var buf bytes.Buffer
 	buf.WriteRune(s.read())
@@ -156,16 +129,8 @@ func (s *lexer) skipWhitespace() {
 	s.readWhile(isSpace)
 }
 
-func (s *lexer) skipEndOfLine() {
-	s.readUntilWith(isEndOfLine)
-}
-
 func (s *lexer) scanComment() token.Token {
 	return s.NewToken(token.Comment).Lit(s.readUntil(isEndOfLine))
-}
-
-func (s *lexer) scanRegex() token.Token {
-	return s.NewToken(token.Regex).Lit(s.readUntil(isSpace))
 }
 
 /**
@@ -220,11 +185,6 @@ func (s *lexer) scanVariable() token.Token {
 	return s.NewToken(token.Variable).Lit(s.readUntil(isKeywordTerminator))
 }
 
-func (s *lexer) unread() {
-	_ = s.reader.UnreadRune()
-	s.column--
-}
-
 func (s *lexer) read() rune {
 	ch, _, err := s.reader.ReadRune()
 	if err != nil {
@@ -242,14 +202,6 @@ func (s *lexer) read() rune {
 
 func isQuote(ch rune) bool {
 	return ch == '"' || ch == '\'' || ch == '`'
-}
-
-func isRegexDelimiter(ch rune) bool {
-	return ch == '/'
-}
-
-func isNotSpace(ch rune) bool {
-	return !isSpace(ch)
 }
 
 func isKeywordTerminator(ch rune) bool {
@@ -270,12 +222,4 @@ func isEOF(ch rune) bool {
 
 func isEndOfLine(ch rune) bool {
 	return ch == '\r' || ch == '\n'
-}
-
-func isLetter(ch rune) bool {
-	return ch == '_' || unicode.IsLetter(ch)
-}
-
-func isWordStart(ch rune) bool {
-	return isLetter(ch) || unicode.IsDigit(ch)
 }
