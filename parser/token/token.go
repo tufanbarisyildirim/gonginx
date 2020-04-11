@@ -49,7 +49,7 @@ type Token struct {
 }
 
 func (t Token) String() string {
-	return fmt.Sprintf("{Type: %s,Literal:\"%s\",Line:%d,Column:%d}", t.Type, t.Literal, t.Line, t.Column)
+	return fmt.Sprintf("{Type:%s,Literal:\"%s\",Line:%d,Column:%d}", t.Type, t.Literal, t.Line, t.Column)
 }
 
 //Lit set literal string

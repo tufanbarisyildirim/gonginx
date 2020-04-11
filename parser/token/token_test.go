@@ -1,51 +1,271 @@
 package token
 
 import (
+	"fmt"
+	"reflect"
 	"testing"
 )
 
-func TestToken_EqualTo(t *testing.T) {
+func TestType_String(t *testing.T) {
 	tests := []struct {
-		name   string
-		Token1 Token
-		Token2 Token
-		want   bool
+		name string
+		tt   Type
+		want string
 	}{
 		{
-			name: "server is server",
-			Token1: Token{
+			name: "QuotedString",
+			tt:   QuotedString,
+			want: "QuotedString",
+		},
+		{
+			name: "Eof",
+			tt:   Eof,
+			want: "Eof",
+		},
+		{
+			name: "Keyword",
+			tt:   Keyword,
+			want: "Keyword",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.tt.String(); got != tt.want {
+				t.Errorf("Type.String() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestToken_String(t *testing.T) {
+	type fields struct {
+		Type    Type
+		Literal string
+		Line    int
+		Column  int
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "serialize quoted string",
+			fields: fields{
+				Type:    QuotedString,
+				Literal: "my test string",
+				Line:    0,
+				Column:  0,
+			},
+			want: fmt.Sprintf("{Type:%s,Literal:\"%s\",Line:%d,Column:%d}", "QuotedString", "my test string", 0, 0),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tok := Token{
+				Type:    tt.fields.Type,
+				Literal: tt.fields.Literal,
+				Line:    tt.fields.Line,
+				Column:  tt.fields.Column,
+			}
+			if got := tok.String(); got != tt.want {
+				t.Errorf("Token.String() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestToken_Lit(t *testing.T) {
+	type fields struct {
+		Type    Type
+		Literal string
+		Line    int
+		Column  int
+	}
+	type args struct {
+		literal string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   Token
+	}{
+		{
+			name: "a string literal",
+			fields: fields{
+				Type:    QuotedString,
+				Literal: "a test string",
+				Line:    0,
+				Column:  0,
+			},
+			args: args{
+				literal: "new test string",
+			},
+			want: Token{
+				Type:    QuotedString,
+				Literal: "new test string",
+				Line:    0,
+				Column:  0,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tok := Token{
+				Type:    tt.fields.Type,
+				Literal: tt.fields.Literal,
+				Line:    tt.fields.Line,
+				Column:  tt.fields.Column,
+			}
+			if got := tok.Lit(tt.args.literal); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Token.Lit() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestToken_EqualTo(t *testing.T) {
+
+	tests := []struct {
+		name string
+		tok1 Token
+		tok2 Token
+		want bool
+	}{
+		{
+			name: "keyword is keyword",
+			tok1: Token{
 				Type:    Keyword,
 				Literal: "server",
 			},
-			Token2: Token{
+			tok2: Token{
 				Type:    Keyword,
 				Literal: "server",
 			},
 			want: true,
 		},
 		{
-			name: "loc is not server",
-			Token1: Token{
+			name: "keyword is keyword but needs same directive",
+			tok1: Token{
 				Type:    Keyword,
 				Literal: "server",
 			},
-			Token2: Token{
+			tok2: Token{
 				Type:    Keyword,
 				Literal: "location",
 			},
 			want: false,
+		}, {
+			name: "string is string",
+			tok1: Token{
+				Type:    QuotedString,
+				Literal: "same quoted strings",
+			},
+			tok2: Token{
+				Type:    QuotedString,
+				Literal: "same quoted strings",
+			},
+			want: true,
+		},
+		{
+			name: "Blockstart is Blockstart even if they are in different lines",
+			tok1: Token{
+				Type:    BlockStart,
+				Literal: "{",
+				Line:    1,
+			},
+			tok2: Token{
+				Type:    BlockStart,
+				Literal: "{",
+				Line:    2,
+			},
+			want: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.Token1.EqualTo(tt.Token2); got != tt.want {
+			if got := tt.tok1.EqualTo(tt.tok2); got != tt.want {
 				t.Errorf("Token.EqualTo() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestToken_is(t *testing.T) {
+func TestTokens_EqualTo(t *testing.T) {
+	type args struct {
+		tokens Tokens
+	}
+	tests := []struct {
+		name string
+		ts   Tokens
+		args args
+		want bool
+	}{
+		{
+			name: "token array matching",
+			ts: Tokens{
+				{Type: Keyword, Literal: "server", Line: 2, Column: 1},
+				{Type: BlockStart, Literal: "{", Line: 2, Column: 8},
+				{Type: Comment, Literal: "# simple reverse-proxy", Line: 2, Column: 10},
+				{Type: BlockEnd, Literal: "}", Line: 3, Column: 5},
+			},
+			args: args{
+				tokens: Tokens{
+					{Type: Keyword, Literal: "server", Line: 2, Column: 1},
+					{Type: BlockStart, Literal: "{", Line: 2, Column: 8},
+					{Type: Comment, Literal: "# simple reverse-proxy", Line: 2, Column: 10},
+					{Type: BlockEnd, Literal: "}", Line: 3, Column: 5},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "token array matching",
+			ts: Tokens{
+				{Type: Keyword, Literal: "server", Line: 2, Column: 1},
+				{Type: BlockStart, Literal: "{", Line: 2, Column: 8},
+				{Type: Comment, Literal: "# simple reverse-proxy", Line: 2, Column: 10},
+				{Type: BlockEnd, Literal: "}", Line: 3, Column: 5},
+			},
+			args: args{
+				tokens: Tokens{
+					{Type: Keyword, Literal: "server", Line: 2, Column: 1},
+					{Type: BlockStart, Literal: "{", Line: 2, Column: 8},
+					{Type: Comment, Literal: "# simple reverse-proxy", Line: 2, Column: 10},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "token array matching",
+			ts: Tokens{
+				{Type: Keyword, Literal: "server", Line: 2, Column: 1},
+				{Type: BlockStart, Literal: "{", Line: 2, Column: 8},
+				{Type: Comment, Literal: "# simple reverse-proxy", Line: 2, Column: 10},
+				{Type: BlockEnd, Literal: "}", Line: 3, Column: 5},
+			},
+			args: args{
+				tokens: Tokens{
+					{Type: Keyword, Literal: "server", Line: 2, Column: 1},
+					{Type: BlockStart, Literal: "{", Line: 2, Column: 8},
+					{Type: QuotedString, Literal: "simple reverse-proxy", Line: 2, Column: 10},
+					{Type: BlockEnd, Literal: "}", Line: 3, Column: 5},
+				},
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.ts.EqualTo(tt.args.tokens); got != tt.want {
+				t.Errorf("Tokens.EqualTo() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestToken_Is(t *testing.T) {
 	type fields struct {
 		Type    Type
 		Literal string
@@ -61,7 +281,28 @@ func TestToken_is(t *testing.T) {
 		args   args
 		want   bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "QuotedString Type",
+			fields: fields{
+				Type:    QuotedString,
+				Literal: "hello",
+			},
+			args: args{
+				typ: QuotedString,
+			},
+			want: true,
+		},
+		{
+			name: "QuotedString Type",
+			fields: fields{
+				Type:    QuotedString,
+				Literal: "hello",
+			},
+			args: args{
+				typ: Keyword,
+			},
+			want: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -72,7 +313,7 @@ func TestToken_is(t *testing.T) {
 				Column:  tt.fields.Column,
 			}
 			if got := tok.Is(tt.args.typ); got != tt.want {
-				t.Errorf("Token.is() = %v, want %v", got, tt.want)
+				t.Errorf("Token.Is() = %v, want %v", got, tt.want)
 			}
 		})
 	}
