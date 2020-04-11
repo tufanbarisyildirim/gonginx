@@ -54,8 +54,16 @@ func (p *Parser) followingTokenIs(t token.Type) bool {
 	return p.followingToken.Type == t
 }
 
+//Parse the config.
+func (p *Parser) Parse() *config.Config {
+	return &config.Config{
+		FilePath: "nil", //TODO: set filepath here,
+		Block:    p.parseBlock(),
+	}
+}
+
 //ParseBlock parse a block statement
-func (p *Parser) ParseBlock() *config.Block {
+func (p *Parser) parseBlock() *config.Block {
 
 	context := &config.Block{
 		Statements: make([]config.Statement, 0),
@@ -70,6 +78,7 @@ parsingloop:
 			context.Statements = append(context.Statements, p.parseStatement())
 			break
 		}
+		p.nextToken()
 	}
 
 	return context
@@ -77,11 +86,13 @@ parsingloop:
 
 func (p *Parser) parseInclude() *config.Include {
 	include := &config.Include{}
-	p.nextToken() //path
+	p.nextToken() //include
 	include.IncludePath = p.currentToken.Literal
+	p.nextToken() //path
+
 	// path
 	if !p.curTokenIs(token.Semicolon) {
-		panic("expected semicolon after include path")
+		panic(fmt.Errorf("expected semicolon after include path but got %s", p.currentToken.Literal))
 	}
 
 	//TODO: start sub parsing here, detect all files from include path
@@ -109,7 +120,7 @@ func (p *Parser) parseStatement() config.Statement {
 	}
 
 	if p.curTokenIs(token.BlockStart) {
-		d.Block = p.ParseBlock()
+		d.Block = p.parseBlock()
 		return d
 	}
 

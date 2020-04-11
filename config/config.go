@@ -8,7 +8,7 @@ import (
 
 //Config  represents a whole config file.
 type Config struct {
-	Block
+	*Block
 	FilePath string
 }
 
