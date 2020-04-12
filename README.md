@@ -9,6 +9,8 @@ Gonginx is an Nginx configuration parser helps you to parse, edit, regenerate yo
 
 %token EOF Keyword Variable BlockStart BlockEnd Semicolon Regex
 
+%%
+
 config      :  /* empty */ 
             | config directives
             ;
