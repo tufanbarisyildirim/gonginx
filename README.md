@@ -4,6 +4,28 @@
 
 Gonginx is an Nginx configuration parser helps you to parse, edit, regenerate your nginx config files in your go applications. It makes managing your banalcer configurations easier. We use this library in a tool that discovers microservices and updates our the nginx balancer config. We will make it opensource soon.
 
+## Basic grammar of an nginx config file
+```yacc
+
+%token EOF Keyword Variable BlockStart BlockEnd Semicolon Regex
+
+config      :  /* empty */ 
+            | config directives
+            ;
+block       : BlockStart directives BlockEnd
+            ;
+directives  : directives directive
+            ;
+directive   : Keyword [parameters] Semicolon [block]
+            ;
+parameters  : parameters keyword
+            ;
+keyowrd     : Keyword 
+            | Variable 
+            | Regex
+            ;
+```
+
 ## Core Components
 - ### [Parser](/parser) 
   Parser is the main package that analyzes and turns nginx structred files into objects. It basically has 2 libraries, `lexer` explodes it into `token`s and `parser` turns tokens into config objects which are in their own package, 
