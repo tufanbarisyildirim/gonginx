@@ -8,8 +8,8 @@ Gonginx is an Nginx configuration parser helps you to parse, edit, regenerate yo
 Generated a to-do/feature list from a full nginx config examle to track how is going.
 
 
-- [ ] user       www www;  ## Default: nobody
-- [ ] worker_processes  5;  ## Default: 1
+- [ ] `user       www www;  ## Default: nobody`
+- [ ] `worker_processes  5;  ## Default: 1`
 - [ ] error_log  logs/error.log;
 - [ ] pid        logs/nginx.pid;
 - [ ] worker_rlimit_nofile 8192;
