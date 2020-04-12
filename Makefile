@@ -5,8 +5,8 @@ test:
 	go test -race -cover ${PWD}/parser/token
 	go test -race -cover ${PWD}/parser
 	go test -race -cover ${PWD}/config
+	go test -race -cover ${PWD}/dumper
 	
-
 fmt:
 	find . -name "*.go" | xargs gofmt -w -s
 

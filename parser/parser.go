@@ -161,7 +161,7 @@ func (p *Parser) parseInclude() *config.Include {
 	return include
 }
 
-//TODO: moe this into config.Location
+//TODO: move this into config.Location
 func (p *Parser) wrapLocation(directive *config.Directive) *config.Location {
 	location := &config.Location{
 		Modifier: "",
