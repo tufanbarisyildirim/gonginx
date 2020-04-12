@@ -2,7 +2,7 @@
 ![reportcard](https://goreportcard.com/badge/github.com/tufanbarisyildirim/gonginx) [![Actions Status](https://github.com/tufanbarisyildirim/gonginx/workflows/Go/badge.svg)](https://github.com/tufanbarisyildirim/gonging/actions)
 
 
-Gonginx is an Nginx configuration parser helps you to parse, edit, regenerate your nginx config files in your go applications. It makes managing your banalcer configurations easier. We use this library in a tool that discovers microservices and updates our the nginx balancer config. We will make it opensource soon.
+Gonginx is an Nginx configuration parser helps you to parse, edit, regenerate your nginx config files in your go applications. It makes managing your banalcer configurations easier. We use this library in a tool that discovers microservices and updates our nginx balancer config. We will make it opensource soon.
 
 ## Basic grammar of an nginx config file
 ```yacc
