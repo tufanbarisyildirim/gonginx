@@ -7,7 +7,7 @@ Gonginx is an Nginx configuration parser helps you to parse, edit, regenerate yo
 ## Basic grammar of an nginx config file
 ```yacc
 
-%token EOF Keyword Variable BlockStart BlockEnd Semicolon Regex
+%token Keyword Variable BlockStart BlockEnd Semicolon Regex
 
 %%
 
@@ -22,7 +22,7 @@ directive   : Keyword [parameters] Semicolon [block]
             ;
 parameters  : parameters keyword
             ;
-keyowrd     : Keyword 
+keyword     : Keyword 
             | Variable 
             | Regex
             ;
