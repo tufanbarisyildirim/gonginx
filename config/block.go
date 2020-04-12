@@ -18,9 +18,11 @@ func (b *Block) ToString() string {
 func (b *Block) ToByteArray() []byte {
 	var buf bytes.Buffer
 
-	for _, statement := range b.Statements {
+	for i, statement := range b.Statements {
 		buf.WriteString(statement.ToString())
-		buf.WriteString("\n")
+		if i != len(b.Statements)-1 {
+			buf.WriteString("\n")
+		}
 	}
 
 	return buf.Bytes()
