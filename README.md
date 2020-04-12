@@ -2,10 +2,11 @@
 ![reportcard](https://goreportcard.com/badge/github.com/tufanbarisyildirim/gonginx) [![Actions Status](https://github.com/tufanbarisyildirim/gonginx/workflows/Go/badge.svg)](https://github.com/tufanbarisyildirim/gonging/actions)
 
 
-Gonginx is an Nginx configuration parser helps you to parse, edit, regenerate your nginx config in your go applications.
+Gonginx is an Nginx configuration parser helps you to parse, edit, regenerate your nginx config files in your go applications. It makes managing your banalcer configurations easier. We use this library in a tool that discovers microservices and updates our the nginx balancer config. We will make it opensource soon.
 
-## Supporting Blocks/Directives
+## Supporting Blocks/Directives - TODO
 Generated a to-do/feature list from a full nginx config examle to track how is going.
+Most common directives will be checked when they implemented. But blocks will be checked when we fully support their sub directives.
 
 
 - [ ] `user       www www;  ## Default: nobody`
@@ -52,7 +53,7 @@ Generated a to-do/feature list from a full nginx config examle to track how is g
 
 
 ## Limitations
--- a list is coming soon, but it will support most of core functions of nginx
+There is no limitation yet, because its the limt itself :) I haven't implemented all features yet. PRs are more then welcome if you want to implement a specific directive / block
 
 # [Contributing](CONTRIBUTING.md)
 

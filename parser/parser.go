@@ -143,6 +143,7 @@ func (p *Parser) parseStatement() config.Statement {
 	panic(fmt.Errorf("unexpected token %s (%s) on line %d, column %d", p.currentToken.Type.String(), p.currentToken.Literal, p.currentToken.Line, p.currentToken.Column))
 }
 
+//TODO: move this into config.Include
 func (p *Parser) parseInclude() *config.Include {
 	include := &config.Include{}
 	p.nextToken() //include
@@ -160,6 +161,7 @@ func (p *Parser) parseInclude() *config.Include {
 	return include
 }
 
+//TODO: moe this into config.Location
 func (p *Parser) wrapLocation(directive *config.Directive) *config.Location {
 	location := &config.Location{
 		Modifier: "",
@@ -192,13 +194,5 @@ func (p *Parser) wrapServer(directive *config.Directive) *config.Server {
 }
 
 func (p *Parser) parseUpstreamServer(directive *config.Directive) *config.UpstreamServer {
-	upstreamServer := &config.UpstreamServer{
-		Directive: directive,
-	}
-
-	//TODO: param 1 should be the server, with port.
-	//others should be parsed as key=value
-	//some of them line down, etc are sub directives or arguments.
-
-	return upstreamServer
+	return config.NewUpstreamServer(directive)
 }
