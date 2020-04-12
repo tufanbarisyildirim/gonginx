@@ -164,9 +164,9 @@ func (p *Parser) parseInclude() *config.Include {
 //TODO: move this into config.Location
 func (p *Parser) wrapLocation(directive *config.Directive) *config.Location {
 	location := &config.Location{
-		Modifier: "",
-		Match:    "",
-		Block:    directive.Block,
+		Modifier:  "",
+		Match:     "",
+		Directive: directive,
 	}
 
 	if len(directive.Parameters) == 0 {

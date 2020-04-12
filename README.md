@@ -34,7 +34,7 @@ keyword     : Keyword
 - ### [Config](/config)
   Config package is representation of any context, directive or their parameters in golang. So basically they are models and also AST
 - ### [Dumper (in progress)](/dumper)
-  Dumper id the package that can print any model with some styling options. 
+  Dumper is the package that can print any model with some styling options. 
 
 ### Supporting Blocks/Directives - TODO
 Generated a to-do/feature list from a full nginx config examle to track how is going.
