@@ -32,7 +32,7 @@ keyword     : Keyword
 - ### [Parser](/parser) 
   Parser is the main package that analyzes and turns nginx structred files into objects. It basically has 2 libraries, `lexer` explodes it into `token`s and `parser` turns tokens into config objects which are in their own package, 
 - ### [Config](/config)
-  Config package is representation of any context, directive or their parameters in golang. So basucally they are models and also AST
+  Config package is representation of any context, directive or their parameters in golang. So basically they are models and also AST
 - ### [Dumper (in progress)](/dumper)
   Dumper id the package that can print any model with some styling options. 
 
