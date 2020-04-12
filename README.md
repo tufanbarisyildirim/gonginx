@@ -7,7 +7,7 @@ Gonginx is an Nginx configuration parser helps you to parse, edit, regenerate yo
 ## Supporting Blocks/Directives
 Generated a to-do/feature list from a full nginx config examle to track how is going.
 
-```conf
+
 - [ ] user       www www;  ## Default: nobody
 - [ ] worker_processes  5;  ## Default: 1
 - [ ] error_log  logs/error.log;
@@ -50,7 +50,7 @@ Generated a to-do/feature list from a full nginx config examle to track how is g
     - [ ] server 127.0.0.3:8001 weight=5;
   }
 }
- ```
+
 
 ## Limitations
 -- a list is coming soon, but it will support most of core functions of nginx
