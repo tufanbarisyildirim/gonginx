@@ -11,12 +11,12 @@ import (
 
 //Parser is an nginx config parser
 type Parser struct {
-	lexer               *lexer
-	currentToken        token.Token
-	followingToken      token.Token
-	statementParsers    map[string]func() config.Statement
-	blockConverters     map[string]func(*config.Directive) config.Statement
-	directiveConverters map[string]func(*config.Directive) config.Statement
+	lexer             *lexer
+	currentToken      token.Token
+	followingToken    token.Token
+	statementParsers  map[string]func() config.Statement
+	blockWrappers     map[string]func(*config.Directive) config.Statement
+	directiveWrappers map[string]func(*config.Directive) config.Statement
 }
 
 //NewStringParser parses nginx conf from string
@@ -47,13 +47,16 @@ func NewParserFromLexer(lexer *lexer) *Parser {
 		},
 	}
 
-	parser.blockConverters = map[string]func(*config.Directive) config.Statement{
+	parser.blockWrappers = map[string]func(*config.Directive) config.Statement{
+		"server": func(directive *config.Directive) config.Statement {
+			return parser.wrapServer(directive)
+		},
 		"location": func(directive *config.Directive) config.Statement {
-			return parser.parseLocation(directive)
+			return parser.wrapLocation(directive)
 		},
 	}
 
-	parser.directiveConverters = map[string]func(*config.Directive) config.Statement{
+	parser.directiveWrappers = map[string]func(*config.Directive) config.Statement{
 		"server": func(directive *config.Directive) config.Statement {
 			return parser.parseUpstreamServer(directive)
 		},
@@ -111,8 +114,8 @@ func (p *Parser) parseStatement() config.Statement {
 	}
 
 	//if we have a special parser for the directive, we use it.
-	if _, ok := p.statementParsers[d.Name]; ok {
-		return p.statementParsers[d.Name]()
+	if sp, ok := p.statementParsers[d.Name]; ok {
+		return sp()
 	}
 
 	//parse parameters until the end.
@@ -122,8 +125,8 @@ func (p *Parser) parseStatement() config.Statement {
 
 	//if we find a semicolon it is a directive, we will check directive converters
 	if p.curTokenIs(token.Semicolon) {
-		if _, ok := p.directiveConverters[d.Name]; ok {
-			return p.directiveConverters[d.Name](d)
+		if dw, ok := p.directiveWrappers[d.Name]; ok {
+			return dw(d)
 		}
 		return d
 	}
@@ -131,8 +134,8 @@ func (p *Parser) parseStatement() config.Statement {
 	//ok, it does not end with a semicolon but a block starts, we will convert that block if we have a converter
 	if p.curTokenIs(token.BlockStart) {
 		d.Block = p.parseBlock()
-		if _, ok := p.blockConverters[d.Name]; ok {
-			return p.blockConverters[d.Name](d)
+		if bw, ok := p.blockWrappers[d.Name]; ok {
+			return bw(d)
 		}
 		return d
 	}
@@ -157,7 +160,7 @@ func (p *Parser) parseInclude() *config.Include {
 	return include
 }
 
-func (p *Parser) parseLocation(directive *config.Directive) *config.Location {
+func (p *Parser) wrapLocation(directive *config.Directive) *config.Location {
 	location := &config.Location{
 		Modifier: "",
 		Match:    "",
@@ -178,6 +181,14 @@ func (p *Parser) parseLocation(directive *config.Directive) *config.Location {
 	}
 
 	panic("too many arguments for location directive")
+}
+
+func (p *Parser) wrapServer(directive *config.Directive) *config.Server {
+	server := &config.Server{
+		Directive: directive,
+	}
+
+	return server
 }
 
 func (p *Parser) parseUpstreamServer(directive *config.Directive) *config.UpstreamServer {

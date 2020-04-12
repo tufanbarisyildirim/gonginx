@@ -2,15 +2,15 @@ package config
 
 //Server represents server block
 type Server struct {
-	Block
+	*Directive
 }
 
 //ToString return config as string
 func (s *Server) ToString() string {
-	return string(s.Block.ToByteArray())
+	return string(s.Directive.ToByteArray())
 }
 
 //ToByteArray return config as byte array
 func (s *Server) ToByteArray() []byte {
-	return s.Block.ToByteArray()
+	return s.Directive.ToByteArray()
 }

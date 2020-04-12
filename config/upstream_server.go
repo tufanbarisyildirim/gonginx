@@ -9,6 +9,6 @@ type UpstreamServer struct {
 }
 
 //ToString convert it to a string
-func (us *UpstreamServer) ToString() string {
-	return us.Directive.ToString()
+func (uss *UpstreamServer) ToString() string {
+	return uss.Directive.ToString()
 }
