@@ -30,14 +30,14 @@ func (c *Config) SaveToFile() error {
 	if _, err := os.Stat(dirPath); err != nil {
 		err := os.MkdirAll(dirPath, os.ModePerm)
 		if err != nil {
-			return err
+			return err //TODO: do we reallt need to find a way to test dir creating error?
 		}
 	}
 
 	//write main file
 	err := ioutil.WriteFile(c.FilePath, c.ToByteArray(), 0644)
 	if err != nil {
-		return err
+		return err //TODO: do we need to find a way to test writing error?
 	}
 
 	//write sub files (inlude /file/path)

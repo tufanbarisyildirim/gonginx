@@ -27,5 +27,3 @@ func (b *Block) ToByteArray() []byte {
 
 	return buf.Bytes()
 }
-
-func (b *Block) contextStatement() {}
