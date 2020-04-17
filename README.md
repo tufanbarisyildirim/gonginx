@@ -1,7 +1,10 @@
+<p align="center"><img src="./gopher.png" width="360"></p>
+<p align="center">
+<a href="https://goreportcard.com/badge/github.com/tufanbarisyildirim/gonginx"><img src="https://goreportcard.com/badge/github.com/tufanbarisyildirim/gonginx" alt="Report Card" /></a>
+<a href="https://github.com/tufanbarisyildirim/gonging/actions"><img src="https://github.com/tufanbarisyildirim/gonginx/workflows/Go/badge.svg" alt="Actions Status" /></a>
+</p>
+
 # Gonginx
-![reportcard](https://goreportcard.com/badge/github.com/tufanbarisyildirim/gonginx) [![Actions Status](https://github.com/tufanbarisyildirim/gonginx/workflows/Go/badge.svg)](https://github.com/tufanbarisyildirim/gonging/actions)
-
-
 Gonginx is an Nginx configuration parser helps you to parse, edit, regenerate your nginx config files in your go applications. It makes managing your balancer configurations easier. 
 
 ## Basic grammar of an nginx config file
