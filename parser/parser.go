@@ -30,7 +30,10 @@ func NewParser(filePath string) (*Parser, error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewParserFromLexer(newLexer(bufio.NewReader(f))), nil
+	l := newLexer(bufio.NewReader(f))
+	l.file = filePath
+	p := NewParserFromLexer(l)
+	return p, nil
 }
 
 //NewParserFromLexer initilizes a new Parser
@@ -40,12 +43,6 @@ func NewParserFromLexer(lexer *lexer) *Parser {
 	}
 	parser.nextToken()
 	parser.nextToken()
-
-	parser.statementParsers = map[string]func() config.Statement{
-		"include": func() config.Statement {
-			return parser.parseInclude()
-		},
-	}
 
 	parser.blockWrappers = map[string]func(*config.Directive) config.Statement{
 		"server": func(directive *config.Directive) config.Statement {
@@ -59,6 +56,9 @@ func NewParserFromLexer(lexer *lexer) *Parser {
 	parser.directiveWrappers = map[string]func(*config.Directive) config.Statement{
 		"server": func(directive *config.Directive) config.Statement {
 			return parser.parseUpstreamServer(directive)
+		},
+		"include": func(directive *config.Directive) config.Statement {
+			return parser.parseInclude(directive)
 		},
 	}
 
@@ -81,7 +81,7 @@ func (p *Parser) followingTokenIs(t token.Type) bool {
 //Parse the config.
 func (p *Parser) Parse() *config.Config {
 	return &config.Config{
-		FilePath: "nil", //TODO: set filepath here,
+		FilePath: p.lexer.file, //TODO: set filepath here,
 		Block:    p.parseBlock(),
 	}
 }
@@ -96,7 +96,7 @@ func (p *Parser) parseBlock() *config.Block {
 parsingloop:
 	for {
 		switch {
-		case p.curTokenIs(token.EOF):
+		case p.curTokenIs(token.EOF) || p.curTokenIs(token.BlockEnd):
 			break parsingloop
 		case p.curTokenIs(token.Keyword):
 			context.Statements = append(context.Statements, p.parseStatement())
@@ -119,7 +119,7 @@ func (p *Parser) parseStatement() config.Statement {
 	}
 
 	//parse parameters until the end.
-	for p.nextToken(); p.curTokenIs(token.Keyword); p.nextToken() {
+	for p.nextToken(); p.curTokenIs(token.Keyword) || p.curTokenIs(token.QuotedString); p.nextToken() {
 		d.Parameters = append(d.Parameters, p.currentToken.Literal)
 	}
 
@@ -144,19 +144,19 @@ func (p *Parser) parseStatement() config.Statement {
 }
 
 //TODO: move this into config.Include
-func (p *Parser) parseInclude() *config.Include {
-	include := &config.Include{}
-	p.nextToken() //include
-	include.IncludePath = p.currentToken.Literal
-	p.nextToken() //path
-
-	// path
-	if !p.curTokenIs(token.Semicolon) {
-		panic(fmt.Errorf("expected semicolon after include path but got %s", p.currentToken.Literal))
+func (p *Parser) parseInclude(directive *config.Directive) *config.Include {
+	include := &config.Include{
+		Directive:   directive,
+		IncludePath: directive.Parameters[0],
 	}
 
-	//TODO: find all files using glob, parse all includes as Block
-	//TODO: include should have mutlipe []Congfig only one!
+	if len(directive.Parameters) > 1 {
+		panic("include directive can not have multiple parameters")
+	}
+
+	if directive.Block != nil {
+		panic("include can not have a block or missing semicolon at the end of include statement")
+	}
 
 	return include
 }

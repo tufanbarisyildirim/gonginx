@@ -12,7 +12,7 @@ import (
 type Directive struct {
 	*Block
 	Name       string
-	Parameters []string
+	Parameters []string //TODO: Save parameters with their type
 }
 
 //ToString string repre of a directive

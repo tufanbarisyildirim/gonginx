@@ -8,13 +8,14 @@ import (
 
 //Include include structure
 type Include struct {
+	*Directive
 	IncludePath string
 	Configs     []*Config
 }
 
 //ToString returns include statement as string
 func (i *Include) ToString(style *dumper.Style) string {
-	return fmt.Sprintf("include %s;", i.IncludePath)
+	return i.Directive.ToString(style)
 }
 
 //SaveToFile saves include to its own file

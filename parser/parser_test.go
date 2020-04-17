@@ -39,7 +39,7 @@ func TestParser_UnendedInclude(t *testing.T) {
 	NewParserFromLexer(
 		lex(`
 	server { 
-	include /but/no/semicolon {}
+	include /but/no/semicolon before block;
 	`)).Parse()
 }
 

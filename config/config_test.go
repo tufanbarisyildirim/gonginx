@@ -31,6 +31,10 @@ func TestConfig_ToString(t *testing.T) {
 							Parameters: []string{"5"},
 						},
 						&Include{
+							Directive: &Directive{
+								Name:       "include",
+								Parameters: []string{"/etc/nginx/conf/*.conf"},
+							},
 							IncludePath: "/etc/nginx/conf/*.conf",
 						},
 					},
@@ -96,6 +100,10 @@ func TestConfig_SaveToFile(t *testing.T) {
 							Parameters: []string{"5"},
 						},
 						&Include{
+							Directive: &Directive{
+								Name:       "include",
+								Parameters: []string{"/etc/nginx/conf/*.conf"},
+							},
 							IncludePath: "/etc/nginx/conf/*.conf",
 						},
 					},
@@ -118,6 +126,10 @@ func TestConfig_SaveToFile(t *testing.T) {
 							Parameters: []string{"5"},
 						},
 						&Include{
+							Directive: &Directive{
+								Name:       "include",
+								Parameters: []string{"/etc/nginx/conf/*.conf"},
+							},
 							IncludePath: "/etc/nginx/conf/*.conf",
 						},
 					},

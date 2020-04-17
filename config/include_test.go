@@ -10,6 +10,10 @@ import (
 func TestConfig_IncludeToString(t *testing.T) {
 
 	include := &Include{
+		Directive: &Directive{
+			Name:       "include",
+			Parameters: []string{"/etc/nginx/conf.d/*.conf"},
+		},
 		IncludePath: "/etc/nginx/conf.d/*.conf",
 	}
 	assert.Equal(t, "include /etc/nginx/conf.d/*.conf;", include.ToString(dumper.NoIndentStyle))
