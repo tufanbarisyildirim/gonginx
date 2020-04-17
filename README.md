@@ -42,9 +42,6 @@ keyword     : Keyword
 - [ ]  wire config object properties to their sub object (Directives & Block)   
        e.g, S`etting UpstreamServer.Address` should update `Upstream.Directive.Parameters[0]` if that's ugly, find another way to bind data between config and AST
 
-#### TODO for directives, parsing
-
-
 ## Limitations
 There is no known limitations yet. PRs are more then welcome if you want to implement a specific directive / block, please read [Contributing](CONTRIBUTING.md) before your first PR.
 
