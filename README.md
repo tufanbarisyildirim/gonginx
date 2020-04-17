@@ -36,11 +36,12 @@ keyword     : Keyword
 - ### [Dumper](/dumper)
   Dumper is the package that holds styling configuration only. 
 
-#### General TODO
+#### TODO
 - [ ]  associate comments with config objects to print them on config generation and make it configurable with `dumper.Style`
 - [ ]  move any context wrapper into their own file (remove from parser)
 - [ ]  wire config object properties to their sub object (Directives & Block)   
        e.g, S`etting UpstreamServer.Address` should update `Upstream.Directive.Parameters[0]` if that's ugly, find another way to bind data between config and AST
+- [ ]  Parse included files recusively, keep relative path on load, save all in a related structure and make that optional in dumper.Style
 
 ## Limitations
 There is no known limitations yet. PRs are more then welcome if you want to implement a specific directive / block, please read [Contributing](CONTRIBUTING.md) before your first PR.
