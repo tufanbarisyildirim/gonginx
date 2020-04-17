@@ -1,6 +1,10 @@
 package config
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/tufanbarisyildirim/gonginx/dumper"
+)
 
 //UpstreamServer represents `server` directive in `upstream{}` block
 type UpstreamServer struct {
@@ -11,8 +15,8 @@ type UpstreamServer struct {
 }
 
 //ToString convert it to a string
-func (uss *UpstreamServer) ToString() string {
-	return uss.Directive.ToString()
+func (uss *UpstreamServer) ToString(style *dumper.Style) string {
+	return uss.Directive.ToString(style)
 }
 
 //NewUpstreamServer creates an upstream server from a directive

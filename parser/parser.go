@@ -155,8 +155,8 @@ func (p *Parser) parseInclude() *config.Include {
 		panic(fmt.Errorf("expected semicolon after include path but got %s", p.currentToken.Literal))
 	}
 
-	//TODO: start sub parsing here, detect all files from include path
-	//		support wildcards, include all matching files
+	//TODO: find all files using glob, parse all includes as Block
+	//TODO: include should have mutlipe []Congfig only one!
 
 	return include
 }

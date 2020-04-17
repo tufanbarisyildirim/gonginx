@@ -3,6 +3,8 @@ package config
 import (
 	"reflect"
 	"testing"
+
+	"github.com/tufanbarisyildirim/gonginx/dumper"
 )
 
 func TestNewUpstreamServer(t *testing.T) {
@@ -83,8 +85,8 @@ func TestNewUpstreamServer(t *testing.T) {
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewUpstreamServer() = %v, want %v", got, tt.want)
 			}
-			if got.ToString() != tt.wantString {
-				t.Errorf("NewUpstreamServer().ToString = %v, want %v", got.ToString(), tt.wantString)
+			if got.ToString(dumper.NoIndentStyle) != tt.wantString {
+				t.Errorf("NewUpstreamServer().ToString = %v, want %v", got.ToString(dumper.NoIndentStyle), tt.wantString)
 			}
 		})
 	}

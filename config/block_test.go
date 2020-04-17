@@ -1,6 +1,10 @@
 package config
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/tufanbarisyildirim/gonginx/dumper"
+)
 
 func TestBlock_ToString(t *testing.T) {
 	type fields struct {
@@ -79,7 +83,7 @@ func TestBlock_ToString(t *testing.T) {
 			b := &Block{
 				Statements: tt.fields.Statements,
 			}
-			if got := b.ToString(); got != tt.want {
+			if got := b.ToString(dumper.NoIndentStyle); got != tt.want {
 				t.Errorf("Block.ToString() = \"%v\", want \"%v\"", got, tt.want)
 			}
 		})

@@ -1,14 +1,16 @@
 package config
 
+import "github.com/tufanbarisyildirim/gonginx/dumper"
+
 //Statement represents any statement
 type Statement interface {
-	ToString() string
+	ToString(style *dumper.Style) string
 }
 
 //FileStatement a statement that saves its own file
 type FileStatement interface {
 	Statement
-	SaveToFile() error
+	SaveToFile(style *dumper.Style) error
 }
 
 //IncludeStatement represents include statement in nginx

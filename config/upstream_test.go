@@ -1,6 +1,10 @@
 package config
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/tufanbarisyildirim/gonginx/dumper"
+)
 
 func TestUpstream_ToString(t *testing.T) {
 	type fields struct {
@@ -104,7 +108,7 @@ func TestUpstream_ToString(t *testing.T) {
 				Directive: tt.fields.Directive,
 				Name:      tt.fields.Name,
 			}
-			if got := us.ToString(); got != tt.want {
+			if got := us.ToString(dumper.NoIndentStyle); got != tt.want {
 				t.Errorf("Upstream.ToString() = %v, want %v", got, tt.want)
 			}
 		})

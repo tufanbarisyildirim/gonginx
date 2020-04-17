@@ -1,6 +1,10 @@
 package config
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/tufanbarisyildirim/gonginx/dumper"
+)
 
 func TestLocation_ToString(t *testing.T) {
 	type fields struct {
@@ -36,7 +40,7 @@ func TestLocation_ToString(t *testing.T) {
 				Modifier:  tt.fields.Modifier,
 				Match:     tt.fields.Match,
 			}
-			if got := l.ToString(); got != tt.want {
+			if got := l.ToString(dumper.NoIndentStyle); got != tt.want {
 				t.Errorf("Location.ToString() = %v, want %v", got, tt.want)
 			}
 		})

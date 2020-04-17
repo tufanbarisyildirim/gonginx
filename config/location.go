@@ -1,5 +1,7 @@
 package config
 
+import "github.com/tufanbarisyildirim/gonginx/dumper"
+
 //Location represents a location in nginx config
 type Location struct {
 	*Directive
@@ -8,6 +10,6 @@ type Location struct {
 }
 
 //ToString serialize location
-func (l *Location) ToString() string {
-	return l.Directive.ToString()
+func (l *Location) ToString(style *dumper.Style) string {
+	return l.Directive.ToString(style)
 }

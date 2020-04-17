@@ -83,9 +83,9 @@ Most common directives will be checked when they implemented. But blocks will be
     `}`
   `}`
 
-  - [ ] `upstream big_server_com {`
+  - [x] `upstream big_server_com {`
     - [x] `server 127.0.0.3:8000;`
-    - [ ] `server 127.0.0.3:8001 weight=5;`
+    - [x] `server 127.0.0.3:8001 weight=5;`
   `}`
 `}`
 

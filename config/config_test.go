@@ -3,6 +3,8 @@ package config
 import (
 	"os"
 	"testing"
+
+	"github.com/tufanbarisyildirim/gonginx/dumper"
 )
 
 func TestConfig_ToString(t *testing.T) {
@@ -43,7 +45,7 @@ func TestConfig_ToString(t *testing.T) {
 				Block:    tt.fields.Block,
 				FilePath: tt.fields.FilePath,
 			}
-			if got := c.ToString(); got != tt.want || string(c.ToByteArray()) != tt.want {
+			if got := c.ToString(dumper.NoIndentStyle); got != tt.want || string(c.ToByteArray(dumper.NoIndentStyle)) != tt.want {
 				t.Errorf("Config.ToString() = %v, want %v", got, tt.want)
 			}
 		})
@@ -131,7 +133,7 @@ func TestConfig_SaveToFile(t *testing.T) {
 				Block:    tt.fields.Block,
 				FilePath: tt.fields.FilePath,
 			}
-			if err := c.SaveToFile(); (err != nil) != tt.wantErr {
+			if err := c.SaveToFile(dumper.NoIndentStyle); (err != nil) != tt.wantErr {
 				t.Errorf("Config.SaveToFile() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
