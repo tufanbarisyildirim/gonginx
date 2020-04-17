@@ -13,6 +13,7 @@ func TestServer_ToString(t *testing.T) {
 	tests := []struct {
 		name   string
 		fields fields
+		args   *dumper.Style
 		want   string
 	}{
 		{
@@ -25,7 +26,33 @@ func TestServer_ToString(t *testing.T) {
 					Name: "server",
 				},
 			},
+			args: dumper.NoIndentStyle,
 			want: "server {\n\n}",
+		},
+		{
+			name: "styled server block with some directives",
+			fields: fields{
+				Directive: &Directive{
+					Block: &Block{
+						Statements: []Statement{
+							&Directive{
+								Name:       "server_name",
+								Parameters: []string{"gonginx.dev"},
+							},
+							&Directive{
+								Name:       "root",
+								Parameters: []string{"/var/sites/gonginx"},
+							},
+						},
+					},
+					Name: "server",
+				},
+			},
+			args: dumper.NewStyle(),
+			want: `server {
+    server_name gonginx.dev;
+    root /var/sites/gonginx;
+}`,
 		},
 	}
 	for _, tt := range tests {
@@ -33,8 +60,8 @@ func TestServer_ToString(t *testing.T) {
 			s := &Server{
 				Directive: tt.fields.Directive,
 			}
-			if got := s.ToString(dumper.NoIndentStyle); got != tt.want {
-				t.Errorf("Server.ToString() = %v, want %v", got, tt.want)
+			if got := s.ToString(tt.args); got != tt.want {
+				t.Errorf("Server.ToString() = \"%v\", want \"%v\"", got, tt.want)
 			}
 		})
 	}
