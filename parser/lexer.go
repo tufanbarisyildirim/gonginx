@@ -143,7 +143,7 @@ func (s *lexer) scanComment() token.Token {
 func (s *lexer) scanQuotedString(delimiter rune) token.Token {
 	var buf bytes.Buffer
 	tok := s.NewToken(token.QuotedString)
-	s.read() //consume delimiter
+	buf.WriteRune(s.read()) //consume delimiter
 	for {
 		ch := s.read()
 
@@ -168,10 +168,10 @@ func (s *lexer) scanQuotedString(delimiter rune) token.Token {
 				continue
 			}
 		}
+		buf.WriteRune(ch)
 		if ch == delimiter {
 			break
 		}
-		buf.WriteRune(ch)
 	}
 
 	return tok.Lit(buf.String())

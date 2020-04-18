@@ -80,7 +80,7 @@ directive "with a quoted string\t \r\n \\ with some escaped thing s\" good.";
 		{Type: token.Keyword, Literal: "/etc/nginx/conf.d/*.conf", Line: 20, Column: 9},
 		{Type: token.Semicolon, Literal: ";", Line: 20, Column: 33},
 		{Type: token.Keyword, Literal: "directive", Line: 21, Column: 1},
-		{Type: token.QuotedString, Literal: "with a quoted string\t \r\n \\ with some escaped thing s\" good.", Line: 21, Column: 11},
+		{Type: token.QuotedString, Literal: "\"with a quoted string\t \r\n \\ with some escaped thing s\" good.\"", Line: 21, Column: 11},
 		{Type: token.Semicolon, Literal: ";", Line: 21, Column: 77},
 		{Type: token.Comment, Literal: "#also cmment right before eof", Line: 22, Column: 1},
 	}
