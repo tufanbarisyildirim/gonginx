@@ -21,7 +21,7 @@ block       : BlockStart directives BlockEnd
             ;
 directives  : directives directive
             ;
-directive   : Keyword [parameters] Semicolon [block]
+directive   : Keyword [parameters] (semicolon|block)
             ;
 parameters  : parameters keyword
             ;
