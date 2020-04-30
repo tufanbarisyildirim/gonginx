@@ -11,10 +11,10 @@ var (
 
 //Style dumping style
 type Style struct {
-	SortDirectives     bool
-	SpaceBetweenBlocks bool
-	StartIndent        int
-	Indent             int
+	SortDirectives    bool
+	SpaceBeforeBlocks bool
+	StartIndent       int
+	Indent            int
 }
 
 //NewStyle create new style
@@ -30,9 +30,10 @@ func NewStyle() *Style {
 //Iterate interate the indentation for sub blocks
 func (s *Style) Iterate() *Style {
 	newStyle := &Style{
-		SortDirectives: s.SortDirectives,
-		StartIndent:    s.StartIndent + s.Indent,
-		Indent:         s.Indent,
+		SortDirectives:    s.SortDirectives,
+		SpaceBeforeBlocks: s.SpaceBeforeBlocks,
+		StartIndent:       s.StartIndent + s.Indent,
+		Indent:            s.Indent,
 	}
 	return newStyle
 }

@@ -18,6 +18,9 @@ type Directive struct {
 //ToString string repre of a directive
 func (d *Directive) ToString(style *dumper.Style) string {
 	var buf bytes.Buffer
+	if style.SpaceBeforeBlocks && d.Block != nil {
+		buf.WriteString("\n")
+	}
 	buf.WriteString(fmt.Sprintf("%s%s", strings.Repeat(" ", style.StartIndent), d.Name))
 	if len(d.Parameters) > 0 {
 		buf.WriteString(fmt.Sprintf(" %s", strings.Join(d.Parameters, " ")))
