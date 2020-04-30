@@ -2,6 +2,7 @@ package config
 
 import (
 	"bytes"
+	"sort"
 
 	"github.com/tufanbarisyildirim/gonginx/dumper"
 )
@@ -19,6 +20,12 @@ func (b *Block) ToString(style *dumper.Style) string {
 //ToByteArray return config as byte array
 func (b *Block) ToByteArray(style *dumper.Style) []byte {
 	var buf bytes.Buffer
+
+	if style.SortDirectives {
+		sort.SliceStable(b.Statements, func(i, j int) bool {
+			return b.Statements[i].GetName() < b.Statements[j].GetName()
+		})
+	}
 
 	for i, statement := range b.Statements {
 		buf.WriteString(statement.ToString(style))

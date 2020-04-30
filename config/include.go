@@ -31,3 +31,8 @@ func (i *Include) SaveToFile(style *dumper.Style) error {
 	}
 	return nil
 }
+
+//GetName get directive name
+func (i *Include) GetName() string {
+	return i.Directive.Name
+}

@@ -70,7 +70,7 @@ func (t Token) Lit(literal string) Token {
 	return t
 }
 
-//EqualTo check equality
+//EqualTo checks equality
 func (t Token) EqualTo(t2 Token) bool {
 	return t.Type == t2.Type && t.Literal == t2.Literal
 }

@@ -10,10 +10,10 @@ var (
 
 //Style dumping style
 type Style struct {
-	SortDirectives     bool
-	SpaceBetweenBlocks bool
-	StartIndent        int
-	Indent             int
+	SortDirectives   bool
+	KeepBlocksBottom bool
+	StartIndent      int
+	Indent           int
 }
 
 //NewStyle create new style

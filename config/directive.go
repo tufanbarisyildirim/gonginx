@@ -31,3 +31,8 @@ func (d *Directive) ToString(style *dumper.Style) string {
 	}
 	return buf.String()
 }
+
+//GetName get directive name
+func (d *Directive) GetName() string {
+	return d.Name
+}
