@@ -1,6 +1,7 @@
 package dumper
 
 var (
+	//NoIndentStyle default style
 	NoIndentStyle = &Style{
 		SortDirectives: false,
 		StartIndent:    0,
@@ -10,10 +11,10 @@ var (
 
 //Style dumping style
 type Style struct {
-	SortDirectives   bool
-	KeepBlocksBottom bool
-	StartIndent      int
-	Indent           int
+	SortDirectives     bool
+	SpaceBetweenBlocks bool
+	StartIndent        int
+	Indent             int
 }
 
 //NewStyle create new style

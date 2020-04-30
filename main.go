@@ -13,9 +13,9 @@ func main() {
 	c := p.Parse()
 	c.FilePath = "./full-example/formatting/formatted.conf" //move this to savefile method.
 	c.SaveToFile(&dumper.Style{
-		SortDirectives:   true,
-		KeepBlocksBottom: true,
-		StartIndent:      0,
-		Indent:           4,
+		SortDirectives:     true,
+		SpaceBetweenBlocks: true,
+		StartIndent:        0,
+		Indent:             4,
 	})
 }
