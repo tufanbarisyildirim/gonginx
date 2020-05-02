@@ -6,6 +6,9 @@ test:
 	go test -race -cover ${PWD}/parser
 	go test -race -cover ${PWD}/config
 	go test -race -cover ${PWD}/dumper
+
+bench:
+	go test -bench=. -benchmem ${PWD}/parser
 	
 fmt:
 	find . -name "*.go" | xargs gofmt -w -s
