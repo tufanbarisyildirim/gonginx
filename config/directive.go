@@ -28,7 +28,7 @@ func (d *Directive) ToString(style *dumper.Style) string {
 	if d.Block == nil {
 		buf.WriteRune(';')
 	} else {
-		buf.WriteString(fmt.Sprintf(" {\n"))
+		buf.WriteString(" {\n")
 		buf.WriteString(d.Block.ToString(style.Iterate()))
 		buf.WriteString(fmt.Sprintf("\n%s}", strings.Repeat(" ", style.StartIndent)))
 	}
