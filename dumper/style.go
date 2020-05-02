@@ -7,6 +7,21 @@ var (
 		StartIndent:    0,
 		Indent:         0,
 	}
+
+	//NoIndentSortedStyle default style
+	NoIndentSortedStyle = &Style{
+		SortDirectives: true,
+		StartIndent:    0,
+		Indent:         0,
+	}
+
+	//NoIndentSortedSpaceStyle default style
+	NoIndentSortedSpaceStyle = &Style{
+		SortDirectives:    true,
+		SpaceBeforeBlocks: true,
+		StartIndent:       0,
+		Indent:            0,
+	}
 )
 
 //Style dumping style

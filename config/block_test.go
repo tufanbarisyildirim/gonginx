@@ -11,9 +11,11 @@ func TestBlock_ToString(t *testing.T) {
 		Statements []Statement
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		want   string
+		name                        string
+		fields                      fields
+		want                        string
+		wantSorted                  string
+		wantSortedSpaceBeforeBlocks string
 	}{
 		{
 			name: "empty block",
@@ -36,7 +38,9 @@ func TestBlock_ToString(t *testing.T) {
 					},
 				},
 			},
-			want: "user nginx nginx;\nworker_processes 5;",
+			want:                        "user nginx nginx;\nworker_processes 5;",
+			wantSorted:                  "user nginx nginx;\nworker_processes 5;",
+			wantSortedSpaceBeforeBlocks: "user nginx nginx;\nworker_processes 5;",
 		},
 		{
 			name: "statement list with wrapped directives",
@@ -83,7 +87,9 @@ func TestBlock_ToString(t *testing.T) {
 					},
 				},
 			},
-			want: "user nginx nginx;\nworker_processes 5;\ninclude /etc/nginx/conf/*.conf;\nserver {\nuser nginx nginx;\nworker_processes 5;\ninclude /etc/nginx/conf/*.conf;\n}",
+			want:                        "user nginx nginx;\nworker_processes 5;\ninclude /etc/nginx/conf/*.conf;\nserver {\nuser nginx nginx;\nworker_processes 5;\ninclude /etc/nginx/conf/*.conf;\n}",
+			wantSorted:                  "include /etc/nginx/conf/*.conf;\nserver {\ninclude /etc/nginx/conf/*.conf;\nuser nginx nginx;\nworker_processes 5;\n}\nuser nginx nginx;\nworker_processes 5;",
+			wantSortedSpaceBeforeBlocks: "include /etc/nginx/conf/*.conf;\n\nserver {\ninclude /etc/nginx/conf/*.conf;\nuser nginx nginx;\nworker_processes 5;\n}\nuser nginx nginx;\nworker_processes 5;",
 		},
 	}
 	for _, tt := range tests {
@@ -92,7 +98,13 @@ func TestBlock_ToString(t *testing.T) {
 				Statements: tt.fields.Statements,
 			}
 			if got := b.ToString(dumper.NoIndentStyle); got != tt.want {
-				t.Errorf("Block.ToString() = \"%v\", want \"%v\"", got, tt.want)
+				t.Errorf("Block.ToString(NoIndentStyle) = \"%v\", want \"%v\"", got, tt.want)
+			}
+			if got := b.ToString(dumper.NoIndentSortedStyle); got != tt.wantSorted {
+				t.Errorf("Block.ToString(NoIndentSortedStyle) = \"%v\", want \"%v\"", got, tt.wantSorted)
+			}
+			if got := b.ToString(dumper.NoIndentSortedSpaceStyle); got != tt.wantSortedSpaceBeforeBlocks {
+				t.Errorf("Block.ToString(NoIndentSortedSpaceStyle) = \"%v\", want \"%v\"", got, tt.wantSortedSpaceBeforeBlocks)
 			}
 		})
 	}
