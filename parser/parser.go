@@ -119,7 +119,7 @@ func (p *Parser) parseStatement() config.Statement {
 	}
 
 	//parse parameters until the end.
-	for p.nextToken(); p.curTokenIs(token.Keyword) || p.curTokenIs(token.QuotedString); p.nextToken() {
+	for p.nextToken(); p.currentToken.IsParameterEligible(); p.nextToken() {
 		d.Parameters = append(d.Parameters, p.currentToken.Literal)
 	}
 
@@ -155,7 +155,7 @@ func (p *Parser) parseInclude(directive *config.Directive) *config.Include {
 	}
 
 	if directive.Block != nil {
-		panic("include can not have a block or missing semicolon at the end of include statement")
+		panic("include can not have a block, or missing semicolon at the end of include statement")
 	}
 
 	return include

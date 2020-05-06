@@ -318,3 +318,76 @@ func TestToken_Is(t *testing.T) {
 		})
 	}
 }
+
+func TestToken_IsParameterEligible(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		token Token
+		want  bool
+	}{
+		{
+			name: "Keyword can be a parameter",
+			token: Token{
+				Type: Keyword,
+			},
+			want: true,
+		},
+		{
+			name: "Variable can be a parameter",
+			token: Token{
+				Type: Variable,
+			},
+			want: true,
+		},
+		{
+			name: "Quoted string can be a parameter",
+			token: Token{
+				Type: QuotedString,
+			},
+			want: true,
+		},
+		{
+			name: "Quoted string can be a parameter",
+			token: Token{
+				Type: QuotedString,
+			},
+			want: true,
+		},
+		{
+			name: "Regex string can be a parameter",
+			token: Token{
+				Type: Regex,
+			},
+			want: true,
+		},
+		{
+			name: "Blockstart cant can be a parameter",
+			token: Token{
+				Type: BlockStart,
+			},
+			want: false,
+		},
+		{
+			name: "Blockend cant can be a parameter",
+			token: Token{
+				Type: BlockEnd,
+			},
+			want: false,
+		},
+		{
+			name: "Comment cant can be a parameter",
+			token: Token{
+				Type: Comment,
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.token.IsParameterEligible(); got != tt.want {
+				t.Errorf("Token.IsParameterEligible() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -95,3 +95,8 @@ func (ts Tokens) EqualTo(tokens Tokens) bool {
 func (t Token) Is(typ Type) bool {
 	return t.Type == typ
 }
+
+//IsParameterEligible checks if token is directive parameter eligible
+func (t Token) IsParameterEligible() bool {
+	return t.Is(Keyword) || t.Is(QuotedString) || t.Is(Variable) || t.Is(Regex)
+}
