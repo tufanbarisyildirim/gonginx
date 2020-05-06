@@ -136,6 +136,22 @@ func TestParser_Location(t *testing.T) {
 	assert.Assert(t, ok, "expecting a location as first statement")
 }
 
+func TestParser_VariableAsParameter(t *testing.T) {
+	c := NewParserFromLexer(
+		lex(`
+			map $host $clientname {
+				default -;
+			}
+	`)).Parse()
+
+	d, ok := c.Statements[0].(*config.Directive)
+	assert.Assert(t, ok, "expecting a directive(http) as first statement")
+	assert.Equal(t, d.Name, "map", "first directive needs to be ")
+	assert.Equal(t, len(d.Parameters), 2, "map must have 2 parameters here")
+	assert.Equal(t, d.Parameters[0], "$host", "invalid first parameter")
+	assert.Equal(t, d.Parameters[1], "$clientname", "invalid second parameter")
+}
+
 func TestParser_UnendedMultiParams(t *testing.T) {
 	defer func() {
 		if r := recover(); r == nil {
