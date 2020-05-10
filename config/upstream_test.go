@@ -104,3 +104,63 @@ func TestUpstream_ToString(t *testing.T) {
 		})
 	}
 }
+
+func TestUpstream_AddServer(t *testing.T) {
+	type fields struct {
+		UpstreamName    string
+		UpstreamServers []*UpstreamServer
+		Directives      []IDirective
+	}
+	type args struct {
+		server *UpstreamServer
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		args     args
+		toString string
+	}{
+		{
+			name: "add simple server",
+			fields: fields{
+				UpstreamName: "my_backend",
+				UpstreamServers: []*UpstreamServer{
+					{
+						Address: "127.0.0.1:8080",
+						Flags:   []string{"backup"},
+						Parameters: map[string]string{
+							"weight": "1",
+						},
+					},
+				},
+			},
+			args: args{
+				server: &UpstreamServer{
+					Address: "backend2.gonginx.org:8090",
+					Flags:   []string{"resolve"},
+					Parameters: map[string]string{
+						"fail_timeout": "5s",
+						"slow_start":   "30s",
+					},
+				},
+			},
+			toString: `upstream my_backend {
+server 127.0.0.1:8080 weight=1 backup;
+server backend2.gonginx.org:8090 fail_timeout=5s slow_start=30s resolve;
+}`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			us := &Upstream{
+				UpstreamName:    tt.fields.UpstreamName,
+				UpstreamServers: tt.fields.UpstreamServers,
+				Directives:      tt.fields.Directives,
+			}
+			us.AddServer(tt.args.server)
+			if got := us.ToString(dumper.NoIndentStyle); got != tt.toString {
+				t.Errorf("us.ToString() = `%v`, want `%v`", got, tt.toString)
+			}
+		})
+	}
+}

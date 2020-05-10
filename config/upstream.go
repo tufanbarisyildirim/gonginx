@@ -48,8 +48,8 @@ func NewUpstream(directive Directive) (*Upstream, error) {
 //ToString convert it to a string
 func (us *Upstream) ToString(style *dumper.Style) string {
 	directive := Directive{
-		Name:       "upstream",
-		Parameters: []string{us.UpstreamName},
+		Name:       us.GetName(),
+		Parameters: us.GetParameters(),
 		Block: &Block{
 			Directives: []IDirective{},
 		},
@@ -66,4 +66,9 @@ func (us *Upstream) ToString(style *dumper.Style) string {
 	}
 
 	return directive.ToString(style)
+}
+
+//AddServer add a server to upstream
+func (us *Upstream) AddServer(server *UpstreamServer) {
+	us.UpstreamServers = append(us.UpstreamServers, server)
 }
