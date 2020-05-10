@@ -115,12 +115,14 @@ func TestParser_ParseFromFile(t *testing.T) {
 func TestParser_MultiParamDirecive(t *testing.T) {
 	NewParserFromLexer(
 		lex(`
-	server { 
-		a_directive has multi params /and/ends;
-		location ~ /and/ends{
-			
+http{
+		server { 
+			a_directive has multi params /and/ends;
+			location ~ /and/ends{
+				
+			}
 		}
-	}
+}
 	`)).Parse()
 }
 

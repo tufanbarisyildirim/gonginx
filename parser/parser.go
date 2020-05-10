@@ -45,6 +45,9 @@ func NewParserFromLexer(lexer *lexer) *Parser {
 	parser.nextToken()
 
 	parser.blockWrappers = map[string]func(*config.Directive) config.IDirective{
+		"http": func(directive *config.Directive) config.IDirective {
+			return parser.wrapHttp(directive)
+		},
 		"server": func(directive *config.Directive) config.IDirective {
 			return parser.wrapServer(directive)
 		},
@@ -188,6 +191,11 @@ func (p *Parser) wrapLocation(directive *config.Directive) *config.Location {
 func (p *Parser) wrapServer(directive *config.Directive) *config.Server {
 	s, _ := config.NewServer(directive)
 	return s
+}
+
+func (p *Parser) wrapHttp(directive *config.Directive) *config.Http {
+	h, _ := config.NewHttp(directive)
+	return h
 }
 
 func (p *Parser) parseUpstreamServer(directive *config.Directive) *config.UpstreamServer {
