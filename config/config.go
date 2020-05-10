@@ -43,8 +43,8 @@ func (c *Config) SaveToFile(style *dumper.Style) error {
 	}
 
 	//write sub files (inlude /file/path)
-	for _, statement := range c.Block.Statements {
-		if fs, ok := statement.(FileStatement); ok {
+	for _, directive := range c.Block.Directives {
+		if fs, ok := (interface{}(directive)).(FileDirective); ok {
 			err := fs.SaveToFile(style)
 			if err != nil {
 				return err

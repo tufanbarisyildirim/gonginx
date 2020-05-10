@@ -23,7 +23,7 @@ func TestUpstream_ToString(t *testing.T) {
 					Name:       "upstream",
 					Parameters: []string{"gonginx_upstream"},
 					Block: &Block{
-						Statements: make([]Statement, 0),
+						Directives: make([]IDirective, 0),
 					},
 				},
 			},
@@ -36,13 +36,11 @@ func TestUpstream_ToString(t *testing.T) {
 					Name:       "upstream",
 					Parameters: []string{"gonginx_upstream"},
 					Block: &Block{
-						Statements: []Statement{
-							&UpstreamServer{
-								Directive: &Directive{
-									Name:       "server",
-									Parameters: []string{"127.0.0.1:9005"},
-								},
-							},
+						Directives: []IDirective{
+							NewUpstreamServer(&Directive{
+								Name:       "server",
+								Parameters: []string{"127.0.0.1:9005"},
+							}),
 						},
 					},
 				},
@@ -56,19 +54,15 @@ func TestUpstream_ToString(t *testing.T) {
 					Name:       "upstream",
 					Parameters: []string{"gonginx_upstream"},
 					Block: &Block{
-						Statements: []Statement{
-							&UpstreamServer{
-								Directive: &Directive{
-									Name:       "server",
-									Parameters: []string{"127.0.0.1:9005"},
-								},
-							},
-							&UpstreamServer{
-								Directive: &Directive{
-									Name:       "server",
-									Parameters: []string{"127.0.0.2:9005"},
-								},
-							},
+						Directives: []IDirective{
+							NewUpstreamServer(&Directive{
+								Name:       "server",
+								Parameters: []string{"127.0.0.1:9005"},
+							}),
+							NewUpstreamServer(&Directive{
+								Name:       "server",
+								Parameters: []string{"127.0.0.2:9005"},
+							}),
 						},
 					},
 				},
@@ -82,19 +76,15 @@ func TestUpstream_ToString(t *testing.T) {
 					Name:       "upstream",
 					Parameters: []string{"gonginx_upstream"},
 					Block: &Block{
-						Statements: []Statement{
-							&UpstreamServer{
-								Directive: &Directive{
-									Name:       "server",
-									Parameters: []string{"127.0.0.1:9005", "weight=5"},
-								},
-							},
-							&UpstreamServer{
-								Directive: &Directive{
-									Name:       "server",
-									Parameters: []string{"127.0.0.2:9005", "weight=4", "down"},
-								},
-							},
+						Directives: []IDirective{
+							NewUpstreamServer(&Directive{
+								Name:       "server",
+								Parameters: []string{"127.0.0.1:9005", "weight=5"},
+							}),
+							NewUpstreamServer(&Directive{
+								Name:       "server",
+								Parameters: []string{"127.0.0.2:9005", "weight=4", "down"},
+							}),
 						},
 					},
 				},
@@ -104,9 +94,9 @@ func TestUpstream_ToString(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			us := &Upstream{
-				Directive: tt.fields.Directive,
-				Name:      tt.fields.Name,
+			us, err := NewUpstream(*tt.fields.Directive)
+			if err != nil {
+				t.Error("Failed to create NewUpstream(*tt.fields.Directive)")
 			}
 			if got := us.ToString(dumper.NoIndentStyle); got != tt.want {
 				t.Errorf("Upstream.ToString() = %v, want %v", got, tt.want)

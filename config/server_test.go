@@ -21,7 +21,7 @@ func TestServer_ToString(t *testing.T) {
 			fields: fields{
 				Directive: &Directive{
 					Block: &Block{
-						Statements: make([]Statement, 0),
+						Directives: make([]IDirective, 0),
 					},
 					Name: "server",
 				},
@@ -34,7 +34,7 @@ func TestServer_ToString(t *testing.T) {
 			fields: fields{
 				Directive: &Directive{
 					Block: &Block{
-						Statements: []Statement{
+						Directives: []IDirective{
 							&Directive{
 								Name:       "server_name",
 								Parameters: []string{"gonginx.dev"},

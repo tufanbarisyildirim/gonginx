@@ -24,7 +24,7 @@ func TestLocation_ToString(t *testing.T) {
 					Name:       "location",
 					Parameters: []string{"/admin"},
 					Block: &Block{
-						Statements: make([]Statement, 0),
+						Directives: make([]IDirective, 0),
 					},
 				},
 				Modifier: "",

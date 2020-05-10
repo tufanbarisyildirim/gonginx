@@ -18,8 +18,8 @@ func TestConfig_IncludeToString(t *testing.T) {
 	}
 	assert.Equal(t, "include /etc/nginx/conf.d/*.conf;", include.ToString(dumper.NoIndentStyle))
 	var i interface{} = include
-	_, ok := i.(Statement)
-	_, ok2 := i.(IncludeStatement)
+	_, ok := i.(IDirective)
+	_, ok2 := i.(IncludeDirective)
 	assert.Assert(t, ok)
 	assert.Assert(t, ok2)
 }
@@ -41,7 +41,7 @@ func TestInclude_SaveToFile(t *testing.T) {
 				Config: &Config{
 					FilePath: "../full-example/unittest/included.conf",
 					Block: &Block{
-						Statements: []Statement{},
+						Directives: []IDirective{},
 					},
 				},
 			},

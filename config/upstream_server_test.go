@@ -26,10 +26,6 @@ func TestNewUpstreamServer(t *testing.T) {
 				},
 			},
 			want: &UpstreamServer{
-				Directive: &Directive{
-					Name:       "server",
-					Parameters: []string{"127.0.0.1:8080"},
-				},
 				Address:    "127.0.0.1:8080",
 				Flags:      make([]string, 0),
 				Parameters: make(map[string]string, 0),
@@ -45,10 +41,6 @@ func TestNewUpstreamServer(t *testing.T) {
 				},
 			},
 			want: &UpstreamServer{
-				Directive: &Directive{
-					Name:       "server",
-					Parameters: []string{"127.0.0.1:8080", "weight=5"},
-				},
 				Address: "127.0.0.1:8080",
 				Flags:   make([]string, 0),
 				Parameters: map[string]string{
@@ -66,10 +58,6 @@ func TestNewUpstreamServer(t *testing.T) {
 				},
 			},
 			want: &UpstreamServer{
-				Directive: &Directive{
-					Name:       "server",
-					Parameters: []string{"127.0.0.1:8080", "weight=5", "down"},
-				},
 				Address: "127.0.0.1:8080",
 				Flags:   []string{"down"},
 				Parameters: map[string]string{
@@ -85,6 +73,11 @@ func TestNewUpstreamServer(t *testing.T) {
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewUpstreamServer() = %v, want %v", got, tt.want)
 			}
+
+			if got.GetBlock() != nil {
+				t.Error("Upstream server returns a block")
+			}
+
 			if got.ToString(dumper.NoIndentStyle) != tt.wantString {
 				t.Errorf("NewUpstreamServer().ToString = %v, want %v", got.ToString(dumper.NoIndentStyle), tt.wantString)
 			}

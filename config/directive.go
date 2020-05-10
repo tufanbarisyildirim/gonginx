@@ -10,7 +10,7 @@ import (
 
 //Directive represents any nginx directive
 type Directive struct {
-	*Block
+	Block      *Block
 	Name       string
 	Parameters []string //TODO: Save parameters with their type
 }
@@ -38,4 +38,14 @@ func (d *Directive) ToString(style *dumper.Style) string {
 //GetName get directive name
 func (d *Directive) GetName() string {
 	return d.Name
+}
+
+//GetParameters get all parameters of a directive
+func (d *Directive) GetParameters() []string {
+	return d.Parameters
+}
+
+//GetBlock get block if it has
+func (d *Directive) GetBlock() *Block {
+	return d.Block
 }

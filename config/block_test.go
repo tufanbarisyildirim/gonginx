@@ -8,7 +8,7 @@ import (
 
 func TestBlock_ToString(t *testing.T) {
 	type fields struct {
-		Statements []Statement
+		Directives []IDirective
 	}
 	tests := []struct {
 		name                        string
@@ -20,14 +20,14 @@ func TestBlock_ToString(t *testing.T) {
 		{
 			name: "empty block",
 			fields: fields{
-				Statements: make([]Statement, 0),
+				Directives: make([]IDirective, 0),
 			},
 			want: "",
 		},
 		{
 			name: "statement list",
 			fields: fields{
-				Statements: []Statement{
+				Directives: []IDirective{
 					&Directive{
 						Name:       "user",
 						Parameters: []string{"nginx", "nginx"},
@@ -45,7 +45,7 @@ func TestBlock_ToString(t *testing.T) {
 		{
 			name: "statement list with wrapped directives",
 			fields: fields{
-				Statements: []Statement{
+				Directives: []IDirective{
 					&Directive{
 						Name:       "user",
 						Parameters: []string{"nginx", "nginx"},
@@ -64,7 +64,7 @@ func TestBlock_ToString(t *testing.T) {
 					&Server{
 						Directive: &Directive{
 							Block: &Block{
-								Statements: []Statement{
+								Directives: []IDirective{
 									&Directive{
 										Name:       "user",
 										Parameters: []string{"nginx", "nginx"},
@@ -95,7 +95,7 @@ func TestBlock_ToString(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			b := &Block{
-				Statements: tt.fields.Statements,
+				Directives: tt.fields.Directives,
 			}
 			if got := b.ToString(dumper.NoIndentStyle); got != tt.want {
 				t.Errorf("Block.ToString(NoIndentStyle) = \"%v\", want \"%v\"", got, tt.want)

@@ -21,7 +21,7 @@ func TestConfig_ToString(t *testing.T) {
 			name: "block",
 			fields: fields{
 				Block: &Block{
-					Statements: []Statement{
+					Directives: []IDirective{
 						&Directive{
 							Name:       "user",
 							Parameters: []string{"nginx", "nginx"},
@@ -71,7 +71,7 @@ func TestConfig_SaveToFile(t *testing.T) {
 			fields: fields{
 				FilePath: "../full-example/unit-test.conf",
 				Block: &Block{
-					Statements: []Statement{
+					Directives: []IDirective{
 						&Directive{
 							Name:       "user",
 							Parameters: []string{"nginx", "nginx"},
@@ -90,7 +90,7 @@ func TestConfig_SaveToFile(t *testing.T) {
 			fields: fields{
 				FilePath: "../full-example/unit-test.conf",
 				Block: &Block{
-					Statements: []Statement{
+					Directives: []IDirective{
 						&Directive{
 							Name:       "user",
 							Parameters: []string{"nginx", "nginx"},
@@ -116,7 +116,7 @@ func TestConfig_SaveToFile(t *testing.T) {
 			fields: fields{
 				FilePath: "../full-example/unittest/file.conf",
 				Block: &Block{
-					Statements: []Statement{
+					Directives: []IDirective{
 						&Directive{
 							Name:       "user",
 							Parameters: []string{"nginx", "nginx"},

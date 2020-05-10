@@ -14,9 +14,9 @@ type Parser struct {
 	lexer             *lexer
 	currentToken      token.Token
 	followingToken    token.Token
-	statementParsers  map[string]func() config.Statement
-	blockWrappers     map[string]func(*config.Directive) config.Statement
-	directiveWrappers map[string]func(*config.Directive) config.Statement
+	statementParsers  map[string]func() config.IDirective
+	blockWrappers     map[string]func(*config.Directive) config.IDirective
+	directiveWrappers map[string]func(*config.Directive) config.IDirective
 }
 
 //NewStringParser parses nginx conf from string
@@ -44,20 +44,20 @@ func NewParserFromLexer(lexer *lexer) *Parser {
 	parser.nextToken()
 	parser.nextToken()
 
-	parser.blockWrappers = map[string]func(*config.Directive) config.Statement{
-		"server": func(directive *config.Directive) config.Statement {
+	parser.blockWrappers = map[string]func(*config.Directive) config.IDirective{
+		"server": func(directive *config.Directive) config.IDirective {
 			return parser.wrapServer(directive)
 		},
-		"location": func(directive *config.Directive) config.Statement {
+		"location": func(directive *config.Directive) config.IDirective {
 			return parser.wrapLocation(directive)
 		},
 	}
 
-	parser.directiveWrappers = map[string]func(*config.Directive) config.Statement{
-		"server": func(directive *config.Directive) config.Statement {
+	parser.directiveWrappers = map[string]func(*config.Directive) config.IDirective{
+		"server": func(directive *config.Directive) config.IDirective {
 			return parser.parseUpstreamServer(directive)
 		},
-		"include": func(directive *config.Directive) config.Statement {
+		"include": func(directive *config.Directive) config.IDirective {
 			return parser.parseInclude(directive)
 		},
 	}
@@ -90,7 +90,7 @@ func (p *Parser) Parse() *config.Config {
 func (p *Parser) parseBlock() *config.Block {
 
 	context := &config.Block{
-		Statements: make([]config.Statement, 0),
+		Directives: make([]config.IDirective, 0),
 	}
 
 parsingloop:
@@ -99,7 +99,7 @@ parsingloop:
 		case p.curTokenIs(token.EOF) || p.curTokenIs(token.BlockEnd):
 			break parsingloop
 		case p.curTokenIs(token.Keyword):
-			context.Statements = append(context.Statements, p.parseStatement())
+			context.Directives = append(context.Directives, p.parseStatement())
 			break
 		}
 		p.nextToken()
@@ -108,7 +108,7 @@ parsingloop:
 	return context
 }
 
-func (p *Parser) parseStatement() config.Statement {
+func (p *Parser) parseStatement() config.IDirective {
 	d := &config.Directive{
 		Name: p.currentToken.Literal,
 	}

@@ -9,7 +9,7 @@ import (
 
 //Block a block statement
 type Block struct {
-	Statements []Statement
+	Directives []IDirective
 }
 
 //ToString return config as string
@@ -22,14 +22,14 @@ func (b *Block) ToByteArray(style *dumper.Style) []byte {
 	var buf bytes.Buffer
 
 	if style.SortDirectives {
-		sort.SliceStable(b.Statements, func(i, j int) bool {
-			return b.Statements[i].GetName() < b.Statements[j].GetName()
+		sort.SliceStable(b.Directives, func(i, j int) bool {
+			return b.Directives[i].GetName() < b.Directives[j].GetName()
 		})
 	}
 
-	for i, statement := range b.Statements {
+	for i, statement := range b.Directives {
 		buf.WriteString(statement.ToString(style))
-		if i != len(b.Statements)-1 {
+		if i != len(b.Directives)-1 {
 			buf.WriteString("\n")
 		}
 	}

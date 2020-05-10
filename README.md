@@ -42,7 +42,7 @@ keyword     : Keyword
 #### TODO
 - [ ]  associate comments with config objects to print them on config generation and make it configurable with `dumper.Style`
 - [ ]  move any context wrapper into their own file (remove from parser)
-- [ ]  wire config object properties to their sub object (Directives & Block)   
+- [ ]  Get rid of *Directive from any known directive, generate them on the fly in ToString(), err, actuall, we can get rid of statement and use Directive only!  
        e.g, S`etting UpstreamServer.Address` should update `Upstream.Directive.Parameters[0]` if that's ugly, find another way to bind data between config and AST
 - [ ]  Parse included files recusively, keep relative path on load, save all in a related structure and make that optional in dumper.Style
 
