@@ -61,30 +61,28 @@ func TestBlock_ToString(t *testing.T) {
 						},
 						IncludePath: "/etc/nginx/conf/*.conf",
 					},
-					&Server{
-						Directive: &Directive{
-							Block: &Block{
-								Directives: []IDirective{
-									&Directive{
-										Name:       "user",
-										Parameters: []string{"nginx", "nginx"},
+					NewServerOrNill(&Directive{
+						Block: &Block{
+							Directives: []IDirective{
+								&Directive{
+									Name:       "user",
+									Parameters: []string{"nginx", "nginx"},
+								},
+								&Directive{
+									Name:       "worker_processes",
+									Parameters: []string{"5"},
+								},
+								&Include{
+									Directive: &Directive{
+										Name:       "include",
+										Parameters: []string{"/etc/nginx/conf/*.conf"},
 									},
-									&Directive{
-										Name:       "worker_processes",
-										Parameters: []string{"5"},
-									},
-									&Include{
-										Directive: &Directive{
-											Name:       "include",
-											Parameters: []string{"/etc/nginx/conf/*.conf"},
-										},
-										IncludePath: "/etc/nginx/conf/*.conf",
-									},
+									IncludePath: "/etc/nginx/conf/*.conf",
 								},
 							},
-							Name: "server",
 						},
-					},
+						Name: "server",
+					}),
 				},
 			},
 			want:                        "user nginx nginx;\nworker_processes 5;\ninclude /etc/nginx/conf/*.conf;\nserver {\nuser nginx nginx;\nworker_processes 5;\ninclude /etc/nginx/conf/*.conf;\n}",
@@ -108,4 +106,9 @@ func TestBlock_ToString(t *testing.T) {
 			}
 		})
 	}
+}
+
+func NewServerOrNill(directive IDirective) *Server {
+	s, _ := NewServer(directive)
+	return s
 }

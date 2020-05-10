@@ -57,8 +57,9 @@ func TestServer_ToString(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &Server{
-				Directive: tt.fields.Directive,
+			s, err := NewServer(tt.fields.Directive)
+			if err != nil {
+				t.Error("NewServer(tt.fields.Directive) failed")
 			}
 			if got := s.ToString(tt.args); got != tt.want {
 				t.Errorf("Server.ToString() = \"%v\", want \"%v\"", got, tt.want)

@@ -186,11 +186,8 @@ func (p *Parser) wrapLocation(directive *config.Directive) *config.Location {
 }
 
 func (p *Parser) wrapServer(directive *config.Directive) *config.Server {
-	server := &config.Server{
-		Directive: directive,
-	}
-
-	return server
+	s, _ := config.NewServer(directive)
+	return s
 }
 
 func (p *Parser) parseUpstreamServer(directive *config.Directive) *config.UpstreamServer {
