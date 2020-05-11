@@ -54,3 +54,30 @@ func (c *Config) SaveToFile(style *dumper.Style) error {
 
 	return nil
 }
+
+//FindDirectives find directives from whole config block
+func (c *Config) FindDirectives(directiveName string) []IDirective {
+	return c.Block.FindDirectives(directiveName)
+}
+
+//Servers find directives from whole config block
+func (c *Config) Servers() []*Server {
+	var servers []*Server
+	directives := c.Block.FindDirectives("upstream")
+	for _, directive := range directives {
+		s, _ := NewServer(directive)
+		servers = append(servers, s)
+	}
+	return servers
+}
+
+//FindUpstreams find directives from whole config block
+func (c *Config) FindUpstreams() []*Upstream {
+	var upstreams []*Upstream
+	directives := c.Block.FindDirectives("upstream")
+	for _, directive := range directives {
+		up, _ := NewUpstream(directive)
+		upstreams = append(upstreams, up)
+	}
+	return upstreams
+}

@@ -7,6 +7,9 @@ test:
 	go test -race -cover ${PWD}/config
 	go test -race -cover ${PWD}/dumper
 
+example:
+	go run ${PWD}/examples/$(example)
+
 bench:
 	go test -bench=. -benchmem ${PWD}/parser
 	

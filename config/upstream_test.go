@@ -95,7 +95,7 @@ func TestUpstream_ToString(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			us, err := NewUpstream(*tt.fields.Directive)
+			us, err := NewUpstream(tt.fields.Directive)
 			if err != nil {
 				t.Error("Failed to create NewUpstream(*tt.fields.Directive)")
 			}

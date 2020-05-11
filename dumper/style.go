@@ -8,6 +8,13 @@ var (
 		Indent:         0,
 	}
 
+	//IndentedStyle default style
+	IndentedStyle = &Style{
+		SortDirectives: false,
+		StartIndent:    0,
+		Indent:         4,
+	}
+
 	//NoIndentSortedStyle default style
 	NoIndentSortedStyle = &Style{
 		SortDirectives: true,
