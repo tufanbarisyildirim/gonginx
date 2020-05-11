@@ -13,14 +13,13 @@ type Server struct {
 
 //NewServer create a server block from a directive with block
 func NewServer(directive IDirective) (*Server, error) {
-
 	if block := directive.GetBlock(); block != nil {
 		return &Server{
 			Block: *block,
 		}, nil
 	}
 
-	return nil, errors.New("server must have a block")
+	return nil, errors.New("server directive must have a block")
 }
 
 //GetName get directive name to construct the statment string

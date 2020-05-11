@@ -18,7 +18,7 @@ func NewHttp(directive IDirective) (*Http, error) {
 			Block: *block,
 		}, nil
 	}
-	return nil, errors.New("http must have a block")
+	return nil, errors.New("http directive must have a block")
 }
 
 //GetName get directive name to construct the statment string

@@ -36,3 +36,18 @@ func (b *Block) ToByteArray(style *dumper.Style) []byte {
 
 	return buf.Bytes()
 }
+
+//FindDirectives find directives in block recursively
+func (b *Block) FindDirectives(directiveName string) []IDirective {
+	directives := make([]IDirective, 0)
+	for _, directive := range b.Directives {
+		if directive.GetName() == directiveName {
+			directives = append(directives, directive)
+		}
+		if directive.GetBlock() != nil {
+			directives = append(directives, directive.GetBlock().FindDirectives(directiveName)...)
+		}
+	}
+
+	return directives
+}
