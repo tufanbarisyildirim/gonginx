@@ -1,6 +1,7 @@
 package config
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/tufanbarisyildirim/gonginx/dumper"
@@ -159,7 +160,7 @@ server backend2.gonginx.org:8090 fail_timeout=5s slow_start=30s resolve;
 			}
 			us.AddServer(tt.args.server)
 			if got := us.ToString(dumper.NoIndentStyle); got != tt.toString {
-				t.Errorf("us.ToString() = `%v`, want `%v`", got, tt.toString)
+				t.Errorf("us.ToString() = `%v`, want `%v`", strings.ReplaceAll(got, " ", "."), strings.ReplaceAll(tt.toString, " ", "."))
 			}
 		})
 	}

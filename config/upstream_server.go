@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/tufanbarisyildirim/gonginx/dumper"
@@ -34,21 +35,30 @@ func (uss *UpstreamServer) GetDirective() *Directive {
 	//First, generate a new directive from upstream server
 	directive := &Directive{
 		Name:       "server",
-		Parameters: make([]string, 1+len(uss.Flags)+len(uss.Parameters)),
+		Parameters: make([]string, 0),
 		Block:      nil,
 	}
 
-	directive.Parameters[0] = uss.Address
+	//address it the first parameter of an upstream directive
+	directive.Parameters = append(directive.Parameters, uss.Address)
 
-	pIndex := 1
-	for pName, pVal := range uss.Parameters {
-		directive.Parameters[pIndex] = fmt.Sprintf("%s=%s", pName, pVal)
-		pIndex++
+	//Iterations are random in golang maps https://blog.golang.org/maps#TOC_7.
+	//we sort keys in different slice and print them sorted.
+	//we always expect key=values parameters to be sorted by key
+	paramNames := make([]string, 0)
+	for k := range uss.Parameters {
+		paramNames = append(paramNames, k)
+	}
+	sort.Strings(paramNames)
+
+	//append named parameters first
+	for _, k := range paramNames {
+		directive.Parameters = append(directive.Parameters, fmt.Sprintf("%s=%s", k, uss.Parameters[k]))
 	}
 
+	//append flags to the end of the directive.
 	for _, flag := range uss.Flags {
-		directive.Parameters[pIndex] = flag
-		pIndex++
+		directive.Parameters = append(directive.Parameters, flag)
 	}
 
 	return directive
