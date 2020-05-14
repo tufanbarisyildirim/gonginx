@@ -54,6 +54,9 @@ func NewParserFromLexer(lexer *lexer) *Parser {
 		"location": func(directive *gonginx.Directive) gonginx.IDirective {
 			return parser.wrapLocation(directive)
 		},
+		"upstream": func(directive *gonginx.Directive) gonginx.IDirective {
+			return parser.wrapUpstream(directive)
+		},
 	}
 
 	parser.directiveWrappers = map[string]func(*gonginx.Directive) gonginx.IDirective{
@@ -190,6 +193,11 @@ func (p *Parser) wrapLocation(directive *gonginx.Directive) *gonginx.Location {
 
 func (p *Parser) wrapServer(directive *gonginx.Directive) *gonginx.Server {
 	s, _ := gonginx.NewServer(directive)
+	return s
+}
+
+func (p *Parser) wrapUpstream(directive *gonginx.Directive) *gonginx.Upstream {
+	s, _ := gonginx.NewUpstream(directive)
 	return s
 }
 
