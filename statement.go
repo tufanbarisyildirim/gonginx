@@ -1,18 +1,21 @@
-package config
+package gonginx
 
-import "github.com/tufanbarisyildirim/gonginx/dumper"
+//IBlock represents any directive block
+type IBlock interface {
+	GetDirectives() []IDirective
+	FindDirectives(directiveName string) []IDirective
+}
 
 //IDirective represents any directive
 type IDirective interface {
-	ToString(style *dumper.Style) string
 	GetName() string //the directive name.
 	GetParameters() []string
-	GetBlock() *Block
+	GetBlock() IBlock
 }
 
 //FileDirective a statement that saves its own file
 type FileDirective interface {
-	SaveToFile(style *dumper.Style) error
+	isFileDirective()
 }
 
 //IncludeDirective represents include statement in nginx

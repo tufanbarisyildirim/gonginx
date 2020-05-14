@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/tufanbarisyildirim/gonginx/config"
+	"github.com/tufanbarisyildirim/gonginx"
 	"github.com/tufanbarisyildirim/gonginx/parser/token"
 )
 
@@ -14,9 +14,9 @@ type Parser struct {
 	lexer             *lexer
 	currentToken      token.Token
 	followingToken    token.Token
-	statementParsers  map[string]func() config.IDirective
-	blockWrappers     map[string]func(*config.Directive) config.IDirective
-	directiveWrappers map[string]func(*config.Directive) config.IDirective
+	statementParsers  map[string]func() gonginx.IDirective
+	blockWrappers     map[string]func(*gonginx.Directive) gonginx.IDirective
+	directiveWrappers map[string]func(*gonginx.Directive) gonginx.IDirective
 }
 
 //NewStringParser parses nginx conf from string
@@ -44,23 +44,23 @@ func NewParserFromLexer(lexer *lexer) *Parser {
 	parser.nextToken()
 	parser.nextToken()
 
-	parser.blockWrappers = map[string]func(*config.Directive) config.IDirective{
-		"http": func(directive *config.Directive) config.IDirective {
+	parser.blockWrappers = map[string]func(*gonginx.Directive) gonginx.IDirective{
+		"http": func(directive *gonginx.Directive) gonginx.IDirective {
 			return parser.wrapHttp(directive)
 		},
-		"server": func(directive *config.Directive) config.IDirective {
+		"server": func(directive *gonginx.Directive) gonginx.IDirective {
 			return parser.wrapServer(directive)
 		},
-		"location": func(directive *config.Directive) config.IDirective {
+		"location": func(directive *gonginx.Directive) gonginx.IDirective {
 			return parser.wrapLocation(directive)
 		},
 	}
 
-	parser.directiveWrappers = map[string]func(*config.Directive) config.IDirective{
-		"server": func(directive *config.Directive) config.IDirective {
+	parser.directiveWrappers = map[string]func(*gonginx.Directive) gonginx.IDirective{
+		"server": func(directive *gonginx.Directive) gonginx.IDirective {
 			return parser.parseUpstreamServer(directive)
 		},
-		"include": func(directive *config.Directive) config.IDirective {
+		"include": func(directive *gonginx.Directive) gonginx.IDirective {
 			return parser.parseInclude(directive)
 		},
 	}
@@ -81,19 +81,19 @@ func (p *Parser) followingTokenIs(t token.Type) bool {
 	return p.followingToken.Type == t
 }
 
-//Parse the config.
-func (p *Parser) Parse() *config.Config {
-	return &config.Config{
+//Parse the gonginx.
+func (p *Parser) Parse() *gonginx.Config {
+	return &gonginx.Config{
 		FilePath: p.lexer.file, //TODO: set filepath here,
 		Block:    p.parseBlock(),
 	}
 }
 
 //ParseBlock parse a block statement
-func (p *Parser) parseBlock() *config.Block {
+func (p *Parser) parseBlock() *gonginx.Block {
 
-	context := &config.Block{
-		Directives: make([]config.IDirective, 0),
+	context := &gonginx.Block{
+		Directives: make([]gonginx.IDirective, 0),
 	}
 
 parsingloop:
@@ -111,8 +111,8 @@ parsingloop:
 	return context
 }
 
-func (p *Parser) parseStatement() config.IDirective {
-	d := &config.Directive{
+func (p *Parser) parseStatement() gonginx.IDirective {
+	d := &gonginx.Directive{
 		Name: p.currentToken.Literal,
 	}
 
@@ -146,9 +146,9 @@ func (p *Parser) parseStatement() config.IDirective {
 	panic(fmt.Errorf("unexpected token %s (%s) on line %d, column %d", p.currentToken.Type.String(), p.currentToken.Literal, p.currentToken.Line, p.currentToken.Column))
 }
 
-//TODO: move this into config.Include
-func (p *Parser) parseInclude(directive *config.Directive) *config.Include {
-	include := &config.Include{
+//TODO: move this into gonginx.Include
+func (p *Parser) parseInclude(directive *gonginx.Directive) *gonginx.Include {
+	include := &gonginx.Include{
 		Directive:   directive,
 		IncludePath: directive.Parameters[0],
 	}
@@ -164,9 +164,9 @@ func (p *Parser) parseInclude(directive *config.Directive) *config.Include {
 	return include
 }
 
-//TODO: move this into config.Location
-func (p *Parser) wrapLocation(directive *config.Directive) *config.Location {
-	location := &config.Location{
+//TODO: move this into gonginx.Location
+func (p *Parser) wrapLocation(directive *gonginx.Directive) *gonginx.Location {
+	location := &gonginx.Location{
 		Modifier:  "",
 		Match:     "",
 		Directive: directive,
@@ -188,16 +188,16 @@ func (p *Parser) wrapLocation(directive *config.Directive) *config.Location {
 	panic("too many arguments for location directive")
 }
 
-func (p *Parser) wrapServer(directive *config.Directive) *config.Server {
-	s, _ := config.NewServer(directive)
+func (p *Parser) wrapServer(directive *gonginx.Directive) *gonginx.Server {
+	s, _ := gonginx.NewServer(directive)
 	return s
 }
 
-func (p *Parser) wrapHttp(directive *config.Directive) *config.Http {
-	h, _ := config.NewHttp(directive)
+func (p *Parser) wrapHttp(directive *gonginx.Directive) *gonginx.Http {
+	h, _ := gonginx.NewHttp(directive)
 	return h
 }
 
-func (p *Parser) parseUpstreamServer(directive *config.Directive) *config.UpstreamServer {
-	return config.NewUpstreamServer(directive)
+func (p *Parser) parseUpstreamServer(directive *gonginx.Directive) *gonginx.UpstreamServer {
+	return gonginx.NewUpstreamServer(directive)
 }

@@ -1,21 +1,19 @@
-package config
+package gonginx
 
 import (
 	"errors"
-
-	"github.com/tufanbarisyildirim/gonginx/dumper"
 )
 
 //Http represents http block
 type Http struct {
-	Block
+	Block IBlock
 }
 
-//Http create an http block from a directive which has a block
+//NewHttp create an http block from a directive which has a block
 func NewHttp(directive IDirective) (*Http, error) {
 	if block := directive.GetBlock(); block != nil {
 		return &Http{
-			Block: *block,
+			Block: block,
 		}, nil
 	}
 	return nil, errors.New("http directive must have a block")
@@ -32,16 +30,6 @@ func (h *Http) GetParameters() []string {
 }
 
 //GetBlock get block if any
-func (h *Http) GetBlock() *Block {
-	return &h.Block
-}
-
-//ToString return config as string
-func (h *Http) ToString(style *dumper.Style) string {
-	directive := Directive{
-		Block:      h.GetBlock(),
-		Name:       h.GetName(),
-		Parameters: h.GetParameters(),
-	}
-	return directive.ToString(style)
+func (h *Http) GetBlock() IBlock {
+	return h.Block
 }

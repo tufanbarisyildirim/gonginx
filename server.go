@@ -1,21 +1,19 @@
-package config
+package gonginx
 
 import (
 	"errors"
-
-	"github.com/tufanbarisyildirim/gonginx/dumper"
 )
 
 //Server represents server block
 type Server struct {
-	Block
+	Block IBlock
 }
 
 //NewServer create a server block from a directive with block
 func NewServer(directive IDirective) (*Server, error) {
 	if block := directive.GetBlock(); block != nil {
 		return &Server{
-			Block: *block,
+			Block: block,
 		}, nil
 	}
 
@@ -33,16 +31,6 @@ func (s *Server) GetParameters() []string {
 }
 
 //GetBlock get block if any
-func (s *Server) GetBlock() *Block {
-	return &s.Block
-}
-
-//ToString return config as string
-func (s *Server) ToString(style *dumper.Style) string {
-	directive := Directive{
-		Block:      s.GetBlock(),
-		Name:       s.GetName(),
-		Parameters: s.GetParameters(),
-	}
-	return directive.ToString(style)
+func (s *Server) GetBlock() IBlock {
+	return s.Block
 }

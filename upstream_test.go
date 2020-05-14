@@ -1,10 +1,8 @@
-package config
+package gonginx
 
 import (
 	"strings"
 	"testing"
-
-	"github.com/tufanbarisyildirim/gonginx/dumper"
 )
 
 func TestUpstream_ToString(t *testing.T) {
@@ -99,7 +97,7 @@ func TestUpstream_ToString(t *testing.T) {
 			if err != nil {
 				t.Error("Failed to create NewUpstream(*tt.fields.Directive)")
 			}
-			if got := us.ToString(dumper.NoIndentStyle); got != tt.want {
+			if got := DumpDirective(us, NoIndentStyle); got != tt.want {
 				t.Errorf("Upstream.ToString() = %v, want %v", got, tt.want)
 			}
 		})
@@ -159,7 +157,7 @@ server backend2.gonginx.org:8090 fail_timeout=5s slow_start=30s resolve;
 				Directives:      tt.fields.Directives,
 			}
 			us.AddServer(tt.args.server)
-			if got := us.ToString(dumper.NoIndentStyle); got != tt.toString {
+			if got := DumpDirective(us, NoIndentStyle); got != tt.toString {
 				t.Errorf("us.ToString() = `%v`, want `%v`", strings.ReplaceAll(got, " ", "."), strings.ReplaceAll(tt.toString, " ", "."))
 			}
 		})

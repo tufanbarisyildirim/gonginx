@@ -1,10 +1,8 @@
-package config
+package gonginx
 
 import (
 	"reflect"
 	"testing"
-
-	"github.com/tufanbarisyildirim/gonginx/dumper"
 )
 
 func TestNewUpstreamServer(t *testing.T) {
@@ -78,8 +76,9 @@ func TestNewUpstreamServer(t *testing.T) {
 				t.Error("Upstream server returns a block")
 			}
 
-			if got.ToString(dumper.NoIndentStyle) != tt.wantString {
-				t.Errorf("NewUpstreamServer().ToString = %v, want %v", got.ToString(dumper.NoIndentStyle), tt.wantString)
+			gotString := DumpDirective(got, NoIndentStyle)
+			if gotString != tt.wantString {
+				t.Errorf("NewUpstreamServer().ToString = %v, want %v", gotString, tt.wantString)
 			}
 		})
 	}

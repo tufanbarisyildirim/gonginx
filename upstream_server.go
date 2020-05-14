@@ -1,11 +1,9 @@
-package config
+package gonginx
 
 import (
 	"fmt"
 	"sort"
 	"strings"
-
-	"github.com/tufanbarisyildirim/gonginx/dumper"
 )
 
 //UpstreamServer represents `server` directive in `upstream{}` block
@@ -15,13 +13,13 @@ type UpstreamServer struct {
 	Parameters map[string]string
 }
 
-//GetName return directive name, config.Statement  interface
+//GetName return directive name, Statement  interface
 func (uss *UpstreamServer) GetName() string {
 	return "server"
 }
 
 //GetBlock block of an upstream, basically nil
-func (uss *UpstreamServer) GetBlock() *Block {
+func (uss *UpstreamServer) GetBlock() IBlock {
 	return nil
 }
 
@@ -62,11 +60,6 @@ func (uss *UpstreamServer) GetDirective() *Directive {
 	}
 
 	return directive
-}
-
-//ToString convert it to a string
-func (uss *UpstreamServer) ToString(style *dumper.Style) string {
-	return uss.GetDirective().ToString(style)
 }
 
 //NewUpstreamServer creates an upstream server from a directive

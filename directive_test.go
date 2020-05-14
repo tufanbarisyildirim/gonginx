@@ -1,9 +1,7 @@
-package config
+package gonginx
 
 import (
 	"testing"
-
-	"github.com/tufanbarisyildirim/gonginx/dumper"
 )
 
 func TestDirective_ToString(t *testing.T) {
@@ -77,7 +75,7 @@ func TestDirective_ToString(t *testing.T) {
 				Name:       tt.fields.Name,
 				Parameters: tt.fields.Parameters,
 			}
-			if got := d.ToString(dumper.NoIndentStyle); got != tt.want {
+			if got := DumpDirective(d, NoIndentStyle); got != tt.want {
 				t.Errorf("Directive.ToString() = %v, want %v", got, tt.want)
 			}
 		})

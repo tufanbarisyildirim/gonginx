@@ -3,7 +3,7 @@ package parser
 import (
 	"testing"
 
-	"github.com/tufanbarisyildirim/gonginx/config"
+	"github.com/tufanbarisyildirim/gonginx"
 	"github.com/tufanbarisyildirim/gonginx/parser/token"
 	"gotest.tools/v3/assert"
 )
@@ -19,15 +19,16 @@ func TestParser_CurrFollow(t *testing.T) {
 	assert.Assert(t, p.followingTokenIs(token.BlockStart))
 }
 
-func TestParser_Include(t *testing.T) {
-	conf := `
-	include /etc/ngin/conf.d/mime.types;
-	`
-	p := NewStringParser(conf)
-	c := p.Parse()
-	_, ok := c.Directives[0].(config.IncludeDirective) //we expect the first statement to be an include
-	assert.Assert(t, ok)
-}
+//TODO(tufan): reactivate here after getting include specific things done
+//func TestParser_Include(t *testing.T) {
+//	conf := `
+//	include /etc/ngin/conf.d/mime.types;
+//	`
+//	p := NewStringParser(conf)
+//	c := p.Parse()
+//	_, ok := c.Directives[0].(gonginx.IncludeDirective) //we expect the first statement to be an include
+//	assert.Assert(t, ok)
+//}
 
 func TestParser_UnendedInclude(t *testing.T) {
 	defer func() {
@@ -134,7 +135,7 @@ func TestParser_Location(t *testing.T) {
 		} 
 	`)).Parse()
 
-	_, ok := c.Directives[0].(*config.Location)
+	_, ok := c.Directives[0].(*gonginx.Location)
 	assert.Assert(t, ok, "expecting a location as first statement")
 }
 
@@ -146,7 +147,7 @@ func TestParser_VariableAsParameter(t *testing.T) {
 			}
 	`)).Parse()
 
-	d, ok := c.Directives[0].(*config.Directive)
+	d, ok := c.Directives[0].(*gonginx.Directive)
 	assert.Assert(t, ok, "expecting a directive(http) as first statement")
 	assert.Equal(t, d.Name, "map", "first directive needs to be ")
 	assert.Equal(t, len(d.Parameters), 2, "map must have 2 parameters here")

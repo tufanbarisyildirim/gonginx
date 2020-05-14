@@ -4,8 +4,7 @@ export GO111MODULE=on
 test:
 	go test -race -cover ${PWD}/parser/token
 	go test -race -cover ${PWD}/parser
-	go test -race -cover ${PWD}/config
-	go test -race -cover ${PWD}/dumper
+	go test -race -cover ${PWD}
 
 example:
 	go run ${PWD}/examples/$(example)

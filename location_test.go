@@ -1,9 +1,8 @@
-package config
+package gonginx
 
 import (
 	"testing"
 
-	"github.com/tufanbarisyildirim/gonginx/dumper"
 )
 
 func TestLocation_ToString(t *testing.T) {
@@ -40,7 +39,7 @@ func TestLocation_ToString(t *testing.T) {
 				Modifier:  tt.fields.Modifier,
 				Match:     tt.fields.Match,
 			}
-			if got := l.ToString(dumper.NoIndentStyle); got != tt.want {
+			if got := DumpDirective(l, NoIndentStyle); got != tt.want {
 				t.Errorf("Location.ToString() = %v, want %v", got, tt.want)
 			}
 		})

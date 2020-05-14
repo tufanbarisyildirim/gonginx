@@ -1,9 +1,8 @@
-package config
+package gonginx
 
 import (
 	"testing"
 
-	"github.com/tufanbarisyildirim/gonginx/dumper"
 )
 
 func TestServer_ToString(t *testing.T) {
@@ -13,7 +12,7 @@ func TestServer_ToString(t *testing.T) {
 	tests := []struct {
 		name   string
 		fields fields
-		args   *dumper.Style
+		args   *Style
 		want   string
 	}{
 		{
@@ -26,7 +25,7 @@ func TestServer_ToString(t *testing.T) {
 					Name: "server",
 				},
 			},
-			args: dumper.NoIndentStyle,
+			args: NoIndentStyle,
 			want: "server {\n\n}",
 		},
 		{
@@ -48,7 +47,7 @@ func TestServer_ToString(t *testing.T) {
 					Name: "server",
 				},
 			},
-			args: dumper.NewStyle(),
+			args: NewStyle(),
 			want: `server {
     server_name gonginx.dev;
     root /var/sites/gonginx;
@@ -61,7 +60,8 @@ func TestServer_ToString(t *testing.T) {
 			if err != nil {
 				t.Error("NewServer(tt.fields.Directive) failed")
 			}
-			if got := s.ToString(tt.args); got != tt.want {
+
+			if got := DumpDirective(s, tt.args); got != tt.want {
 				t.Errorf("Server.ToString() = \"%v\", want \"%v\"", got, tt.want)
 			}
 		})

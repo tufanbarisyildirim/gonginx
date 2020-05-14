@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/tufanbarisyildirim/gonginx/dumper"
+	"github.com/tufanbarisyildirim/gonginx"
 	"github.com/tufanbarisyildirim/gonginx/parser"
 )
 
@@ -51,6 +51,6 @@ access_log logs/big.server.access.log main;
 location / { proxy_pass http://big_server_com; } } }`)
 
 	c := p.Parse()
-	fmt.Println(c.ToString(dumper.IndentedStyle))
+	fmt.Println(gonginx.DumpBlock(c.Block, gonginx.IndentedStyle))
 
 }

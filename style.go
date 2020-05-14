@@ -1,4 +1,4 @@
-package dumper
+package gonginx
 
 var (
 	//NoIndentStyle default style

@@ -1,10 +1,9 @@
-package config
+package gonginx
 
 import (
 	"reflect"
 	"testing"
 
-	"github.com/tufanbarisyildirim/gonginx/dumper"
 )
 
 func TestBlock_ToString(t *testing.T) {
@@ -96,13 +95,13 @@ func TestBlock_ToString(t *testing.T) {
 			b := &Block{
 				Directives: tt.fields.Directives,
 			}
-			if got := b.ToString(dumper.NoIndentStyle); got != tt.want {
+			if got := DumpBlock(b, NoIndentStyle); got != tt.want {
 				t.Errorf("Block.ToString(NoIndentStyle) = \"%v\", want \"%v\"", got, tt.want)
 			}
-			if got := b.ToString(dumper.NoIndentSortedStyle); got != tt.wantSorted {
+			if got := DumpBlock(b, NoIndentSortedStyle); got != tt.wantSorted {
 				t.Errorf("Block.ToString(NoIndentSortedStyle) = \"%v\", want \"%v\"", got, tt.wantSorted)
 			}
-			if got := b.ToString(dumper.NoIndentSortedSpaceStyle); got != tt.wantSortedSpaceBeforeBlocks {
+			if got := DumpBlock(b, NoIndentSortedSpaceStyle); got != tt.wantSortedSpaceBeforeBlocks {
 				t.Errorf("Block.ToString(NoIndentSortedSpaceStyle) = \"%v\", want \"%v\"", got, tt.wantSortedSpaceBeforeBlocks)
 			}
 		})
@@ -129,7 +128,7 @@ func TestBlock_FindDirectives(t *testing.T) {
 			block: &Block{
 				Directives: []IDirective{
 					&Server{
-						Block: Block{
+						Block: &Block{
 							Directives: []IDirective{
 								&Directive{
 									Name:       "server_name",
@@ -139,7 +138,7 @@ func TestBlock_FindDirectives(t *testing.T) {
 						},
 					},
 					&Server{
-						Block: Block{
+						Block: &Block{
 							Directives: []IDirective{
 								&Directive{
 									Name:       "server_name",
@@ -149,10 +148,10 @@ func TestBlock_FindDirectives(t *testing.T) {
 						},
 					},
 					&Http{
-						Block{
+						&Block{
 							Directives: []IDirective{
 								&Server{
-									Block: Block{
+									Block: &Block{
 										Directives: []IDirective{
 											&Directive{
 												Name:       "server_name",
@@ -168,7 +167,7 @@ func TestBlock_FindDirectives(t *testing.T) {
 			},
 			want: []IDirective{
 				&Server{
-					Block: Block{
+					Block: &Block{
 						Directives: []IDirective{
 							&Directive{
 								Name:       "server_name",
@@ -178,7 +177,7 @@ func TestBlock_FindDirectives(t *testing.T) {
 					},
 				},
 				&Server{
-					Block: Block{
+					Block: &Block{
 						Directives: []IDirective{
 							&Directive{
 								Name:       "server_name",
@@ -188,7 +187,7 @@ func TestBlock_FindDirectives(t *testing.T) {
 					},
 				},
 				&Server{
-					Block: Block{
+					Block: &Block{
 						Directives: []IDirective{
 							&Directive{
 								Name:       "server_name",

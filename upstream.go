@@ -1,9 +1,7 @@
-package config
+package gonginx
 
 import (
 	"errors"
-
-	"github.com/tufanbarisyildirim/gonginx/dumper"
 )
 
 //Upstream represents `upstream{}` block
@@ -25,8 +23,19 @@ func (us *Upstream) GetParameters() []string {
 }
 
 //GetBlock upstream does not have block
-func (us *Upstream) GetBlock() *Block {
-	return us.ToDirective().Block
+func (us *Upstream) GetBlock() IBlock {
+	return us
+}
+
+//GetDirectives get sub directives of upstream
+func (us *Upstream) GetDirectives() []IDirective {
+	directives := make([]IDirective, 0)
+	directives = append(directives, us.Directives...)
+	for _, uss := range us.UpstreamServers {
+		directives = append(directives, uss)
+	}
+
+	return directives
 }
 
 //NewUpstream creaste new upstream from a directive
@@ -40,8 +49,8 @@ func NewUpstream(directive IDirective) (*Upstream, error) {
 		return nil, errors.New("missing upstream block")
 	}
 
-	if len(directive.GetBlock().Directives) > 0 {
-		for _, d := range directive.GetBlock().Directives {
+	if len(directive.GetBlock().GetDirectives()) > 0 {
+		for _, d := range directive.GetBlock().GetDirectives() {
 			if d.GetName() == "server" {
 				us.UpstreamServers = append(us.UpstreamServers, NewUpstreamServer(d))
 			}
@@ -51,35 +60,22 @@ func NewUpstream(directive IDirective) (*Upstream, error) {
 	return us, nil
 }
 
-//ToDirective get upstream as a directive
-func (us *Upstream) ToDirective() *Directive {
-	directive := &Directive{
-		Name:       us.GetName(),
-		Parameters: us.GetParameters(),
-		Block: &Block{
-			Directives: []IDirective{},
-		},
-	}
-	//first add other directives
-	if us.Directives != nil {
-		for _, d := range us.Directives {
-			directive.Block.Directives = append(directive.Block.Directives, d)
-		}
-	}
-	//then upstream
-	for _, uss := range us.UpstreamServers {
-		directive.Block.Directives = append(directive.Block.Directives, uss)
-	}
-
-	return directive
-}
-
-//ToString convert it to a string
-func (us *Upstream) ToString(style *dumper.Style) string {
-	return us.ToDirective().ToString(style)
-}
-
 //AddServer add a server to upstream
 func (us *Upstream) AddServer(server *UpstreamServer) {
 	us.UpstreamServers = append(us.UpstreamServers, server)
+}
+
+//FindDirectives find directives in block recursively
+func (us *Upstream) FindDirectives(directiveName string) []IDirective {
+	directives := make([]IDirective, 0)
+	for _, directive := range us.Directives {
+		if directive.GetName() == directiveName {
+			directives = append(directives, directive)
+		}
+		if directive.GetBlock() != nil {
+			directives = append(directives, directive.GetBlock().FindDirectives(directiveName)...)
+		}
+	}
+
+	return directives
 }

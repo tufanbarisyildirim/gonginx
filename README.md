@@ -33,11 +33,11 @@ keyword     : Keyword
 
 ## Core Components
 - ### [Parser](/parser) 
-  Parser is the main package that analyzes and turns nginx structred files into objects. It basically has 3 libraries, `lexer` explodes it into `token`s and `parser` turns tokens into config objects which are in their own package, 
+  Parser is the main package gonginx
 - ### [Config](/config)
-  Config package is representation of any context, directive or their parameters in golang. So basically they are models and also AST
+  Config package gonginx
 - ### [Dumper](/dumper)
-  Dumper is the package that holds styling configuration only. 
+  Dumper is the package gonginx
 
 #### TODO
 - [ ]  associate comments with config objects to print them on config generation and make it configurable with `dumper.Style`
