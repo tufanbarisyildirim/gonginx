@@ -26,7 +26,6 @@ func main() {
 		Flags: []string{"down"},
 	})
 
-	for _, upstream := range upstreams {
-		fmt.Println(gonginx.DumpDirective(upstream, gonginx.IndentedStyle))
-	}
+	fmt.Println(gonginx.DumpBlock(conf.Block, gonginx.IndentedStyle))
+
 }
