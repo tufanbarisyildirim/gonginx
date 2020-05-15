@@ -36,15 +36,14 @@ keyword     : Keyword
   Parser is the main package gonginx
 - ### [Config](/config)
   Config package gonginx
-- ### [Dumper](/dumper)
+- ### [Dumper](dumper.go)
   Dumper is the package gonginx
 
 #### TODO
 - [ ]  associate comments with config objects to print them on config generation and make it configurable with `dumper.Style`
 - [ ]  move any context wrapper into their own file (remove from parser)
-- [ ]  Get rid of *Directive from any known directive, generate them on the fly in ToString(), err, actuall, we can get rid of statement and use Directive only!  
-       e.g, S`etting UpstreamServer.Address` should update `Upstream.Directive.Parameters[0]` if that's ugly, find another way to bind data between config and AST
 - [ ]  Parse included files recusively, keep relative path on load, save all in a related structure and make that optional in dumper.Style
+- [ ]  Implement specific searches, like finding servers by server_name (domain) or any upstream by target etc.
 
 ## Limitations
 There is no known limitations yet. PRs are more then welcome if you want to implement a specific directive / block, please read [Contributing](CONTRIBUTING.md) before your first PR.
