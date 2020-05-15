@@ -33,11 +33,11 @@ keyword     : Keyword
 
 ## Core Components
 - ### [Parser](/parser) 
-  Parser is the main package gonginx
-- ### [Config](/config)
-  Config package gonginx
-- ### [Dumper](dumper.go)
-  Dumper is the package gonginx
+  Parser is the main package that analyzes and turns nginx structred files into objects. It basically has 3 libraries, `lexer` explodes it into `token`s and `parser` turns tokens into config objects which are in their own package, 
+- ### [Config](/config.go)
+  Config package is representation of any context, directive or their parameters in golang. So basically they are models and also AST
+- ### [Dumper](/dumper.go)
+  Dumper is the package that holds styling configuration only. 
 
 #### TODO
 - [ ]  associate comments with config objects to print them on config generation and make it configurable with `dumper.Style`
@@ -46,7 +46,12 @@ keyword     : Keyword
 - [ ]  Implement specific searches, like finding servers by server_name (domain) or any upstream by target etc.
 
 ## Limitations
-There is no known limitations yet. PRs are more then welcome if you want to implement a specific directive / block, please read [Contributing](CONTRIBUTING.md) before your first PR.
+There is no known limitations yet. PRs are more than welcome if you want to implement a specific directive / block, please read [Contributing](CONTRIBUTING.md) before your first PR.
+
+## Examples
+- [Formatting](/examples/formatting/main.go)
+- [Adding a Server to upstream block](/examples/adding-server/main.go)
+
 
 ## License
 [MIT License](LICENSE)
