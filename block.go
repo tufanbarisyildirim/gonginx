@@ -13,7 +13,7 @@ func (b *Block) GetDirectives() []IDirective {
 //FindDirectives find directives in block recursively
 func (b *Block) FindDirectives(directiveName string) []IDirective {
 	directives := make([]IDirective, 0)
-	for _, directive := range b.Directives {
+	for _, directive := range b.GetDirectives() {
 		if directive.GetName() == directiveName {
 			directives = append(directives, directive)
 		}

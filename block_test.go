@@ -3,7 +3,6 @@ package gonginx
 import (
 	"reflect"
 	"testing"
-
 )
 
 func TestBlock_ToString(t *testing.T) {
@@ -148,15 +147,13 @@ func TestBlock_FindDirectives(t *testing.T) {
 						},
 					},
 					&Http{
-						&Block{
-							Directives: []IDirective{
-								&Server{
-									Block: &Block{
-										Directives: []IDirective{
-											&Directive{
-												Name:       "server_name",
-												Parameters: []string{"gonginx3.dev"},
-											},
+						Servers: []*Server{
+							&Server{
+								Block: &Block{
+									Directives: []IDirective{
+										&Directive{
+											Name:       "server_name",
+											Parameters: []string{"gonginx3.dev"},
 										},
 									},
 								},
