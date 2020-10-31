@@ -51,6 +51,6 @@ access_log logs/big.server.access.log main;
 location / { proxy_pass http://big_server_com; } } }`)
 
 	c := p.Parse()
-	fmt.Println(gonginx.DumpBlock(c.Block, gonginx.IndentedStyle))
+	fmt.Println(gonginx.DumpConfig(c, gonginx.IndentedStyle))
 
 }

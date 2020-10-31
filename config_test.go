@@ -48,7 +48,7 @@ func TestConfig_ToString(t *testing.T) {
 				FilePath: tt.fields.FilePath,
 			}
 			//TODO(tufan): create another dumper for a config and include statement (file thingis)
-			if got := DumpBlock(c.Block, NoIndentStyle); got != tt.want {
+			if got := DumpConfig(c, NoIndentStyle); got != tt.want {
 				t.Errorf("ToString() = %v, want %v", got, tt.want)
 			}
 		})
