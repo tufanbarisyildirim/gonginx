@@ -112,3 +112,9 @@ func TestScanner_LexPanicUnclosedQuote(t *testing.T) {
 	directive "with an unclosed quote \t \r\n \\ with some escaped thing s\" good.;
 	`).all()
 }
+
+func TestScanner_LexFormat(t *testing.T) {
+	tokens := lex(`$remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" "$http_x_forwarded_for" $upstream_response_time`).all()
+
+	assert.Equal(t, tokens, 1, "hm")
+}
