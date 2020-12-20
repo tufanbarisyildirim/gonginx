@@ -116,5 +116,19 @@ func TestScanner_LexPanicUnclosedQuote(t *testing.T) {
 func TestScanner_LexFormat(t *testing.T) {
 	tokens := lex(`$remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" "$http_x_forwarded_for" $upstream_response_time`).all()
 
+	/**
+	{Type:Variable,Literal:"$remote_addr",Line:1,Column:0},
+	{Type:Keyword,Literal:"-",Line:1,Column:13},
+	{Type:Variable,Literal:"$remote_user",Line:1,Column:15},
+	{Type:Keyword,Literal:"[$time_local]",Line:1,Column:28},
+	{Type:QuotedString,Literal:""$request"",Line:1,Column:42},
+	{Type:Variable,Literal:"$status",Line:1,Column:53},
+	{Type:Variable,Literal:"$body_bytes_sent",Line:1,Column:61},
+	{Type:QuotedString,Literal:""$http_referer"",Line:1,Column:78},
+	{Type:QuotedString,Literal:""$http_user_agent"",Line:1,Column:94},
+	{Type:QuotedString,Literal:""$http_x_forwarded_for"",Line:1,Column:113},
+	{Type:Variable,Literal:"$upstream_response_time",Line:1,Column:137}
+	**/
+
 	assert.Equal(t, tokens, 1, "hm")
 }
