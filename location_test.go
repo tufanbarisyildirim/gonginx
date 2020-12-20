@@ -2,7 +2,6 @@ package gonginx
 
 import (
 	"testing"
-
 )
 
 func TestLocation_ToString(t *testing.T) {

@@ -2,7 +2,6 @@ package gonginx
 
 import (
 	"testing"
-
 )
 
 func TestConfig_ToString(t *testing.T) {

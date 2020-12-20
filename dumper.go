@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"sort"
 	"strings"
-
 )
 
 var (
@@ -68,7 +67,6 @@ func (s *Style) Iterate() *Style {
 	return newStyle
 }
 
-
 //DumpDirective convert a directive to a string
 func DumpDirective(d IDirective, style *Style) string {
 	var buf bytes.Buffer
@@ -112,6 +110,6 @@ func DumpBlock(b IBlock, style *Style) string {
 }
 
 //DumpConfig dump whole config
-func DumpConfig(c *Config, style *Style) string{
+func DumpConfig(c *Config, style *Style) string {
 	return DumpBlock(c.Block, style)
 }
