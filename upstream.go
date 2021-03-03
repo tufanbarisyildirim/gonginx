@@ -53,6 +53,8 @@ func NewUpstream(directive IDirective) (*Upstream, error) {
 		for _, d := range directive.GetBlock().GetDirectives() {
 			if d.GetName() == "server" {
 				us.UpstreamServers = append(us.UpstreamServers, NewUpstreamServer(d))
+			} else {
+				us.Directives = append(us.Directives, d)
 			}
 		}
 	}
