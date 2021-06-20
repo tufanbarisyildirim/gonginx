@@ -4,17 +4,19 @@ import (
 	"bufio"
 	"bytes"
 	"io"
+	"strings"
 
 	"github.com/tufanbarisyildirim/gonginx/parser/token"
 )
 
 //lexer is the main tokenizer
 type lexer struct {
-	reader *bufio.Reader
-	file   string
-	line   int
-	column int
-	Latest token.Token
+	reader     *bufio.Reader
+	file       string
+	line       int
+	column     int
+	inLuaBlock bool
+	Latest     token.Token
 }
 
 //lex initializes a lexer from string conetnt
@@ -50,6 +52,10 @@ func (s *lexer) all() token.Tokens {
 }
 
 func (s *lexer) getNextToken() token.Token {
+	if s.inLuaBlock {
+		s.inLuaBlock = false
+		return s.scanLuaCode()
+	}
 reToken:
 	ch := s.peek()
 	switch {
@@ -61,6 +67,9 @@ reToken:
 	case ch == ';':
 		return s.NewToken(token.Semicolon).Lit(string(s.read()))
 	case ch == '{':
+		if s.Latest.Type == token.Keyword && strings.HasSuffix(s.Latest.Literal, "_by_lua_block") {
+			s.inLuaBlock = true
+		}
 		return s.NewToken(token.BlockStart).Lit(string(s.read()))
 	case ch == '}':
 		return s.NewToken(token.BlockEnd).Lit(string(s.read()))
@@ -131,6 +140,37 @@ func (s *lexer) skipWhitespace() {
 
 func (s *lexer) scanComment() token.Token {
 	return s.NewToken(token.Comment).Lit(s.readUntil(isEndOfLine))
+}
+
+// TODO: support unpaired bracket in comment and string
+func (s *lexer) scanLuaCode() token.Token {
+	// used to save the real line and column
+	ret := s.NewToken(token.Keyword)
+	stack := make([]rune, 0, 50)
+	code := make([]rune, 0, 100)
+
+	for {
+		ch := s.read()
+		if ch == rune(token.EOF) {
+			panic("unexpected end of file while scanning a string, maybe an unclosed lua code?")
+		}
+
+		if ch == '}' {
+			if len(stack) == 0 {
+				// the end of block
+				_ = s.reader.UnreadRune()
+				return ret.Lit(string(code))
+			}
+			// maybe it's lua table end, pop stack
+			if stack[len(stack)-1] == '{' {
+				stack = stack[0 : len(stack)-1]
+			}
+		} else if ch == '{' {
+			// maybe it's lua table start, push stack
+			stack = append(stack, ch)
+		}
+		code = append(code, ch)
+	}
 }
 
 /**

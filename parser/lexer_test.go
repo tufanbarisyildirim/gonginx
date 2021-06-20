@@ -112,3 +112,44 @@ func TestScanner_LexPanicUnclosedQuote(t *testing.T) {
 	directive "with an unclosed quote \t \r\n \\ with some escaped thing s\" good.;
 	`).all()
 }
+
+func TestScanner_LexLuaCode(t *testing.T) {
+	conf := `
+server {
+  location = /foo {
+    rewrite_by_lua_block {
+      res = ngx.location.capture("/memc",
+        { args = { cmd = "incr", key = ngx.var.uri } }
+      )
+      t = { key="foo", val="bar" }
+    }
+  }
+}`
+	actual := lex(conf).all()
+	var expect = token.Tokens{
+		{Type: token.Keyword, Literal: "server", Line: 2, Column: 1},
+		{Type: token.BlockStart, Literal: "{", Line: 2, Column: 8},
+		{Type: token.Keyword, Literal: "location", Line: 3, Column: 3},
+		{Type: token.Keyword, Literal: "=", Line: 3, Column: 12},
+		{Type: token.Keyword, Literal: "/foo", Line: 3, Column: 14},
+		{Type: token.BlockStart, Literal: "{", Line: 3, Column: 19},
+		{Type: token.Keyword, Literal: "rewrite_by_lua_block", Line: 4, Column: 5},
+		{Type: token.BlockStart, Literal: "{", Line: 4, Column: 26},
+		{Type: token.Keyword, Literal: `
+      res = ngx.location.capture("/memc",
+        { args = { cmd = "incr", key = ngx.var.uri } }
+      )
+      t = { key="foo", val="bar" }
+    `, Line: 4, Column: 27},
+		{Type: token.BlockEnd, Literal: "}", Line: 9, Column: 6},
+		{Type: token.BlockEnd, Literal: "}", Line: 10, Column: 3},
+		{Type: token.BlockEnd, Literal: "}", Line: 11, Column: 1},
+	}
+	tokenString, err := json.Marshal(actual)
+	assert.NilError(t, err)
+	expectJSON, err := json.Marshal(expect)
+	assert.NilError(t, err)
+	assert.Assert(t, actual.EqualTo(expect))
+	assert.Equal(t, string(tokenString), string(expectJSON))
+	assert.Equal(t, len(actual), len(expect))
+}
