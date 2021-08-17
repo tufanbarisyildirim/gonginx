@@ -169,6 +169,16 @@ func TestParser_UnendedMultiParams(t *testing.T) {
 	`)).Parse()
 }
 
+func TestParser_SkipComment(t *testing.T) {
+	NewParserFromLexer(lex(`
+if ($a ~* "")#comment
+#comment
+{#comment
+return 400;
+}
+`)).Parse()
+}
+
 func Benchmark_ParseFullExample(t *testing.B) {
 	fullconf := `user www www;
 worker_processes 5;

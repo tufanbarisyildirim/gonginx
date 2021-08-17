@@ -137,6 +137,14 @@ func (p *Parser) parseStatement() gonginx.IDirective {
 		return d
 	}
 
+	for {
+		if p.curTokenIs(token.Comment) {
+			p.nextToken()
+		} else {
+			break
+		}
+	}
+
 	//ok, it does not end with a semicolon but a block starts, we will convert that block if we have a converter
 	if p.curTokenIs(token.BlockStart) {
 		d.Block = p.parseBlock()
