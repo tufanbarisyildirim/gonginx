@@ -4,13 +4,22 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/tufanbarisyildirim/gonginx"
 	"github.com/tufanbarisyildirim/gonginx/parser/token"
 )
 
+type Option func(*Parser)
+
+type options struct {
+	parseInclude          bool
+	skipIncludeParsingErr bool
+}
+
 //Parser is an nginx config parser
 type Parser struct {
+	opts              options
 	lexer             *lexer
 	currentToken      token.Token
 	followingToken    token.Token
@@ -19,28 +28,63 @@ type Parser struct {
 	directiveWrappers map[string]func(*gonginx.Directive) gonginx.IDirective
 }
 
+func WithSameOptions(p *Parser) Option {
+	return func(curr *Parser) {
+		curr.opts = p.opts
+	}
+}
+
+func withParsedIncludes(parsedIncludes map[string]*gonginx.Config) Option {
+	return func(p *Parser) {
+		p.parsedIncludes = parsedIncludes
+	}
+}
+
+func WithSkipIncludeParsingErr() Option {
+	return func(p *Parser) {
+		p.opts.skipIncludeParsingErr = true
+	}
+}
+
+func WithDefaultOptions() Option {
+	return func(p *Parser) {
+		p.opts = options{}
+	}
+}
+
+func WithIncludeParsing() Option {
+	return func(p *Parser) {
+		p.opts.parseInclude = true
+	}
+}
+
 //NewStringParser parses nginx conf from string
-func NewStringParser(str string) *Parser {
-	return NewParserFromLexer(lex(str))
+func NewStringParser(str string, opts ...Option) *Parser {
+	return NewParserFromLexer(lex(str), opts...)
 }
 
 //NewParser create new parser
-func NewParser(filePath string) (*Parser, error) {
+func NewParser(filePath string, opts ...Option) (*Parser, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
 	}
 	l := newLexer(bufio.NewReader(f))
 	l.file = filePath
-	p := NewParserFromLexer(l)
+	p := NewParserFromLexer(l, opts...)
 	return p, nil
 }
 
 //NewParserFromLexer initilizes a new Parser
-func NewParserFromLexer(lexer *lexer) *Parser {
+func NewParserFromLexer(lexer *lexer, opts ...Option) *Parser {
 	parser := &Parser{
-		lexer: lexer,
+		lexer:          lexer,
+		opts:           options{},
 	}
+	for _, o := range opts {
+		o(parser)
+	}
+
 	parser.nextToken()
 	parser.nextToken()
 
