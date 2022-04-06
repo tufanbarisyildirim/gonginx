@@ -20,9 +20,11 @@ type options struct {
 //Parser is an nginx config parser
 type Parser struct {
 	opts              options
+	configRoot        string // TODO: confirmation needed (whether this is the parent of nginx.conf)
 	lexer             *lexer
 	currentToken      token.Token
 	followingToken    token.Token
+	parsedIncludes    map[string]*gonginx.Config
 	statementParsers  map[string]func() gonginx.IDirective
 	blockWrappers     map[string]func(*gonginx.Directive) gonginx.IDirective
 	directiveWrappers map[string]func(*gonginx.Directive) gonginx.IDirective
@@ -37,6 +39,12 @@ func WithSameOptions(p *Parser) Option {
 func withParsedIncludes(parsedIncludes map[string]*gonginx.Config) Option {
 	return func(p *Parser) {
 		p.parsedIncludes = parsedIncludes
+	}
+}
+
+func withConfigRoot(configRoot string) Option {
+	return func(p *Parser) {
+		p.configRoot = configRoot
 	}
 }
 
@@ -77,10 +85,14 @@ func NewParser(filePath string, opts ...Option) (*Parser, error) {
 
 //NewParserFromLexer initilizes a new Parser
 func NewParserFromLexer(lexer *lexer, opts ...Option) *Parser {
+	configRoot, _ := filepath.Split(lexer.file)
 	parser := &Parser{
 		lexer:          lexer,
 		opts:           options{},
+		parsedIncludes: make(map[string]*gonginx.Config),
+		configRoot:     configRoot,
 	}
+
 	for _, o := range opts {
 		o(parser)
 	}
@@ -214,6 +226,43 @@ func (p *Parser) parseInclude(directive *gonginx.Directive) *gonginx.Include {
 
 	if directive.Block != nil {
 		panic("include can not have a block, or missing semicolon at the end of include statement")
+	}
+
+	if p.opts.parseInclude {
+		includePath := include.IncludePath
+		if !filepath.IsAbs(includePath) {
+			includePath = filepath.Join(p.configRoot, include.IncludePath)
+		}
+		includePaths, err := filepath.Glob(includePath)
+		if err == nil {
+			for _, includePath := range includePaths {
+				if conf, ok := p.parsedIncludes[includePath]; ok {
+					if conf != nil {
+						// TODO: we should copy the conf, there should be clone method
+						include.Configs = append(include.Configs, conf)
+					}
+
+					continue
+				} else {
+					p.parsedIncludes[includePath] = nil
+				}
+				parser, err := NewParser(includePath,
+					WithSameOptions(p),
+					withParsedIncludes(p.parsedIncludes),
+					withConfigRoot(p.configRoot),
+				)
+				if err != nil && !p.opts.skipIncludeParsingErr {
+					panic(err)
+				} else {
+					config := parser.Parse()
+					p.parsedIncludes[includePath] = config
+					include.Configs = append(include.Configs, config)
+				}
+			}
+
+		} else if !p.opts.skipIncludeParsingErr {
+			panic(err)
+		}
 	}
 
 	return include
