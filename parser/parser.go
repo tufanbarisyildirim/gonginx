@@ -237,12 +237,10 @@ func (p *Parser) parseInclude(directive *gonginx.Directive) *gonginx.Include {
 		if err == nil {
 			for _, includePath := range includePaths {
 				if conf, ok := p.parsedIncludes[includePath]; ok {
-					if conf != nil {
-						// TODO: we should copy the conf, there should be clone method
-						include.Configs = append(include.Configs, conf)
+					// same file includes itself? don't blow up the parser
+					if conf == nil {
+						continue
 					}
-
-					continue
 				} else {
 					p.parsedIncludes[includePath] = nil
 				}
