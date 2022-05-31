@@ -234,32 +234,32 @@ func (p *Parser) parseInclude(directive *gonginx.Directive) *gonginx.Include {
 			includePath = filepath.Join(p.configRoot, include.IncludePath)
 		}
 		includePaths, err := filepath.Glob(includePath)
-		if err == nil {
-			for _, includePath := range includePaths {
-				if conf, ok := p.parsedIncludes[includePath]; ok {
-					// same file includes itself? don't blow up the parser
-					if conf == nil {
-						continue
-					}
-				} else {
-					p.parsedIncludes[includePath] = nil
+		if err != nil && !p.opts.skipIncludeParsingErr {
+			panic(err)
+		}
+		for _, includePath := range includePaths {
+			if conf, ok := p.parsedIncludes[includePath]; ok {
+				// same file includes itself? don't blow up the parser
+				if conf == nil {
+					continue
 				}
-				parser, err := NewParser(includePath,
-					WithSameOptions(p),
-					withParsedIncludes(p.parsedIncludes),
-					withConfigRoot(p.configRoot),
-				)
-				if err != nil && !p.opts.skipIncludeParsingErr {
-					panic(err)
-				} else {
-					config := parser.Parse()
-					p.parsedIncludes[includePath] = config
-					include.Configs = append(include.Configs, config)
-				}
+			} else {
+				p.parsedIncludes[includePath] = nil
 			}
 
-		} else if !p.opts.skipIncludeParsingErr {
-			panic(err)
+			parser, err := NewParser(includePath,
+				WithSameOptions(p),
+				withParsedIncludes(p.parsedIncludes),
+				withConfigRoot(p.configRoot),
+			)
+
+			if err != nil && !p.opts.skipIncludeParsingErr {
+				panic(err)
+			}
+
+			config := parser.Parse()
+			p.parsedIncludes[includePath] = config
+			include.Configs = append(include.Configs, config)
 		}
 	}
 
