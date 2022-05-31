@@ -4,43 +4,99 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/tufanbarisyildirim/gonginx"
 	"github.com/tufanbarisyildirim/gonginx/parser/token"
 )
 
+type Option func(*Parser)
+
+type options struct {
+	parseInclude          bool
+	skipIncludeParsingErr bool
+}
+
 //Parser is an nginx config parser
 type Parser struct {
+	opts              options
+	configRoot        string // TODO: confirmation needed (whether this is the parent of nginx.conf)
 	lexer             *lexer
 	currentToken      token.Token
 	followingToken    token.Token
+	parsedIncludes    map[string]*gonginx.Config
 	statementParsers  map[string]func() gonginx.IDirective
 	blockWrappers     map[string]func(*gonginx.Directive) gonginx.IDirective
 	directiveWrappers map[string]func(*gonginx.Directive) gonginx.IDirective
 }
 
+func WithSameOptions(p *Parser) Option {
+	return func(curr *Parser) {
+		curr.opts = p.opts
+	}
+}
+
+func withParsedIncludes(parsedIncludes map[string]*gonginx.Config) Option {
+	return func(p *Parser) {
+		p.parsedIncludes = parsedIncludes
+	}
+}
+
+func withConfigRoot(configRoot string) Option {
+	return func(p *Parser) {
+		p.configRoot = configRoot
+	}
+}
+
+func WithSkipIncludeParsingErr() Option {
+	return func(p *Parser) {
+		p.opts.skipIncludeParsingErr = true
+	}
+}
+
+func WithDefaultOptions() Option {
+	return func(p *Parser) {
+		p.opts = options{}
+	}
+}
+
+func WithIncludeParsing() Option {
+	return func(p *Parser) {
+		p.opts.parseInclude = true
+	}
+}
+
 //NewStringParser parses nginx conf from string
-func NewStringParser(str string) *Parser {
-	return NewParserFromLexer(lex(str))
+func NewStringParser(str string, opts ...Option) *Parser {
+	return NewParserFromLexer(lex(str), opts...)
 }
 
 //NewParser create new parser
-func NewParser(filePath string) (*Parser, error) {
+func NewParser(filePath string, opts ...Option) (*Parser, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
 	}
 	l := newLexer(bufio.NewReader(f))
 	l.file = filePath
-	p := NewParserFromLexer(l)
+	p := NewParserFromLexer(l, opts...)
 	return p, nil
 }
 
 //NewParserFromLexer initilizes a new Parser
-func NewParserFromLexer(lexer *lexer) *Parser {
+func NewParserFromLexer(lexer *lexer, opts ...Option) *Parser {
+	configRoot, _ := filepath.Split(lexer.file)
 	parser := &Parser{
-		lexer: lexer,
+		lexer:          lexer,
+		opts:           options{},
+		parsedIncludes: make(map[string]*gonginx.Config),
+		configRoot:     configRoot,
 	}
+
+	for _, o := range opts {
+		o(parser)
+	}
+
 	parser.nextToken()
 	parser.nextToken()
 
@@ -170,6 +226,41 @@ func (p *Parser) parseInclude(directive *gonginx.Directive) *gonginx.Include {
 
 	if directive.Block != nil {
 		panic("include can not have a block, or missing semicolon at the end of include statement")
+	}
+
+	if p.opts.parseInclude {
+		includePath := include.IncludePath
+		if !filepath.IsAbs(includePath) {
+			includePath = filepath.Join(p.configRoot, include.IncludePath)
+		}
+		includePaths, err := filepath.Glob(includePath)
+		if err != nil && !p.opts.skipIncludeParsingErr {
+			panic(err)
+		}
+		for _, includePath := range includePaths {
+			if conf, ok := p.parsedIncludes[includePath]; ok {
+				// same file includes itself? don't blow up the parser
+				if conf == nil {
+					continue
+				}
+			} else {
+				p.parsedIncludes[includePath] = nil
+			}
+
+			parser, err := NewParser(includePath,
+				WithSameOptions(p),
+				withParsedIncludes(p.parsedIncludes),
+				withConfigRoot(p.configRoot),
+			)
+
+			if err != nil && !p.opts.skipIncludeParsingErr {
+				panic(err)
+			}
+
+			config := parser.Parse()
+			p.parsedIncludes[includePath] = config
+			include.Configs = append(include.Configs, config)
+		}
 	}
 
 	return include

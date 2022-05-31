@@ -179,6 +179,15 @@ return 400;
 `)).Parse()
 }
 
+func TestParser_Include(t *testing.T) {
+	p, err := NewParser("../testdata/include-glob/nginx.conf", WithIncludeParsing())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	p.Parse()
+}
+
 func Benchmark_ParseFullExample(t *testing.B) {
 	fullconf := `user www www;
 worker_processes 5;

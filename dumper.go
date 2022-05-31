@@ -3,6 +3,9 @@ package gonginx
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 )
@@ -112,4 +115,50 @@ func DumpBlock(b IBlock, style *Style) string {
 //DumpConfig dump whole config
 func DumpConfig(c *Config, style *Style) string {
 	return DumpBlock(c.Block, style)
+}
+
+func DumpInclude(i *Include, style *Style) map[string]string {
+	mp := make(map[string]string)
+	for _, cfg := range i.Configs {
+		mp[cfg.FilePath] = DumpConfig(cfg, style)
+	}
+	return mp
+}
+
+func WriteConfig(c *Config, style *Style, writeInclude bool) error {
+	if writeInclude {
+		includes := c.FindDirectives("include")
+		for _, include := range includes {
+			i, ok := include.(*Include)
+			if !ok {
+				panic("bug in FindDirective")
+			}
+
+			// no config parsed
+			if len(i.Configs) == 0 {
+				continue
+			}
+
+			mp := DumpInclude(i, style)
+			for path, config := range mp {
+				// create parent directories, if not exit
+				dir, _ := filepath.Split(path)
+				err := os.MkdirAll(dir, 0755)
+				if err != nil {
+					return err
+				}
+				err = ioutil.WriteFile(path, []byte(config), 0644)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+	// create parent directories, if not exit
+	dir, _ := filepath.Split(c.FilePath)
+	err := os.MkdirAll(dir, 0755)
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(c.FilePath, []byte(DumpConfig(c, style)), 0644)
 }

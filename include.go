@@ -22,6 +22,24 @@ type Include struct {
 //	return nil
 //}
 
+func (c *Include) GetDirectives() []IDirective {
+	directives := make([]IDirective, 0)
+	for _, config := range c.Configs {
+		directives = append(directives, config.GetDirectives()...)
+	}
+
+	return directives
+}
+
+func (c *Include) FindDirectives(directiveName string) []IDirective {
+	directives := make([]IDirective, 0)
+	for _, config := range c.Configs {
+		directives = append(directives, config.FindDirectives(directiveName)...)
+	}
+
+	return directives
+}
+
 //GetName get directive name
 func (i *Include) GetName() string {
 	return i.Directive.Name
