@@ -43,9 +43,7 @@ func (h *Http) GetParameters() []string {
 //GetDirectives get all directives in http
 func (h *Http) GetDirectives() []IDirective {
 	directives := make([]IDirective, 0)
-	for _, directive := range h.Directives {
-		directives = append(directives, directive)
-	}
+	directives = append(directives, h.Directives...)
 	for _, directive := range h.Servers {
 		directives = append(directives, directive)
 	}

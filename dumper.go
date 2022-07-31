@@ -108,8 +108,7 @@ func DumpBlock(b IBlock, style *Style) string {
 			buf.WriteString("\n")
 		}
 	}
-
-	return string(buf.Bytes())
+	return buf.String()
 }
 
 //DumpConfig dump whole config

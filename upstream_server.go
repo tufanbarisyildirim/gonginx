@@ -55,9 +55,7 @@ func (uss *UpstreamServer) GetDirective() *Directive {
 	}
 
 	//append flags to the end of the directive.
-	for _, flag := range uss.Flags {
-		directive.Parameters = append(directive.Parameters, flag)
-	}
+	directive.Parameters = append(directive.Parameters, uss.Flags...)
 
 	return directive
 }
