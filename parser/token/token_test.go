@@ -30,6 +30,7 @@ func TestType_String(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			if got := tt.tt.String(); got != tt.want {
 				t.Errorf("Type.String() = %v, want %v", got, tt.want)
 			}
@@ -62,6 +63,7 @@ func TestToken_String(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			tok := Token{
 				Type:    tt.fields.Type,
 				Literal: tt.fields.Literal,
@@ -112,6 +114,7 @@ func TestToken_Lit(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			tok := Token{
 				Type:    tt.fields.Type,
 				Literal: tt.fields.Literal,

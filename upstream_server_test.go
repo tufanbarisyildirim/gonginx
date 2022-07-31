@@ -6,6 +6,7 @@ import (
 )
 
 func TestNewUpstreamServer(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		directive *Directive
 	}

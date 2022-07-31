@@ -5,6 +5,7 @@ import (
 )
 
 func TestDirective_ToString(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Name       string
 		Parameters []string
@@ -71,6 +72,7 @@ func TestDirective_ToString(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			d := &Directive{
 				Name:       tt.fields.Name,
 				Parameters: tt.fields.Parameters,

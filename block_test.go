@@ -6,6 +6,7 @@ import (
 )
 
 func TestBlock_ToString(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Directives []IDirective
 	}
@@ -113,6 +114,7 @@ func NewServerOrNill(directive IDirective) *Server {
 }
 
 func TestBlock_FindDirectives(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		directiveName string
 	}

@@ -9,6 +9,7 @@ import (
 )
 
 func TestParser_CurrFollow(t *testing.T) {
+	t.Parallel()
 	conf := `
 	server { # simple reverse-proxy
 	}
@@ -31,6 +32,7 @@ func TestParser_CurrFollow(t *testing.T) {
 //}
 
 func TestParser_UnendedInclude(t *testing.T) {
+	t.Parallel()
 	defer func() {
 		if r := recover(); r == nil {
 			t.Errorf("The code did not panic")
@@ -45,6 +47,7 @@ func TestParser_UnendedInclude(t *testing.T) {
 }
 
 func TestParser_LocationNoParam(t *testing.T) {
+	t.Parallel()
 	defer func() {
 		if r := recover(); r == nil {
 			t.Errorf("The code did not panic")
@@ -59,6 +62,7 @@ func TestParser_LocationNoParam(t *testing.T) {
 }
 
 func TestParser_LocationTooManyParam(t *testing.T) {
+	t.Parallel()
 	defer func() {
 		if r := recover(); r == nil {
 			t.Errorf("The code did not panic")
@@ -73,6 +77,7 @@ func TestParser_LocationTooManyParam(t *testing.T) {
 }
 
 func TestParser_ParseValidLocations(t *testing.T) {
+	t.Parallel()
 	NewParserFromLexer(
 		lex(`
 	server { 
@@ -88,6 +93,7 @@ func TestParser_ParseValidLocations(t *testing.T) {
 }
 
 func TestParser_ParseUpstream(t *testing.T) {
+	t.Parallel()
 	NewParserFromLexer(
 		lex(`
 		upstream my_upstream{
@@ -107,6 +113,7 @@ func TestParser_ParseUpstream(t *testing.T) {
 }
 
 func TestParser_ParseFromFile(t *testing.T) {
+	t.Parallel()
 	_, err := NewParser("../full-example/nginx.conf")
 	assert.NilError(t, err)
 	_, err2 := NewParser("../full-example/nginx.conf-not-found")
@@ -114,6 +121,7 @@ func TestParser_ParseFromFile(t *testing.T) {
 }
 
 func TestParser_MultiParamDirecive(t *testing.T) {
+	t.Parallel()
 	NewParserFromLexer(
 		lex(`
 http{
@@ -128,6 +136,7 @@ http{
 }
 
 func TestParser_Location(t *testing.T) {
+	t.Parallel()
 	c := NewParserFromLexer(
 		lex(`
 		location ~ /and/ends{
@@ -140,6 +149,7 @@ func TestParser_Location(t *testing.T) {
 }
 
 func TestParser_VariableAsParameter(t *testing.T) {
+	t.Parallel()
 	c := NewParserFromLexer(
 		lex(`
 			map $host $clientname {
@@ -156,6 +166,7 @@ func TestParser_VariableAsParameter(t *testing.T) {
 }
 
 func TestParser_UnendedMultiParams(t *testing.T) {
+	t.Parallel()
 	defer func() {
 		if r := recover(); r == nil {
 			t.Errorf("The code did not panic")
@@ -170,6 +181,7 @@ func TestParser_UnendedMultiParams(t *testing.T) {
 }
 
 func TestParser_SkipComment(t *testing.T) {
+	t.Parallel()
 	NewParserFromLexer(lex(`
 if ($a ~* "")#comment
 #comment
@@ -180,6 +192,7 @@ return 400;
 }
 
 func TestParser_Include(t *testing.T) {
+	t.Parallel()
 	p, err := NewParser("../testdata/include-glob/nginx.conf", WithIncludeParsing())
 	if err != nil {
 		t.Fatal(err)

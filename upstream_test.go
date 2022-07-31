@@ -6,6 +6,7 @@ import (
 )
 
 func TestUpstream_ToString(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Directive *Directive
 		Name      string
@@ -105,6 +106,7 @@ func TestUpstream_ToString(t *testing.T) {
 }
 
 func TestUpstream_AddServer(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		UpstreamName    string
 		UpstreamServers []*UpstreamServer
