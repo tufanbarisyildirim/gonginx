@@ -7,7 +7,7 @@ import (
 )
 
 func TestConfig_IncludeToString(t *testing.T) {
-
+	t.Parallel()
 	include := &Include{
 		Directive: &Directive{
 			Name:       "include",

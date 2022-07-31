@@ -5,6 +5,7 @@ import (
 )
 
 func TestServer_ToString(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Directive *Directive
 	}

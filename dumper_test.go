@@ -6,6 +6,7 @@ import (
 )
 
 func TestStyle_Iterate(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name  string
 		style *Style

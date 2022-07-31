@@ -9,6 +9,7 @@ import (
 )
 
 func TestScanner_Lex(t *testing.T) {
+	t.Parallel()
 	actual := lex(`
 server { # simple reverse-proxy
     listen       80;
@@ -101,6 +102,7 @@ func panicFunc() {
 }
 
 func TestScanner_LexPanicUnclosedQuote(t *testing.T) {
+	t.Parallel()
 	defer func() {
 		if r := recover(); r == nil {
 			t.Errorf("The code did not panic")

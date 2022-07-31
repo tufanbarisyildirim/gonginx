@@ -5,6 +5,7 @@ import (
 )
 
 func TestConfig_ToString(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Block    *Block
 		FilePath string
