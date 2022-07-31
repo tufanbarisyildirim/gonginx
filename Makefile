@@ -6,6 +6,9 @@ test:
 	go test -race -cover ${PWD}/parser
 	go test -race -cover ${PWD}
 
+lint:
+	golangci-lint run ./...
+
 example:
 	go run ${PWD}/examples/$(example)
 
@@ -18,4 +21,4 @@ fmt:
 deps:
 	go get -v all
 
-.PHONY: fmt deps test
+.PHONY: fmt deps test lint

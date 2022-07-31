@@ -97,10 +97,6 @@ directive "with a quoted string\t \r\n \\ with some escaped thing s\" good.";
 	assert.Equal(t, len(actual), len(expect))
 }
 
-func panicFunc() {
-
-}
-
 func TestScanner_LexPanicUnclosedQuote(t *testing.T) {
 	t.Parallel()
 	defer func() {
