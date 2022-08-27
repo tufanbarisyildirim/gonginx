@@ -198,7 +198,13 @@ func TestParser_Include(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	p.Parse()
+	c := p.Parse()
+	s := gonginx.DumpConfig(c, gonginx.IndentedStyle)
+
+	assert.Equal(t, `user www www;
+worker_processes 5;
+include events.conf;
+include http.conf;`, s)
 }
 
 func Benchmark_ParseFullExample(t *testing.B) {
