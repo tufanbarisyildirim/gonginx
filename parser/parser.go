@@ -162,7 +162,6 @@ parsingloop:
 			break parsingloop
 		case p.curTokenIs(token.Keyword):
 			context.Directives = append(context.Directives, p.parseStatement())
-			break parsingloop
 		}
 		p.nextToken()
 	}
