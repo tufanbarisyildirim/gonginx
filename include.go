@@ -1,6 +1,6 @@
 package gonginx
 
-//Include include structure
+// Include include structure
 type Include struct {
 	*Directive
 	IncludePath string
@@ -40,7 +40,11 @@ func (c *Include) FindDirectives(directiveName string) []IDirective {
 	return directives
 }
 
-//GetName get directive name
-func (i *Include) GetName() string {
-	return i.Directive.Name
+// GetName get directive name
+func (c *Include) GetName() string {
+	return c.Directive.Name
+}
+
+func (c *Include) SetComment(comment []string) {
+	c.Comment = comment
 }

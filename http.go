@@ -4,13 +4,22 @@ import (
 	"errors"
 )
 
-//Http represents http block
+// Http represents http block
 type Http struct {
 	Servers    []*Server
 	Directives []IDirective
+	Comment    []string
 }
 
-//NewHttp create an http block from a directive which has a block
+func (h *Http) GetComment() []string {
+	return h.Comment
+}
+
+func (h *Http) SetComment(comment []string) {
+	h.Comment = comment
+}
+
+// NewHttp create an http block from a directive which has a block
 func NewHttp(directive IDirective) (*Http, error) {
 	if block := directive.GetBlock(); block != nil {
 		http := &Http{
@@ -24,23 +33,24 @@ func NewHttp(directive IDirective) (*Http, error) {
 			}
 			http.Directives = append(http.Directives, directive)
 		}
+		http.Comment = directive.GetComment()
 
 		return http, nil
 	}
 	return nil, errors.New("http directive must have a block")
 }
 
-//GetName get directive name to construct the statment string
+// GetName get directive name to construct the statment string
 func (h *Http) GetName() string { //the directive name.
 	return "http"
 }
 
-//GetParameters get directive parameters if any
+// GetParameters get directive parameters if any
 func (h *Http) GetParameters() []string {
 	return []string{}
 }
 
-//GetDirectives get all directives in http
+// GetDirectives get all directives in http
 func (h *Http) GetDirectives() []IDirective {
 	directives := make([]IDirective, 0)
 	directives = append(directives, h.Directives...)
@@ -50,7 +60,7 @@ func (h *Http) GetDirectives() []IDirective {
 	return directives
 }
 
-//FindDirectives find directives
+// FindDirectives find directives
 func (h *Http) FindDirectives(directiveName string) []IDirective {
 	directives := make([]IDirective, 0)
 	for _, directive := range h.GetDirectives() {
@@ -70,7 +80,7 @@ func (h *Http) FindDirectives(directiveName string) []IDirective {
 	return directives
 }
 
-//GetBlock get block if any
+// GetBlock get block if any
 func (h *Http) GetBlock() IBlock {
 	return h
 }

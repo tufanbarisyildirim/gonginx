@@ -4,30 +4,40 @@ import (
 	"errors"
 )
 
-//Upstream represents `upstream{}` block
+// Upstream represents `upstream{}` block
 type Upstream struct {
 	UpstreamName    string
 	UpstreamServers []*UpstreamServer
 	//Directives Other directives in upstream (ip_hash; etc)
 	Directives []IDirective
+	Comment    []string
 }
 
-//GetName Statement interface
+func (us *Upstream) SetComment(comment []string) {
+	us.Comment = comment
+}
+
+// GetName Statement interface
 func (us *Upstream) GetName() string {
 	return "upstream"
 }
 
-//GetParameters upsrema parameters
+// GetParameters upsrema parameters
 func (us *Upstream) GetParameters() []string {
 	return []string{us.UpstreamName} //the only parameter for an upstream is its name
 }
 
-//GetBlock upstream does not have block
+// GetBlock upstream does not have block
 func (us *Upstream) GetBlock() IBlock {
 	return us
 }
 
-//GetDirectives get sub directives of upstream
+// GetComment get directive comment
+func (us *Upstream) GetComment() []string {
+	return us.Comment
+}
+
+// GetDirectives get sub directives of upstream
 func (us *Upstream) GetDirectives() []IDirective {
 	directives := make([]IDirective, 0)
 	directives = append(directives, us.Directives...)
@@ -38,7 +48,7 @@ func (us *Upstream) GetDirectives() []IDirective {
 	return directives
 }
 
-//NewUpstream creaste new upstream from a directive
+// NewUpstream creaste new upstream from a directive
 func NewUpstream(directive IDirective) (*Upstream, error) {
 	parameters := directive.GetParameters()
 	us := &Upstream{
@@ -59,15 +69,17 @@ func NewUpstream(directive IDirective) (*Upstream, error) {
 		}
 	}
 
+	us.Comment = directive.GetComment()
+
 	return us, nil
 }
 
-//AddServer add a server to upstream
+// AddServer add a server to upstream
 func (us *Upstream) AddServer(server *UpstreamServer) {
 	us.UpstreamServers = append(us.UpstreamServers, server)
 }
 
-//FindDirectives find directives in block recursively
+// FindDirectives find directives in block recursively
 func (us *Upstream) FindDirectives(directiveName string) []IDirective {
 	directives := make([]IDirective, 0)
 	for _, directive := range us.Directives {
