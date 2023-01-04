@@ -37,6 +37,11 @@ root html;
 # comment: location
 location ~ \.php$ {
 fastcgi_pass 127.0.0.1:1025; } } 
+map $http_upgrade $connection_upgrade {
+	default upgrade;
+	'' close;
+	test '';
+}
 # comment: server
 server {
 listen 80;

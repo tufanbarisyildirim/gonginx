@@ -161,7 +161,7 @@ parsingloop:
 		switch {
 		case p.curTokenIs(token.EOF) || p.curTokenIs(token.BlockEnd):
 			break parsingloop
-		case p.curTokenIs(token.Keyword):
+		case p.curTokenIs(token.Keyword) || p.curTokenIs(token.QuotedString):
 			s = p.parseStatement()
 			context.Directives = append(context.Directives, s)
 			line = p.currentToken.Line

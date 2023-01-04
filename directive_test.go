@@ -69,6 +69,16 @@ func TestDirective_ToString(t *testing.T) {
 			},
 			want: "charset koi8-r;",
 		},
+		{
+			name: "'' close",
+			fields: fields{
+				Name: "''",
+				Parameters: []string{
+					"close",
+				},
+			},
+			want: "'' close;",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
