@@ -41,7 +41,7 @@ var (
 	}
 )
 
-//Style dumping style
+// Style dumping style
 type Style struct {
 	SortDirectives    bool
 	SpaceBeforeBlocks bool
@@ -49,7 +49,7 @@ type Style struct {
 	Indent            int
 }
 
-//NewStyle create new style
+// NewStyle create new style
 func NewStyle() *Style {
 	style := &Style{
 		SortDirectives: false,
@@ -59,7 +59,7 @@ func NewStyle() *Style {
 	return style
 }
 
-//Iterate interate the indentation for sub blocks
+// Iterate interate the indentation for sub blocks
 func (s *Style) Iterate() *Style {
 	newStyle := &Style{
 		SortDirectives:    s.SortDirectives,
@@ -70,12 +70,17 @@ func (s *Style) Iterate() *Style {
 	return newStyle
 }
 
-//DumpDirective convert a directive to a string
+// DumpDirective convert a directive to a string
 func DumpDirective(d IDirective, style *Style) string {
 	var buf bytes.Buffer
 
 	if style.SpaceBeforeBlocks && d.GetBlock() != nil {
 		buf.WriteString("\n")
+	}
+	if len(d.GetComment()) > 0 {
+		for _, comment := range d.GetComment() {
+			buf.WriteString(fmt.Sprintf("%s%s\n", strings.Repeat(" ", style.StartIndent), comment))
+		}
 	}
 	buf.WriteString(fmt.Sprintf("%s%s", strings.Repeat(" ", style.StartIndent), d.GetName()))
 	if len(d.GetParameters()) > 0 {
@@ -91,7 +96,7 @@ func DumpDirective(d IDirective, style *Style) string {
 	return buf.String()
 }
 
-//DumpBlock convert a directive to a string
+// DumpBlock convert a directive to a string
 func DumpBlock(b IBlock, style *Style) string {
 	var buf bytes.Buffer
 
@@ -111,7 +116,7 @@ func DumpBlock(b IBlock, style *Style) string {
 	return buf.String()
 }
 
-//DumpConfig dump whole config
+// DumpConfig dump whole config
 func DumpConfig(c *Config, style *Style) string {
 	return DumpBlock(c.Block, style)
 }

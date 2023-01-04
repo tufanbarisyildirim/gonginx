@@ -6,29 +6,38 @@ import (
 	"strings"
 )
 
-//UpstreamServer represents `server` directive in `upstream{}` block
+// UpstreamServer represents `server` directive in `upstream{}` block
 type UpstreamServer struct {
 	Address    string
 	Flags      []string
 	Parameters map[string]string
+	Comment    []string
 }
 
-//GetName return directive name, Statement  interface
+func (uss *UpstreamServer) SetComment(comment []string) {
+	uss.Comment = comment
+}
+
+func (uss *UpstreamServer) GetComment() []string {
+	return uss.Comment
+}
+
+// GetName return directive name, Statement  interface
 func (uss *UpstreamServer) GetName() string {
 	return "server"
 }
 
-//GetBlock block of an upstream, basically nil
+// GetBlock block of an upstream, basically nil
 func (uss *UpstreamServer) GetBlock() IBlock {
 	return nil
 }
 
-//GetParameters block of an upstream, basically nil
+// GetParameters block of an upstream, basically nil
 func (uss *UpstreamServer) GetParameters() []string {
 	return uss.GetDirective().Parameters
 }
 
-//GetDirective get directive of the upstreamserver
+// GetDirective get directive of the upstreamserver
 func (uss *UpstreamServer) GetDirective() *Directive {
 	//First, generate a new directive from upstream server
 	directive := &Directive{
@@ -57,14 +66,17 @@ func (uss *UpstreamServer) GetDirective() *Directive {
 	//append flags to the end of the directive.
 	directive.Parameters = append(directive.Parameters, uss.Flags...)
 
+	directive.Comment = uss.GetComment()
+
 	return directive
 }
 
-//NewUpstreamServer creates an upstream server from a directive
+// NewUpstreamServer creates an upstream server from a directive
 func NewUpstreamServer(directive IDirective) *UpstreamServer {
 	uss := &UpstreamServer{
 		Flags:      make([]string, 0),
 		Parameters: make(map[string]string, 0),
+		Comment:    make([]string, 0),
 	}
 
 	for i, parameter := range directive.GetParameters() {
@@ -79,6 +91,8 @@ func NewUpstreamServer(directive IDirective) *UpstreamServer {
 			uss.Flags = append(uss.Flags, parameter)
 		}
 	}
+
+	uss.Comment = directive.GetComment()
 
 	return uss
 }

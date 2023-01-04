@@ -13,7 +13,10 @@ worker_processes 5;
 error_log logs/error.log;
 pid logs/nginx.pid;
 worker_rlimit_nofile 8192;
-events { worker_connections 4096; } http {
+events { worker_connections 4096; } 
+# http comment
+http {
+# include comment
 include mime.types;
 include proxy.conf;
 include fastcgi.conf;
@@ -31,8 +34,16 @@ listen 80;
 server_name domain1.com www.domain1.com;
 access_log logs/domain1.access.log main;
 root html;
+# comment: location
 location ~ \.php$ {
-fastcgi_pass 127.0.0.1:1025; } } server {
+fastcgi_pass 127.0.0.1:1025; } } 
+map $http_upgrade $connection_upgrade {
+	default upgrade;
+	'' close;
+	test '';
+}
+# comment: server
+server {
 listen 80;
 server_name domain2.com www.domain2.com;
 access_log logs/domain2.access.log main;
@@ -40,13 +51,19 @@ location ~ ^/(images|javascript|js|css|flash|media|static)/ {
 root /var/www/virtual/big.server.com/htdocs;
 expires 30d;
 } location / { proxy_pass http://127.0.0.1:8080; } }
+# comment: big_server_com
+# comment: upstream big_server_com
 upstream big_server_com {
-server 127.0.0.3:8000 weight=5;
-server 127.0.0.3:8001 weight=5;
+server 127.0.0.3:8000 weight=5; # inline comment: server 127.0.0.3:8000 weight=5
+server 127.0.0.3:8001 weight=5; # inline comment: server 127.0.0.3:8000 weight=5
 server 192.168.0.1:8000;
 server 192.168.0.1:8001;
-} server { listen 80;
+}
+# comment: server
+server { # comment: listen
+listen 80;
 server_name big.server.com;
+# comment: access_log
 access_log logs/big.server.access.log main;
 location / { proxy_pass http://big_server_com; } } }`)
 

@@ -3,11 +3,10 @@ package parser
 import (
 	"bufio"
 	"fmt"
-	"os"
-	"path/filepath"
-
 	"github.com/tufanbarisyildirim/gonginx"
 	"github.com/tufanbarisyildirim/gonginx/parser/token"
+	"os"
+	"path/filepath"
 )
 
 type Option func(*Parser)
@@ -17,7 +16,7 @@ type options struct {
 	skipIncludeParsingErr bool
 }
 
-//Parser is an nginx config parser
+// Parser is an nginx config parser
 type Parser struct {
 	opts              options
 	configRoot        string // TODO: confirmation needed (whether this is the parent of nginx.conf)
@@ -28,6 +27,7 @@ type Parser struct {
 	statementParsers  map[string]func() gonginx.IDirective
 	blockWrappers     map[string]func(*gonginx.Directive) gonginx.IDirective
 	directiveWrappers map[string]func(*gonginx.Directive) gonginx.IDirective
+	commentBuffer     []string
 }
 
 func WithSameOptions(p *Parser) Option {
@@ -66,12 +66,12 @@ func WithIncludeParsing() Option {
 	}
 }
 
-//NewStringParser parses nginx conf from string
+// NewStringParser parses nginx conf from string
 func NewStringParser(str string, opts ...Option) *Parser {
 	return NewParserFromLexer(lex(str), opts...)
 }
 
-//NewParser create new parser
+// NewParser create new parser
 func NewParser(filePath string, opts ...Option) (*Parser, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
@@ -83,7 +83,7 @@ func NewParser(filePath string, opts ...Option) (*Parser, error) {
 	return p, nil
 }
 
-//NewParserFromLexer initilizes a new Parser
+// NewParserFromLexer initilizes a new Parser
 func NewParserFromLexer(lexer *lexer, opts ...Option) *Parser {
 	configRoot, _ := filepath.Split(lexer.file)
 	parser := &Parser{
@@ -140,7 +140,7 @@ func (p *Parser) followingTokenIs(t token.Type) bool {
 	return p.followingToken.Type == t
 }
 
-//Parse the gonginx.
+// Parse the gonginx.
 func (p *Parser) Parse() *gonginx.Config {
 	return &gonginx.Config{
 		FilePath: p.lexer.file, //TODO: set filepath here,
@@ -148,20 +148,30 @@ func (p *Parser) Parse() *gonginx.Config {
 	}
 }
 
-//ParseBlock parse a block statement
+// ParseBlock parse a block statement
 func (p *Parser) parseBlock() *gonginx.Block {
 
 	context := &gonginx.Block{
 		Directives: make([]gonginx.IDirective, 0),
 	}
-
+	var s gonginx.IDirective
+	var line int
 parsingloop:
 	for {
 		switch {
 		case p.curTokenIs(token.EOF) || p.curTokenIs(token.BlockEnd):
 			break parsingloop
-		case p.curTokenIs(token.Keyword):
-			context.Directives = append(context.Directives, p.parseStatement())
+		case p.curTokenIs(token.Keyword) || p.curTokenIs(token.QuotedString):
+			s = p.parseStatement()
+			context.Directives = append(context.Directives, s)
+			line = p.currentToken.Line
+		case p.curTokenIs(token.Comment):
+			p.commentBuffer = append(p.commentBuffer, p.currentToken.Literal)
+			// inline comment
+			if line == p.currentToken.Line {
+				s.SetComment(p.commentBuffer)
+				p.commentBuffer = nil
+			}
 		}
 		p.nextToken()
 	}
@@ -179,6 +189,11 @@ func (p *Parser) parseStatement() gonginx.IDirective {
 		return sp()
 	}
 
+	if len(p.commentBuffer) > 0 {
+		d.Comment = p.commentBuffer
+		p.commentBuffer = nil
+	}
+
 	//parse parameters until the end.
 	for p.nextToken(); p.currentToken.IsParameterEligible(); p.nextToken() {
 		d.Parameters = append(d.Parameters, p.currentToken.Literal)
@@ -191,9 +206,9 @@ func (p *Parser) parseStatement() gonginx.IDirective {
 		}
 		return d
 	}
-
 	for {
 		if p.curTokenIs(token.Comment) {
+			p.commentBuffer = append(p.commentBuffer, p.currentToken.Literal)
 			p.nextToken()
 		} else {
 			break
@@ -212,7 +227,7 @@ func (p *Parser) parseStatement() gonginx.IDirective {
 	panic(fmt.Errorf("unexpected token %s (%s) on line %d, column %d", p.currentToken.Type.String(), p.currentToken.Literal, p.currentToken.Line, p.currentToken.Column))
 }
 
-//TODO: move this into gonginx.Include
+// TODO: move this into gonginx.Include
 func (p *Parser) parseInclude(directive *gonginx.Directive) *gonginx.Include {
 	include := &gonginx.Include{
 		Directive:   directive,
@@ -265,7 +280,7 @@ func (p *Parser) parseInclude(directive *gonginx.Directive) *gonginx.Include {
 	return include
 }
 
-//TODO: move this into gonginx.Location
+// TODO: move this into gonginx.Location
 func (p *Parser) wrapLocation(directive *gonginx.Directive) *gonginx.Location {
 	location := &gonginx.Location{
 		Modifier:  "",
