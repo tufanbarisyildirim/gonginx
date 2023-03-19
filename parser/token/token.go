@@ -30,6 +30,8 @@ const (
 	Illegal
 	//Regex any reg expression
 	Regex
+	// LuaCode lua block
+	LuaCode
 )
 
 var (
