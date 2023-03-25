@@ -8,6 +8,7 @@ type Directive struct {
 	Comment    []string
 }
 
+// SetComment sets comment tied to this directive
 func (d *Directive) SetComment(comment []string) {
 	d.Comment = comment
 }

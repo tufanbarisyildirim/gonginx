@@ -9,7 +9,7 @@ import (
 	"github.com/tufanbarisyildirim/gonginx/parser/token"
 )
 
-//lexer is the main tokenizer
+// lexer is the main tokenizer
 type lexer struct {
 	reader     *bufio.Reader
 	file       string
@@ -19,12 +19,12 @@ type lexer struct {
 	Latest     token.Token
 }
 
-//lex initializes a lexer from string conetnt
+// lex initializes a lexer from string conetnt
 func lex(content string) *lexer {
 	return newLexer(bytes.NewBuffer([]byte(content)))
 }
 
-//newLexer initilizes a lexer from a reader
+// newLexer initilizes a lexer from a reader
 func newLexer(r io.Reader) *lexer {
 	return &lexer{
 		line:   1,
@@ -32,13 +32,13 @@ func newLexer(r io.Reader) *lexer {
 	}
 }
 
-//Scan gives you next token
+// Scan gives you next token
 func (s *lexer) scan() token.Token {
 	s.Latest = s.getNextToken()
 	return s.Latest
 }
 
-//All scans all token and returns them as a slice
+// All scans all token and returns them as a slice
 func (s *lexer) all() token.Tokens {
 	tokens := make([]token.Token, 0)
 	for {
@@ -84,7 +84,7 @@ reToken:
 	}
 }
 
-//Peek returns nexr rune without consuming it
+// Peek returns nexr rune without consuming it
 func (s *lexer) peek() rune {
 	r, _, _ := s.reader.ReadRune()
 	_ = s.reader.UnreadRune()
@@ -110,7 +110,7 @@ func (s *lexer) readUntil(until runeCheck) string {
 	return buf.String()
 }
 
-//NewToken creates a new Token with its line and column
+// NewToken creates a new Token with its line and column
 func (s *lexer) NewToken(tokenType token.Type) token.Token {
 	return token.Token{
 		Type:   tokenType,
@@ -155,8 +155,6 @@ func (s *lexer) scanLuaCode() token.Token {
 		if ch == rune(token.EOF) {
 			panic("unexpected end of file while scanning a string, maybe an unclosed lua code?")
 		}
-		tmp := string(ch)
-		strings.TrimSpace(tmp)
 		if inComment {
 			if ch == '\n' {
 				inComment = false
@@ -181,7 +179,8 @@ func (s *lexer) scanLuaCode() token.Token {
 	}
 }
 
-/**
+/*
+*
 \” – To escape “ within double quoted string.
 \\ – To escape the backslash.
 \n – To add line breaks between string.
@@ -191,7 +190,7 @@ func (s *lexer) scanLuaCode() token.Token {
 func (s *lexer) scanQuotedString(delimiter rune) token.Token {
 	var buf bytes.Buffer
 	tok := s.NewToken(token.QuotedString)
-	buf.WriteRune(s.read()) //consume delimiter
+	_, _ = buf.WriteRune(s.read()) //consume delimiter
 	for {
 		ch := s.read()
 
@@ -203,20 +202,20 @@ func (s *lexer) scanQuotedString(delimiter rune) token.Token {
 			if needsEscape(s.peek(), delimiter) {
 				switch s.read() {
 				case 'n':
-					buf.WriteRune('\n')
+					_, _ = buf.WriteRune('\n')
 				case 'r':
-					buf.WriteRune('\r')
+					_, _ = buf.WriteRune('\r')
 				case 't':
-					buf.WriteRune('\t')
+					_, _ = buf.WriteRune('\t')
 				case '\\':
-					buf.WriteRune('\\')
+					_, _ = buf.WriteRune('\\')
 				case delimiter:
-					buf.WriteRune(delimiter)
+					_, _ = buf.WriteRune(delimiter)
 				}
 				continue
 			}
 		}
-		buf.WriteRune(ch)
+		_, _ = buf.WriteRune(ch)
 		if ch == delimiter {
 			break
 		}

@@ -22,6 +22,7 @@ type Include struct {
 //	return nil
 //}
 
+// GetDirectives return all directives inside the included file
 func (c *Include) GetDirectives() []IDirective {
 	directives := make([]IDirective, 0)
 	for _, config := range c.Configs {
@@ -31,6 +32,7 @@ func (c *Include) GetDirectives() []IDirective {
 	return directives
 }
 
+// FindDirectives find a specific directive in included file
 func (c *Include) FindDirectives(directiveName string) []IDirective {
 	directives := make([]IDirective, 0)
 	for _, config := range c.Configs {
@@ -45,6 +47,7 @@ func (c *Include) GetName() string {
 	return c.Directive.Name
 }
 
+// SetComment set comment of include directive
 func (c *Include) SetComment(comment []string) {
 	c.Comment = comment
 }

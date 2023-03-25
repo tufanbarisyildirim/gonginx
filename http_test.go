@@ -57,12 +57,12 @@ func TestHttp_ToString(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s, err := NewHttp(tt.fields.Directive)
+			s, err := NewHTTP(tt.fields.Directive)
 			if err != nil {
-				t.Error("NewHttp(tt.fields.Directive) failed")
+				t.Error("NewHTTP(tt.fields.Directive) failed")
 			}
 			if got := DumpDirective(s, tt.args); got != tt.want {
-				t.Errorf("Http.ToString() = \"%v\", want \"%v\"", strings.ReplaceAll(got, " ", "."), strings.ReplaceAll(tt.want, " ", "."))
+				t.Errorf("HTTP.ToString() = \"%v\", want \"%v\"", strings.ReplaceAll(got, " ", "."), strings.ReplaceAll(tt.want, " ", "."))
 			}
 		})
 	}

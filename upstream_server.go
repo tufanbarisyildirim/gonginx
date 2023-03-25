@@ -14,10 +14,12 @@ type UpstreamServer struct {
 	Comment    []string
 }
 
+// SetComment set comment of the directive
 func (uss *UpstreamServer) SetComment(comment []string) {
 	uss.Comment = comment
 }
 
+// GetComment get comment of the directive
 func (uss *UpstreamServer) GetComment() []string {
 	return uss.Comment
 }

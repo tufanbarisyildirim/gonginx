@@ -3,7 +3,6 @@ package gonginx
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -121,6 +120,7 @@ func DumpConfig(c *Config, style *Style) string {
 	return DumpBlock(c.Block, style)
 }
 
+// DumpInclude dump(stringify) the included AST
 func DumpInclude(i *Include, style *Style) map[string]string {
 	mp := make(map[string]string)
 	for _, cfg := range i.Configs {
@@ -129,6 +129,7 @@ func DumpInclude(i *Include, style *Style) map[string]string {
 	return mp
 }
 
+// WriteConfig writes config
 func WriteConfig(c *Config, style *Style, writeInclude bool) error {
 	if writeInclude {
 		includes := c.FindDirectives("include")
@@ -151,7 +152,7 @@ func WriteConfig(c *Config, style *Style, writeInclude bool) error {
 				if err != nil {
 					return err
 				}
-				err = ioutil.WriteFile(path, []byte(config), 0644)
+				err = os.WriteFile(path, []byte(config), 0644)
 				if err != nil {
 					return err
 				}
@@ -164,5 +165,5 @@ func WriteConfig(c *Config, style *Style, writeInclude bool) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(c.FilePath, []byte(DumpConfig(c, style)), 0644)
+	return os.WriteFile(c.FilePath, []byte(DumpConfig(c, style)), 0644)
 }

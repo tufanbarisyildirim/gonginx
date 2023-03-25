@@ -8,6 +8,10 @@ test:
 
 lint:
 	golangci-lint run ./...
+	golint ./...
+
+check:
+	staticcheck ./...
 
 example:
 	go run ${PWD}/examples/$(example)

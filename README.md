@@ -49,7 +49,7 @@ keyword     : Keyword
 #### TODO
 - [x]  associate comments with config objects to print them on config generation and make it configurable with `dumper.Style`
 - [ ]  move any context wrapper into their own file (remove from parser)
-- [ ]  Parse included files recusively, keep relative path on load, save all in a related structure and make that optional in dumper.Style
+- [x]  Parse included files recusively, keep relative path on load, save all in a related structure and make that optional in dumper.Style
 - [ ]  Implement specific searches, like finding servers by server_name (domain) or any upstream by target etc.
 - [ ]  add more examples
 - [ ]  link the parent directive to any directive for easier manipulation

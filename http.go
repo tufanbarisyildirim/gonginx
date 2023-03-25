@@ -4,25 +4,27 @@ import (
 	"errors"
 )
 
-// Http represents http block
-type Http struct {
+// HTTP represents http block
+type HTTP struct {
 	Servers    []*Server
 	Directives []IDirective
 	Comment    []string
 }
 
-func (h *Http) GetComment() []string {
+// GetComment comment of the HTTP directive
+func (h *HTTP) GetComment() []string {
 	return h.Comment
 }
 
-func (h *Http) SetComment(comment []string) {
+// SetComment set the comment of the HTTP directive
+func (h *HTTP) SetComment(comment []string) {
 	h.Comment = comment
 }
 
-// NewHttp create an http block from a directive which has a block
-func NewHttp(directive IDirective) (*Http, error) {
+// NewHTTP create an http block from a directive which has a block
+func NewHTTP(directive IDirective) (*HTTP, error) {
 	if block := directive.GetBlock(); block != nil {
-		http := &Http{
+		http := &HTTP{
 			Servers:    []*Server{},
 			Directives: []IDirective{},
 		}
@@ -41,17 +43,17 @@ func NewHttp(directive IDirective) (*Http, error) {
 }
 
 // GetName get directive name to construct the statment string
-func (h *Http) GetName() string { //the directive name.
+func (h *HTTP) GetName() string { //the directive name.
 	return "http"
 }
 
 // GetParameters get directive parameters if any
-func (h *Http) GetParameters() []string {
+func (h *HTTP) GetParameters() []string {
 	return []string{}
 }
 
 // GetDirectives get all directives in http
-func (h *Http) GetDirectives() []IDirective {
+func (h *HTTP) GetDirectives() []IDirective {
 	directives := make([]IDirective, 0)
 	directives = append(directives, h.Directives...)
 	for _, directive := range h.Servers {
@@ -61,7 +63,7 @@ func (h *Http) GetDirectives() []IDirective {
 }
 
 // FindDirectives find directives
-func (h *Http) FindDirectives(directiveName string) []IDirective {
+func (h *HTTP) FindDirectives(directiveName string) []IDirective {
 	directives := make([]IDirective, 0)
 	for _, directive := range h.GetDirectives() {
 		if directive.GetName() == directiveName {
@@ -81,6 +83,6 @@ func (h *Http) FindDirectives(directiveName string) []IDirective {
 }
 
 // GetBlock get block if any
-func (h *Http) GetBlock() IBlock {
+func (h *HTTP) GetBlock() IBlock {
 	return h
 }

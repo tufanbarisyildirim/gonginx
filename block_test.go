@@ -148,7 +148,7 @@ func TestBlock_FindDirectives(t *testing.T) {
 							},
 						},
 					},
-					&Http{
+					&HTTP{
 						Servers: []*Server{
 							{
 								Block: &Block{
