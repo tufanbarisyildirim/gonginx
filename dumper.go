@@ -3,7 +3,6 @@ package gonginx
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -153,7 +152,7 @@ func WriteConfig(c *Config, style *Style, writeInclude bool) error {
 				if err != nil {
 					return err
 				}
-				err = ioutil.WriteFile(path, []byte(config), 0644)
+				err = os.WriteFile(path, []byte(config), 0644)
 				if err != nil {
 					return err
 				}
@@ -166,5 +165,5 @@ func WriteConfig(c *Config, style *Style, writeInclude bool) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(c.FilePath, []byte(DumpConfig(c, style)), 0644)
+	return os.WriteFile(c.FilePath, []byte(DumpConfig(c, style)), 0644)
 }
