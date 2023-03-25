@@ -121,6 +121,7 @@ func DumpConfig(c *Config, style *Style) string {
 	return DumpBlock(c.Block, style)
 }
 
+// DumpInclude dump(stringify) the included AST
 func DumpInclude(i *Include, style *Style) map[string]string {
 	mp := make(map[string]string)
 	for _, cfg := range i.Configs {
@@ -129,6 +130,7 @@ func DumpInclude(i *Include, style *Style) map[string]string {
 	return mp
 }
 
+// WriteConfig writes config
 func WriteConfig(c *Config, style *Style, writeInclude bool) error {
 	if writeInclude {
 		includes := c.FindDirectives("include")

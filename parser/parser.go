@@ -3,12 +3,14 @@ package parser
 import (
 	"bufio"
 	"fmt"
-	"github.com/tufanbarisyildirim/gonginx"
-	"github.com/tufanbarisyildirim/gonginx/parser/token"
 	"os"
 	"path/filepath"
+
+	"github.com/tufanbarisyildirim/gonginx"
+	"github.com/tufanbarisyildirim/gonginx/parser/token"
 )
 
+// Option parsing option
 type Option func(*Parser)
 
 type options struct {
@@ -30,6 +32,7 @@ type Parser struct {
 	commentBuffer     []string
 }
 
+// WithSameOptions copy options from another parser
 func WithSameOptions(p *Parser) Option {
 	return func(curr *Parser) {
 		curr.opts = p.opts
@@ -48,18 +51,21 @@ func withConfigRoot(configRoot string) Option {
 	}
 }
 
+// WithSkipIncludeParsingErr ignores include parsing errors
 func WithSkipIncludeParsingErr() Option {
 	return func(p *Parser) {
 		p.opts.skipIncludeParsingErr = true
 	}
 }
 
+// WithDefaultOptions default options
 func WithDefaultOptions() Option {
 	return func(p *Parser) {
 		p.opts = options{}
 	}
 }
 
+// WithIncludeParsing enable parsing included files
 func WithIncludeParsing() Option {
 	return func(p *Parser) {
 		p.opts.parseInclude = true
@@ -102,7 +108,7 @@ func NewParserFromLexer(lexer *lexer, opts ...Option) *Parser {
 
 	parser.blockWrappers = map[string]func(*gonginx.Directive) gonginx.IDirective{
 		"http": func(directive *gonginx.Directive) gonginx.IDirective {
-			return parser.wrapHttp(directive)
+			return parser.wrapHTTP(directive)
 		},
 		"server": func(directive *gonginx.Directive) gonginx.IDirective {
 			return parser.wrapServer(directive)
@@ -314,8 +320,8 @@ func (p *Parser) wrapUpstream(directive *gonginx.Directive) *gonginx.Upstream {
 	return s
 }
 
-func (p *Parser) wrapHttp(directive *gonginx.Directive) *gonginx.Http {
-	h, _ := gonginx.NewHttp(directive)
+func (p *Parser) wrapHTTP(directive *gonginx.Directive) *gonginx.HTTP {
+	h, _ := gonginx.NewHTTP(directive)
 	return h
 }
 

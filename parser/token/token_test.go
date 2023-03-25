@@ -29,10 +29,11 @@ func TestType_String(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt2 := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			if got := tt.tt.String(); got != tt.want {
-				t.Errorf("Type.String() = %v, want %v", got, tt.want)
+			if got := tt2.tt.String(); got != tt2.want {
+				t.Errorf("Type.String() = %v, want %v", got, tt2.want)
 			}
 		})
 	}
@@ -62,16 +63,17 @@ func TestToken_String(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt2 := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			tok := Token{
-				Type:    tt.fields.Type,
-				Literal: tt.fields.Literal,
-				Line:    tt.fields.Line,
-				Column:  tt.fields.Column,
+				Type:    tt2.fields.Type,
+				Literal: tt2.fields.Literal,
+				Line:    tt2.fields.Line,
+				Column:  tt2.fields.Column,
 			}
-			if got := tok.String(); got != tt.want {
-				t.Errorf("Token.String() = %v, want %v", got, tt.want)
+			if got := tok.String(); got != tt2.want {
+				t.Errorf("Token.String() = %v, want %v", got, tt2.want)
 			}
 		})
 	}
@@ -113,16 +115,17 @@ func TestToken_Lit(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt2 := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			tok := Token{
-				Type:    tt.fields.Type,
-				Literal: tt.fields.Literal,
-				Line:    tt.fields.Line,
-				Column:  tt.fields.Column,
+				Type:    tt2.fields.Type,
+				Literal: tt2.fields.Literal,
+				Line:    tt2.fields.Line,
+				Column:  tt2.fields.Column,
 			}
-			if got := tok.Lit(tt.args.literal); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Token.Lit() = %v, want %v", got, tt.want)
+			if got := tok.Lit(tt2.args.literal); !reflect.DeepEqual(got, tt2.want) {
+				t.Errorf("Token.Lit() = %v, want %v", got, tt2.want)
 			}
 		})
 	}
@@ -187,9 +190,10 @@ func TestToken_EqualTo(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.tok1.EqualTo(tt.tok2); got != tt.want {
-				t.Errorf("Token.EqualTo() = %v, want %v", got, tt.want)
+		tt2 := tt
+		t.Run(tt2.name, func(t *testing.T) {
+			if got := tt2.tok1.EqualTo(tt2.tok2); got != tt2.want {
+				t.Errorf("Token.EqualTo() = %v, want %v", got, tt2.want)
 			}
 		})
 	}

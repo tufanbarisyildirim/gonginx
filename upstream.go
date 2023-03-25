@@ -13,6 +13,7 @@ type Upstream struct {
 	Comment    []string
 }
 
+// SetComment set comment of the directive
 func (us *Upstream) SetComment(comment []string) {
 	us.Comment = comment
 }

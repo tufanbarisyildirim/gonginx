@@ -10,10 +10,12 @@ type Server struct {
 	Comment []string
 }
 
+// SetComment set comment of server directive
 func (s *Server) SetComment(comment []string) {
 	s.Comment = comment
 }
 
+// GetComment get comment of server directive
 func (s *Server) GetComment() []string {
 	return s.Comment
 }

@@ -81,14 +81,15 @@ func TestDirective_ToString(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt2 := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			d := &Directive{
-				Name:       tt.fields.Name,
-				Parameters: tt.fields.Parameters,
+				Name:       tt2.fields.Name,
+				Parameters: tt2.fields.Parameters,
 			}
-			if got := DumpDirective(d, NoIndentStyle); got != tt.want {
-				t.Errorf("Directive.ToString() = %v, want %v", got, tt.want)
+			if got := DumpDirective(d, NoIndentStyle); got != tt2.want {
+				t.Errorf("Directive.ToString() = %v, want %v", got, tt2.want)
 			}
 		})
 	}
