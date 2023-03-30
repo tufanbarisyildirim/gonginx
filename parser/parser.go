@@ -305,6 +305,10 @@ func (p *Parser) wrapLocation(directive *gonginx.Directive) *gonginx.Location {
 		location.Modifier = directive.Parameters[0]
 		location.Match = directive.Parameters[1]
 		return location
+	} else if len(directive.Parameters) == 3 {
+		location.Modifier = directive.Parameters[1]
+		location.Match = directive.Parameters[2]
+		return location
 	}
 
 	panic("too many arguments for location directive")
