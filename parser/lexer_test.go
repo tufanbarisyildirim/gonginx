@@ -11,7 +11,7 @@ import (
 
 func TestScanner_Lex(t *testing.T) {
 	t.Parallel()
-	actual := lex(`
+	conf := `
 server { # simple reverse-proxy
     listen       80;
     server_name  gonginx.com www.gonginx.com;
@@ -32,7 +32,8 @@ server { # simple reverse-proxy
   }
 include /etc/nginx/conf.d/*.conf;
 directive "with a quoted string\t \r\n \\ with some escaped thing s\" good.";
-#also cmment right before eof`).all()
+#also cmment right before eof`
+	actual := lex(conf).all()
 
 	var expect = token.Tokens{
 		{Type: token.Keyword, Literal: "server", Line: 2, Column: 1},
@@ -74,7 +75,7 @@ directive "with a quoted string\t \r\n \\ with some escaped thing s\" good.";
 		{Type: token.Semicolon, Literal: ";", Line: 16, Column: 44},
 		{Type: token.Keyword, Literal: "proxy_set_header", Line: 17, Column: 7},
 		{Type: token.Keyword, Literal: "X-Real-IP", Line: 17, Column: 26},
-		{Type: token.Variable, Literal: "$remote_addr", Line: 17, Column: 43},
+		{Type: token.Keyword, Literal: "$remote_addr", Line: 17, Column: 43},
 		{Type: token.Semicolon, Literal: ";", Line: 17, Column: 55},
 		{Type: token.BlockEnd, Literal: "}", Line: 18, Column: 5},
 		{Type: token.BlockEnd, Literal: "}", Line: 19, Column: 3},
@@ -82,7 +83,7 @@ directive "with a quoted string\t \r\n \\ with some escaped thing s\" good.";
 		{Type: token.Keyword, Literal: "/etc/nginx/conf.d/*.conf", Line: 20, Column: 9},
 		{Type: token.Semicolon, Literal: ";", Line: 20, Column: 33},
 		{Type: token.Keyword, Literal: "directive", Line: 21, Column: 1},
-		{Type: token.QuotedString, Literal: "\"with a quoted string\t \r\n \\ with some escaped thing s\" good.\"", Line: 21, Column: 11},
+		{Type: token.QuotedString, Literal: "\"with a quoted string\\t \\r\\n \\\\ with some escaped thing s\\\" good.\"", Line: 21, Column: 11},
 		{Type: token.Semicolon, Literal: ";", Line: 21, Column: 77},
 		{Type: token.Comment, Literal: "#also cmment right before eof", Line: 22, Column: 1},
 	}
@@ -93,8 +94,8 @@ directive "with a quoted string\t \r\n \\ with some escaped thing s\" good.";
 	assert.NilError(t, err)
 
 	//assert.Assert(t, tokens, 1)
-	assert.Assert(t, actual.EqualTo(expect))
 	assert.Equal(t, string(tokenString), string(expectJSON))
+	assert.Assert(t, actual.EqualTo(expect))
 	assert.Equal(t, len(actual), len(expect))
 }
 
