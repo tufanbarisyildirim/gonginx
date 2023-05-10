@@ -2,7 +2,6 @@ package parser
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -230,7 +229,8 @@ func (p *Parser) parseStatement() gonginx.IDirective {
 		return d
 	}
 
-	panic(fmt.Errorf("unexpected token %s (%s) on line %d, column %d", p.currentToken.Type.String(), p.currentToken.Literal, p.currentToken.Line, p.currentToken.Column))
+	return &gonginx.Directive{}
+	//panic(fmt.Errorf("unexpected token %s (%s) on line %d, column %d", p.currentToken.Type.String(), p.currentToken.Literal, p.currentToken.Line, p.currentToken.Column))
 }
 
 // TODO: move this into gonginx.Include
