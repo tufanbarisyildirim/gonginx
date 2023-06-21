@@ -3,7 +3,6 @@ package parser
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"io"
 	"strings"
 
@@ -277,7 +276,6 @@ func isEndOfLine(ch rune) bool {
 }
 
 func isLuaBlock(latest, prev token.Token) bool {
-	fmt.Printf("lateset: %v, prev: %v\n", latest.Literal, prev.Literal)
 	// *_by_lua_block {}
 	if latest.Type == token.Keyword && strings.HasSuffix(latest.Literal, "_by_lua_block") {
 		return true
