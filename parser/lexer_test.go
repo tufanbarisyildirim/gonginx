@@ -124,6 +124,10 @@ server {
       )
       t = { key="foo", val="bar" }
     }
+    set_by_lua_block $wocao {
+      local t = {}
+      t["a"] = "b"
+    }
   }
 }`
 	actual := lex(conf).all()
@@ -144,8 +148,17 @@ server {
       t = { key="foo", val="bar" }
     `, Line: 4, Column: 27},
 		{Type: token.BlockEnd, Literal: "}", Line: 10, Column: 6},
-		{Type: token.BlockEnd, Literal: "}", Line: 11, Column: 3},
-		{Type: token.BlockEnd, Literal: "}", Line: 12, Column: 1},
+
+		{Type: token.Keyword, Literal: "set_by_lua_block", Line: 11, Column: 5},
+		{Type: token.Keyword, Literal: "$wocao", Line: 11, Column: 22},
+		{Type: token.BlockStart, Literal: "{", Line: 11, Column: 29},
+		{Type: token.LuaCode, Literal: `
+      local t = {}
+      t["a"] = "b"
+    `, Line: 11, Column: 30},
+		{Type: token.BlockEnd, Literal: "}", Line: 14, Column: 6},
+		{Type: token.BlockEnd, Literal: "}", Line: 15, Column: 3},
+		{Type: token.BlockEnd, Literal: "}", Line: 16, Column: 1},
 	}
 	tokenString, err := json.Marshal(actual)
 	assert.NilError(t, err)

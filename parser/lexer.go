@@ -3,6 +3,7 @@ package parser
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"io"
 	"strings"
 
@@ -16,7 +17,8 @@ type lexer struct {
 	line       int
 	column     int
 	inLuaBlock bool
-	Latest     token.Token
+	prev       token.Token
+	latest     token.Token
 }
 
 // lex initializes a lexer from string conetnt
@@ -34,8 +36,10 @@ func newLexer(r io.Reader) *lexer {
 
 // Scan gives you next token
 func (s *lexer) scan() token.Token {
-	s.Latest = s.getNextToken()
-	return s.Latest
+	prev := s.latest
+	s.latest = s.getNextToken()
+	s.prev = prev
+	return s.latest
 }
 
 // All scans all token and returns them as a slice
@@ -67,7 +71,7 @@ reToken:
 	case ch == ';':
 		return s.NewToken(token.Semicolon).Lit(string(s.read()))
 	case ch == '{':
-		if isLuaBlock(s.Latest) {
+		if isLuaBlock(s.latest, s.prev) {
 			s.inLuaBlock = true
 		}
 		return s.NewToken(token.BlockStart).Lit(string(s.read()))
@@ -272,6 +276,16 @@ func isEndOfLine(ch rune) bool {
 	return ch == '\r' || ch == '\n'
 }
 
-func isLuaBlock(t token.Token) bool {
-	return t.Type == token.Keyword && strings.HasSuffix(t.Literal, "_by_lua_block")
+func isLuaBlock(latest, prev token.Token) bool {
+	fmt.Printf("lateset: %v, prev: %v\n", latest.Literal, prev.Literal)
+	// *_by_lua_block {}
+	if latest.Type == token.Keyword && strings.HasSuffix(latest.Literal, "_by_lua_block") {
+		return true
+	}
+	// set_by_lua_block $var {}
+	if (latest.Type == token.Keyword && strings.HasPrefix(latest.Literal, "$")) &&
+		(prev.Type == token.Keyword && prev.Literal == "set_by_lua_block") {
+		return true
+	}
+	return false
 }
