@@ -162,11 +162,11 @@ func (p *Parser) parseBlock() *gonginx.Block {
 	}
 	var s gonginx.IDirective
 	var line int
-parsingloop:
+parsingLoop:
 	for {
 		switch {
 		case p.curTokenIs(token.EOF) || p.curTokenIs(token.BlockEnd):
-			break parsingloop
+			break parsingLoop
 		case p.curTokenIs(token.Keyword) || p.curTokenIs(token.QuotedString):
 			s = p.parseStatement()
 			context.Directives = append(context.Directives, s)
