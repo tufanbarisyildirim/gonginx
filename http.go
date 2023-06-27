@@ -86,3 +86,7 @@ func (h *HTTP) FindDirectives(directiveName string) []IDirective {
 func (h *HTTP) GetBlock() IBlock {
 	return h
 }
+
+func (h *HTTP) GetCodeBlock() string {
+	return ""
+}

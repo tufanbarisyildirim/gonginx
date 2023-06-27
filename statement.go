@@ -4,6 +4,7 @@ package gonginx
 type IBlock interface {
 	GetDirectives() []IDirective
 	FindDirectives(directiveName string) []IDirective
+	GetCodeBlock() string
 }
 
 // IDirective represents any directive
