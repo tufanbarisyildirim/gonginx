@@ -151,7 +151,7 @@ server {
 	assert.NilError(t, err)
 	expectJSON, err := json.Marshal(expect)
 	assert.NilError(t, err)
-	assert.Assert(t, actual.EqualTo(expect))
+	assert.NilError(t, actual.Diff(expect))
 	assert.Equal(t, string(tokenString), string(expectJSON))
 	assert.Equal(t, len(actual), len(expect))
 }
