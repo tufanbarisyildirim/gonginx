@@ -21,10 +21,7 @@ func NewLuaBlock(directive IDirective) (*LuaBlock, error) {
 			LuaCode:    block.GetCodeBlock(),
 		}
 
-		for _, innerDirective := range block.GetDirectives() {
-			lb.Directives = append(lb.Directives, innerDirective)
-		}
-
+		lb.Directives = append(lb.Directives, block.GetDirectives()...)
 		lb.Comment = directive.GetComment()
 
 		return lb, nil
