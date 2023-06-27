@@ -305,3 +305,33 @@ location /.well-known/acme-challenge {
     alias /public_html/certbot_temp/.well-known/acme-challenge;
 }`, s)
 }
+
+func TestParser_Issue22(t *testing.T) {
+	t.Parallel()
+	p, err := NewParser("../testdata/issues/22.conf")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	c := p.Parse()
+	st := &gonginx.Style{
+		SortDirectives: false,
+		StartIndent:    0,
+		Indent:         4,
+		Debug:          false,
+	}
+	s := gonginx.DumpConfig(c, st)
+	assert.Equal(t, `server {
+    location = /foo {
+        rewrite_by_lua_block {
+            
+            res = ngx.location.capture("/memc",
+            { args = { cmd = "incr", key = ngx.var.uri } } # comment contained unexpect '{'
+            # comment contained unexpect '}'
+            )
+            t = { key="foo", val="bar" }
+            
+        }
+    }
+}`, s)
+}
