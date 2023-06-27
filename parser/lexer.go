@@ -145,25 +145,22 @@ func (s *lexer) scanLuaCode() token.Token {
 	// used to save the real line and column
 	ret := s.NewToken(token.LuaCode)
 	stack := make([]rune, 0, 50)
-	code := make([]rune, 0, 100)
+	code := strings.Builder{}
 
-	inComment := false
 	for {
 		ch := s.read()
 		if ch == rune(token.EOF) {
 			panic("unexpected end of file while scanning a string, maybe an unclosed lua code?")
 		}
-		if inComment {
-			if ch == '\n' {
-				inComment = false
-			}
-		} else if ch == '#' {
-			inComment = true
+		if ch == '#' {
+			code.WriteRune(ch)
+			code.WriteString(s.readUntil(isEndOfLine))
+			continue
 		} else if ch == '}' {
 			if len(stack) == 0 {
 				// the end of block
 				_ = s.reader.UnreadRune()
-				return ret.Lit(string(code))
+				return ret.Lit(code.String())
 			}
 			// maybe it's lua table end, pop stack
 			if stack[len(stack)-1] == '{' {
@@ -173,7 +170,7 @@ func (s *lexer) scanLuaCode() token.Token {
 			// maybe it's lua table start, push stack
 			stack = append(stack, ch)
 		}
-		code = append(code, ch)
+		code.WriteRune(ch)
 	}
 }
 
