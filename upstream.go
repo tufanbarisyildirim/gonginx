@@ -80,6 +80,10 @@ func (us *Upstream) AddServer(server *UpstreamServer) {
 	us.UpstreamServers = append(us.UpstreamServers, server)
 }
 
+func (us *Upstream) GetCodeBlock() string {
+	return ""
+}
+
 // FindDirectives find directives in block recursively
 func (us *Upstream) FindDirectives(directiveName string) []IDirective {
 	directives := make([]IDirective, 0)

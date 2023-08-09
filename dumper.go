@@ -15,6 +15,7 @@ var (
 		SortDirectives: false,
 		StartIndent:    0,
 		Indent:         0,
+		Debug:          false,
 	}
 
 	//IndentedStyle default style
@@ -22,6 +23,7 @@ var (
 		SortDirectives: false,
 		StartIndent:    0,
 		Indent:         4,
+		Debug:          false,
 	}
 
 	//NoIndentSortedStyle default style
@@ -29,6 +31,7 @@ var (
 		SortDirectives: true,
 		StartIndent:    0,
 		Indent:         0,
+		Debug:          false,
 	}
 
 	//NoIndentSortedSpaceStyle default style
@@ -37,6 +40,7 @@ var (
 		SpaceBeforeBlocks: true,
 		StartIndent:       0,
 		Indent:            0,
+		Debug:             false,
 	}
 )
 
@@ -46,6 +50,7 @@ type Style struct {
 	SpaceBeforeBlocks bool
 	StartIndent       int
 	Indent            int
+	Debug             bool
 }
 
 // NewStyle create new style
@@ -54,6 +59,7 @@ func NewStyle() *Style {
 		SortDirectives: false,
 		StartIndent:    0,
 		Indent:         4,
+		Debug:          false,
 	}
 	return style
 }
@@ -71,6 +77,10 @@ func (s *Style) Iterate() *Style {
 
 // DumpDirective convert a directive to a string
 func DumpDirective(d IDirective, style *Style) string {
+	if d == nil {
+		return ""
+	}
+
 	var buf bytes.Buffer
 
 	if style.SpaceBeforeBlocks && d.GetBlock() != nil {
@@ -99,6 +109,18 @@ func DumpDirective(d IDirective, style *Style) string {
 func DumpBlock(b IBlock, style *Style) string {
 	var buf bytes.Buffer
 
+	if b.GetCodeBlock() != "" {
+		luaLines := strings.Split(b.GetCodeBlock(), "\n")
+		for i, line := range luaLines {
+			buf.WriteString(fmt.Sprintf("%s%s", strings.Repeat(" ", style.StartIndent), line))
+			if i != len(luaLines)-1 {
+				buf.WriteString("\n")
+			}
+		}
+
+		return buf.String()
+	}
+
 	directives := b.GetDirectives()
 	if style.SortDirectives {
 		sort.SliceStable(directives, func(i, j int) bool {
@@ -107,11 +129,18 @@ func DumpBlock(b IBlock, style *Style) string {
 	}
 
 	for i, directive := range directives {
+		if style.Debug {
+			buf.WriteString("#")
+			buf.WriteString(directive.GetName())
+			buf.WriteString(fmt.Sprintf("%t", directive.GetBlock()))
+			buf.WriteString("\n")
+		}
 		buf.WriteString(DumpDirective(directive, style))
 		if i != len(directives)-1 {
 			buf.WriteString("\n")
 		}
 	}
+
 	return buf.String()
 }
 

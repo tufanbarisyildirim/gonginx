@@ -254,3 +254,84 @@ location / { proxy_pass http://big_server_com; } } }`
 			lex(fullconf)).Parse()
 	}
 }
+
+func TestParser_Issue17(t *testing.T) {
+	t.Parallel()
+	p, err := NewParser("../testdata/issues/17.conf")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	c := p.Parse()
+	s := gonginx.DumpConfig(c, gonginx.IndentedStyle)
+	assert.Equal(t, `location / {
+    set $serve_URL $fullurl${uri}index.html;
+    try_files $serve_URL $uri $uri/ /index.php$is_args$args;
+}
+# deny access to xmlrpc.php - https://kinsta.com/blog/xmlrpc-php/
+location ~* ^/xmlrpc.php$ {
+    return 403;
+}
+location ~ \.php$ {
+    include snippets/fastcgi-php.conf;
+    fastcgi_param PHP_VALUE "open_basedir=$document_root:/tmp;\nerror_log=/public_html/logs/demo1-php_errors.log;";
+    fastcgi_pass unix:/run/php/php7.4-fpm.sock;
+}
+location /wp-content/uploads/ {
+    location ~ .(aspx|php|jsp|cgi)$ {
+        return 410;
+    }
+}
+#location ~ \.pdf$ { rewrite .* /custom/pdf_auth.php; }
+location ~* \.(css|gif|ico|jpeg|jpg|js|png|woff|woff2|ttf|ttc|otf|eot)$ {
+    # https://nginx.org/en/docs/http/ngx_http_headers_module.html
+    expires 30d;
+    # https://nginx.org/en/docs/http/ngx_http_core_module.html#log_not_found
+    log_not_found off;
+}
+# deny access to .htaccess files
+location ~ /\.ht {
+    deny all;
+}
+location ~ ^/(status)$ {
+    # https://www.tecmint.com/enable-monitor-php-fpm-status-in-nginx/
+    allow 127.0.0.1;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    fastcgi_index index.php;
+    include fastcgi_params;
+    fastcgi_pass unix:/run/php/php7.4-fpm.sock;
+}
+location /.well-known/acme-challenge {
+    alias /public_html/certbot_temp/.well-known/acme-challenge;
+}`, s)
+}
+
+func TestParser_Issue22(t *testing.T) {
+	t.Parallel()
+	p, err := NewParser("../testdata/issues/22.conf")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	c := p.Parse()
+	st := &gonginx.Style{
+		SortDirectives: false,
+		StartIndent:    0,
+		Indent:         4,
+		Debug:          false,
+	}
+	s := gonginx.DumpConfig(c, st)
+	assert.Equal(t, `server {
+    location = /foo {
+        rewrite_by_lua_block {
+            
+            res = ngx.location.capture("/memc",
+            { args = { cmd = "incr", key = ngx.var.uri } } # comment contained unexpect '{'
+            # comment contained unexpect '}'
+            )
+            t = { key="foo", val="bar" }
+            
+        }
+    }
+}`, s)
+}

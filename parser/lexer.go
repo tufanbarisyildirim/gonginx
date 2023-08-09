@@ -75,8 +75,6 @@ reToken:
 		return s.NewToken(token.BlockEnd).Lit(string(s.read()))
 	case ch == '#':
 		return s.scanComment()
-	case ch == '$':
-		return s.scanVariable()
 	case isQuote(ch):
 		return s.scanQuotedString(ch)
 	default:
@@ -147,25 +145,22 @@ func (s *lexer) scanLuaCode() token.Token {
 	// used to save the real line and column
 	ret := s.NewToken(token.LuaCode)
 	stack := make([]rune, 0, 50)
-	code := make([]rune, 0, 100)
+	code := strings.Builder{}
 
-	inComment := false
 	for {
 		ch := s.read()
 		if ch == rune(token.EOF) {
 			panic("unexpected end of file while scanning a string, maybe an unclosed lua code?")
 		}
-		if inComment {
-			if ch == '\n' {
-				inComment = false
-			}
-		} else if ch == '#' {
-			inComment = true
+		if ch == '#' {
+			code.WriteRune(ch)
+			code.WriteString(s.readUntil(isEndOfLine))
+			continue
 		} else if ch == '}' {
 			if len(stack) == 0 {
 				// the end of block
 				_ = s.reader.UnreadRune()
-				return ret.Lit(string(code))
+				return ret.Lit(code.String())
 			}
 			// maybe it's lua table end, pop stack
 			if stack[len(stack)-1] == '{' {
@@ -175,7 +170,7 @@ func (s *lexer) scanLuaCode() token.Token {
 			// maybe it's lua table start, push stack
 			stack = append(stack, ch)
 		}
-		code = append(code, ch)
+		code.WriteRune(ch)
 	}
 }
 
@@ -198,23 +193,12 @@ func (s *lexer) scanQuotedString(delimiter rune) token.Token {
 			panic("unexpected end of file while scanning a string, maybe an unclosed quote?")
 		}
 
-		if ch == '\\' {
-			if needsEscape(s.peek(), delimiter) {
-				switch s.read() {
-				case 'n':
-					_, _ = buf.WriteRune('\n')
-				case 'r':
-					_, _ = buf.WriteRune('\r')
-				case 't':
-					_, _ = buf.WriteRune('\t')
-				case '\\':
-					_, _ = buf.WriteRune('\\')
-				case delimiter:
-					_, _ = buf.WriteRune(delimiter)
-				}
-				continue
-			}
+		if ch == '\\' && (s.peek() == delimiter) {
+			buf.WriteRune(ch)       // the backslash
+			buf.WriteRune(s.read()) // the char needed escaping
+			continue
 		}
+
 		_, _ = buf.WriteRune(ch)
 		if ch == delimiter {
 			break
@@ -225,11 +209,33 @@ func (s *lexer) scanQuotedString(delimiter rune) token.Token {
 }
 
 func (s *lexer) scanKeyword() token.Token {
-	return s.NewToken(token.Keyword).Lit(s.readUntil(isKeywordTerminator))
-}
+	var buf bytes.Buffer
+	tok := s.NewToken(token.Keyword)
+	prev := s.read()
+	buf.WriteRune(prev)
+	for {
+		ch := s.peek()
 
-func (s *lexer) scanVariable() token.Token {
-	return s.NewToken(token.Variable).Lit(s.readUntil(isKeywordTerminator))
+		//space, ;  and file ending definitely ends the keyword.
+		if isSpace(ch) || isEOF(ch) || ch == ';' {
+			break
+		}
+
+		//the keyword could contain a variable with like ${var}
+		if ch == '{' {
+			if prev == '$' {
+				buf.WriteString(s.readUntil(func(r rune) bool {
+					return r == '}'
+				}))
+				buf.WriteRune(s.read()) //consume latest '}'
+			} else {
+				break
+			}
+		}
+		buf.WriteRune(s.read())
+	}
+
+	return tok.Lit(buf.String())
 }
 
 func (s *lexer) read() rune {
@@ -249,14 +255,6 @@ func (s *lexer) read() rune {
 
 func isQuote(ch rune) bool {
 	return ch == '"' || ch == '\'' || ch == '`'
-}
-
-func isKeywordTerminator(ch rune) bool {
-	return isSpace(ch) || isEndOfLine(ch) || ch == '{' || ch == ';'
-}
-
-func needsEscape(ch, delimiter rune) bool {
-	return ch == delimiter || ch == 'n' || ch == 't' || ch == '\\' || ch == 'r'
 }
 
 func isSpace(ch rune) bool {

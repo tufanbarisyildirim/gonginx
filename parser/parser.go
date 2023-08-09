@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/tufanbarisyildirim/gonginx"
 	"github.com/tufanbarisyildirim/gonginx/parser/token"
@@ -119,6 +120,9 @@ func NewParserFromLexer(lexer *lexer, opts ...Option) *Parser {
 		"upstream": func(directive *gonginx.Directive) gonginx.IDirective {
 			return parser.wrapUpstream(directive)
 		},
+		"_by_lua_block": func(directive *gonginx.Directive) gonginx.IDirective {
+			return parser.wrapLuaBlock(directive)
+		},
 	}
 
 	parser.directiveWrappers = map[string]func(*gonginx.Directive) gonginx.IDirective{
@@ -162,11 +166,14 @@ func (p *Parser) parseBlock() *gonginx.Block {
 	}
 	var s gonginx.IDirective
 	var line int
-parsingloop:
+parsingLoop:
 	for {
 		switch {
+		case p.curTokenIs(token.LuaCode):
+			context.IsLuaBlock = true
+			context.LiteralCode = p.currentToken.Literal
 		case p.curTokenIs(token.EOF) || p.curTokenIs(token.BlockEnd):
-			break parsingloop
+			break parsingLoop
 		case p.curTokenIs(token.Keyword) || p.curTokenIs(token.QuotedString):
 			s = p.parseStatement()
 			context.Directives = append(context.Directives, s)
@@ -224,6 +231,11 @@ func (p *Parser) parseStatement() gonginx.IDirective {
 	//ok, it does not end with a semicolon but a block starts, we will convert that block if we have a converter
 	if p.curTokenIs(token.BlockStart) {
 		d.Block = p.parseBlock()
+
+		if strings.HasSuffix(d.Name, "_by_lua_block") {
+			return p.blockWrappers["_by_lua_block"](d)
+		}
+
 		if bw, ok := p.blockWrappers[d.Name]; ok {
 			return bw(d)
 		}
@@ -321,6 +333,11 @@ func (p *Parser) wrapServer(directive *gonginx.Directive) *gonginx.Server {
 
 func (p *Parser) wrapUpstream(directive *gonginx.Directive) *gonginx.Upstream {
 	s, _ := gonginx.NewUpstream(directive)
+	return s
+}
+
+func (p *Parser) wrapLuaBlock(directive *gonginx.Directive) *gonginx.LuaBlock {
+	s, _ := gonginx.NewLuaBlock(directive)
 	return s
 }
 

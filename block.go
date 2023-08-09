@@ -1,16 +1,22 @@
 package gonginx
 
-//Block a block statement
+// Block a block statement
 type Block struct {
-	Directives []IDirective
+	Directives  []IDirective
+	IsLuaBlock  bool
+	LiteralCode string
 }
 
-//GetDirectives get all directives in this block
+// GetDirectives get all directives in this block
 func (b *Block) GetDirectives() []IDirective {
 	return b.Directives
 }
 
-//FindDirectives find directives in block recursively
+func (b *Block) GetCodeBlock() string {
+	return b.LiteralCode
+}
+
+// FindDirectives find directives in block recursively
 func (b *Block) FindDirectives(directiveName string) []IDirective {
 	directives := make([]IDirective, 0)
 	for _, directive := range b.GetDirectives() {
