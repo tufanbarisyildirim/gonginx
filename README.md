@@ -5,6 +5,8 @@
 </p>
 
 # Gonginx
+TBH, I would like to rewrite the parser next time I need it again :)) but it still does its job. 
+
 Gonginx is an Nginx configuration parser helps you to parse, edit, regenerate your nginx config files in your go applications. It makes managing your balancer configurations easier. 
 
 ## Basic grammar of an nginx config file
