@@ -114,8 +114,9 @@ func TestParser_ParseUpstream(t *testing.T) {
 
 func TestParser_ParseFromFile(t *testing.T) {
 	t.Parallel()
-	_, err := NewParser("../full-example/nginx.conf")
+	p, err := NewParser("../full-example/nginx.conf")
 	assert.NilError(t, err)
+	assert.Assert(t, p.file != nil, "file must be non-nil")
 	_, err2 := NewParser("../full-example/nginx.conf-not-found")
 	assert.ErrorContains(t, err2, "no such file or directory")
 }
