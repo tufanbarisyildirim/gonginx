@@ -31,6 +31,7 @@ type Parser struct {
 	blockWrappers     map[string]func(*gonginx.Directive) gonginx.IDirective
 	directiveWrappers map[string]func(*gonginx.Directive) gonginx.IDirective
 	commentBuffer     []string
+	file              *os.File
 }
 
 // WithSameOptions copy options from another parser
@@ -87,6 +88,7 @@ func NewParser(filePath string, opts ...Option) (*Parser, error) {
 	l := newLexer(bufio.NewReader(f))
 	l.file = filePath
 	p := NewParserFromLexer(l, opts...)
+	p.file = f
 	return p, nil
 }
 
@@ -152,10 +154,12 @@ func (p *Parser) followingTokenIs(t token.Type) bool {
 
 // Parse the gonginx.
 func (p *Parser) Parse() *gonginx.Config {
-	return &gonginx.Config{
+	c := &gonginx.Config{
 		FilePath: p.lexer.file, //TODO: set filepath here,
 		Block:    p.parseBlock(),
 	}
+	_ = p.Close()
+	return c
 }
 
 // ParseBlock parse a block statement
@@ -344,4 +348,12 @@ func (p *Parser) wrapHTTP(directive *gonginx.Directive) *gonginx.HTTP {
 
 func (p *Parser) parseUpstreamServer(directive *gonginx.Directive) *gonginx.UpstreamServer {
 	return gonginx.NewUpstreamServer(directive)
+}
+
+// Close closes the file handler and releases the resources
+func (p *Parser) Close() (err error) {
+	if p.file != nil {
+		err = p.file.Close()
+	}
+	return err
 }
