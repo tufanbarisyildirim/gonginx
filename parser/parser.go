@@ -350,6 +350,7 @@ func (p *Parser) parseUpstreamServer(directive *gonginx.Directive) *gonginx.Upst
 	return gonginx.NewUpstreamServer(directive)
 }
 
+// Close closes the file handler and releases the resources
 func (p *Parser) Close() (err error) {
 	if p.file != nil {
 		err = p.file.Close()
