@@ -250,7 +250,7 @@ location / { proxy_pass http://big_server_com; } } }`
 
 func TestParser_Issue17(t *testing.T) {
 	t.Parallel()
-	p, err := NewParser("../testdata/issues/17.conf")
+	p, err := NewParser("../testdata/issues/17.conf", WithSkipComments())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -262,7 +262,6 @@ func TestParser_Issue17(t *testing.T) {
     set $serve_URL $fullurl${uri}index.html;
     try_files $serve_URL $uri $uri/ /index.php$is_args$args;
 }
-# deny access to xmlrpc.php - https://kinsta.com/blog/xmlrpc-php/
 location ~* ^/xmlrpc.php$ {
     return 403;
 }
@@ -276,19 +275,14 @@ location /wp-content/uploads/ {
         return 410;
     }
 }
-#location ~ \.pdf$ { rewrite .* /custom/pdf_auth.php; }
 location ~* \.(css|gif|ico|jpeg|jpg|js|png|woff|woff2|ttf|ttc|otf|eot)$ {
-    # https://nginx.org/en/docs/http/ngx_http_headers_module.html
     expires 30d;
-    # https://nginx.org/en/docs/http/ngx_http_core_module.html#log_not_found
     log_not_found off;
 }
-# deny access to .htaccess files
 location ~ /\.ht {
     deny all;
 }
 location ~ ^/(status)$ {
-    # https://www.tecmint.com/enable-monitor-php-fpm-status-in-nginx/
     allow 127.0.0.1;
     fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
     fastcgi_index index.php;

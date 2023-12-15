@@ -18,6 +18,7 @@ type Option func(*Parser)
 type options struct {
 	parseInclude          bool
 	skipIncludeParsingErr bool
+	skipComments          bool
 }
 
 // Parser is an nginx config parser
@@ -65,6 +66,13 @@ func WithSkipIncludeParsingErr() Option {
 func WithDefaultOptions() Option {
 	return func(p *Parser) {
 		p.opts = options{}
+	}
+}
+
+// WithSkipComments default options
+func WithSkipComments() Option {
+	return func(p *Parser) {
+		p.opts.skipComments = true
 	}
 }
 
@@ -191,16 +199,19 @@ parsingLoop:
 			context.Directives = append(context.Directives, s)
 			line = p.currentToken.Line
 		case p.curTokenIs(token.Comment):
-			if s == nil {
-				s = &gonginx.Directive{}
+			if p.opts.skipComments {
+				break
 			}
 			p.commentBuffer = append(p.commentBuffer, p.currentToken.Literal)
 			// inline comment
 			if line == p.currentToken.Line {
+				if s == nil && len(context.Directives) > 0 {
+					s = context.Directives[len(context.Directives)-1]
+				}
 				s.SetComment(p.commentBuffer)
 				p.commentBuffer = nil
 			}
-			context.Directives = append(context.Directives, s)
+
 		}
 		p.nextToken()
 	}

@@ -96,7 +96,9 @@ func DumpDirective(d IDirective, style *Style) string {
 		buf.WriteString(fmt.Sprintf(" %s", strings.Join(d.GetParameters(), " ")))
 	}
 	if d.GetBlock() == nil {
-		buf.WriteRune(';')
+		if d.GetName() != "" {
+			buf.WriteRune(';')
+		}
 	} else {
 		buf.WriteString(" {\n")
 		buf.WriteString(DumpBlock(d.GetBlock(), style.Iterate()))
