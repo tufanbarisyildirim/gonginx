@@ -48,32 +48,24 @@ func TestParser_UnendedInclude(t *testing.T) {
 
 func TestParser_LocationNoParam(t *testing.T) {
 	t.Parallel()
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("The code did not panic")
-		}
-	}()
 
-	NewParserFromLexer(
+	_, err := NewParserFromLexer(
 		lex(`
 	server { 
 	location  {} #location with no param
 	`)).Parse()
+
+	assert.Error(t, err, "no enough parameter for location")
 }
 
 func TestParser_LocationTooManyParam(t *testing.T) {
 	t.Parallel()
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("The code did not panic")
-		}
-	}()
-
-	NewParserFromLexer(
+	_, err := NewParserFromLexer(
 		lex(`
 	server { 
 	location one two three four {} #location with too many arguments
 	`)).Parse()
+	assert.Error(t, err, "too many arguments for location directive")
 }
 
 func TestParser_ParseValidLocations(t *testing.T) {
@@ -94,7 +86,7 @@ func TestParser_ParseValidLocations(t *testing.T) {
 
 func TestParser_ParseUpstream(t *testing.T) {
 	t.Parallel()
-	NewParserFromLexer(
+	_, err := NewParserFromLexer(
 		lex(`
 		upstream my_upstream{
 			server 127.0.0.1:8080;
@@ -109,7 +101,8 @@ func TestParser_ParseUpstream(t *testing.T) {
 
 			} #location with no param
 
-	`)).Parse()
+	}`)).Parse()
+	assert.NilError(t, err, "no error expected here")
 }
 
 func TestParser_ParseFromFile(t *testing.T) {
@@ -138,12 +131,13 @@ http{
 
 func TestParser_Location(t *testing.T) {
 	t.Parallel()
-	c := NewParserFromLexer(
+	c, err := NewParserFromLexer(
 		lex(`
 		location ~ /and/ends{
 			
 		} 
 	`)).Parse()
+	assert.NilError(t, err, "no error expected here")
 
 	_, ok := c.Directives[0].(*gonginx.Location)
 	assert.Assert(t, ok, "expecting a location as first statement")
@@ -151,12 +145,14 @@ func TestParser_Location(t *testing.T) {
 
 func TestParser_VariableAsParameter(t *testing.T) {
 	t.Parallel()
-	c := NewParserFromLexer(
+	c, err := NewParserFromLexer(
 		lex(`
 			map $host $clientname {
 				default -;
 			}
 	`)).Parse()
+
+	assert.NilError(t, err, "no error expected here")
 
 	d, ok := c.Directives[0].(*gonginx.Directive)
 	assert.Assert(t, ok, "expecting a directive(http) as first statement")
@@ -168,17 +164,12 @@ func TestParser_VariableAsParameter(t *testing.T) {
 
 func TestParser_UnendedMultiParams(t *testing.T) {
 	t.Parallel()
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("The code did not panic")
-		}
-	}()
-
-	NewParserFromLexer(
+	_, err := NewParserFromLexer(
 		lex(`
 	server { 
 	a_driective with mutli params /but/no/semicolon/to/panic }
 	`)).Parse()
+	assert.Error(t, err, "unexpected token BlockEnd (}) on line 3, column 59")
 }
 
 func TestParser_SkipComment(t *testing.T) {
@@ -199,7 +190,8 @@ func TestParser_Include(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c := p.Parse()
+	c, err := p.Parse()
+	assert.NilError(t, err, "no error expected here")
 	s := gonginx.DumpConfig(c, gonginx.IndentedStyle)
 
 	assert.Equal(t, `user www www;
@@ -263,7 +255,8 @@ func TestParser_Issue17(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c := p.Parse()
+	c, err := p.Parse()
+	assert.NilError(t, err, "no error expected here")
 	s := gonginx.DumpConfig(c, gonginx.IndentedStyle)
 	assert.Equal(t, `location / {
     set $serve_URL $fullurl${uri}index.html;
@@ -314,7 +307,8 @@ func TestParser_Issue22(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c := p.Parse()
+	c, err := p.Parse()
+	assert.NilError(t, err, "no error expected here")
 	st := &gonginx.Style{
 		SortDirectives: false,
 		StartIndent:    0,
@@ -335,4 +329,15 @@ func TestParser_Issue22(t *testing.T) {
         }
     }
 }`, s)
+}
+
+func TestParser_Issue31(t *testing.T) {
+	t.Parallel()
+	p, err := NewParser("../testdata/issues/31.conf")
+	assert.NilError(t, err, "no error expected here")
+
+	_, err = p.Parse()
+	if err == nil {
+		t.Fatal("error expected here")
+	}
 }

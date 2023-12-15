@@ -6,6 +6,9 @@ test:
 	go test -race -cover ${PWD}/parser
 	go test -race -cover ${PWD}
 
+test-parser:
+	go test -race -cover ${PWD}/parser/parser.go
+
 lint:
 	golangci-lint run ./...
 	golint ./...
