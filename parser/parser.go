@@ -163,7 +163,7 @@ func (p *Parser) followingTokenIs(t token.Type) bool {
 
 // Parse the gonginx.
 func (p *Parser) Parse() (*gonginx.Config, error) {
-	parsedBlock, err := p.parseBlock()
+	parsedBlock, err := p.parseBlock(false)
 	if err != nil {
 		return nil, err
 	}
@@ -176,7 +176,7 @@ func (p *Parser) Parse() (*gonginx.Config, error) {
 }
 
 // ParseBlock parse a block statement
-func (p *Parser) parseBlock() (*gonginx.Block, error) {
+func (p *Parser) parseBlock(inBlock bool) (*gonginx.Block, error) {
 
 	context := &gonginx.Block{
 		Directives: make([]gonginx.IDirective, 0),
@@ -186,10 +186,16 @@ func (p *Parser) parseBlock() (*gonginx.Block, error) {
 parsingLoop:
 	for {
 		switch {
+		case p.curTokenIs(token.EOF):
+			if inBlock {
+				return nil, errors.New("unexpected eof in block")
+			} else {
+				break parsingLoop
+			}
 		case p.curTokenIs(token.LuaCode):
 			context.IsLuaBlock = true
 			context.LiteralCode = p.currentToken.Literal
-		case p.curTokenIs(token.EOF) || p.curTokenIs(token.BlockEnd):
+		case p.curTokenIs(token.BlockEnd):
 			break parsingLoop
 		case p.curTokenIs(token.Keyword) || p.curTokenIs(token.QuotedString):
 			s, err := p.parseStatement()
@@ -257,7 +263,7 @@ func (p *Parser) parseStatement() (gonginx.IDirective, error) {
 
 	//ok, it does not end with a semicolon but a block starts, we will convert that block if we have a converter
 	if p.curTokenIs(token.BlockStart) {
-		b, err := p.parseBlock()
+		b, err := p.parseBlock(true)
 		if err != nil {
 			return nil, err
 		}

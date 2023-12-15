@@ -37,7 +37,7 @@ func TestUpstream_ToString(t *testing.T) {
 					Parameters: []string{"gonginx_upstream"},
 					Block: &Block{
 						Directives: []IDirective{
-							NewUpstreamServer(&Directive{
+							NewUpstreamServerIgnoreErr(&Directive{
 								Name:       "server",
 								Parameters: []string{"127.0.0.1:9005"},
 							}),
@@ -55,11 +55,11 @@ func TestUpstream_ToString(t *testing.T) {
 					Parameters: []string{"gonginx_upstream"},
 					Block: &Block{
 						Directives: []IDirective{
-							NewUpstreamServer(&Directive{
+							NewUpstreamServerIgnoreErr(&Directive{
 								Name:       "server",
 								Parameters: []string{"127.0.0.1:9005"},
 							}),
-							NewUpstreamServer(&Directive{
+							NewUpstreamServerIgnoreErr(&Directive{
 								Name:       "server",
 								Parameters: []string{"127.0.0.2:9005"},
 							}),
@@ -77,11 +77,11 @@ func TestUpstream_ToString(t *testing.T) {
 					Parameters: []string{"gonginx_upstream"},
 					Block: &Block{
 						Directives: []IDirective{
-							NewUpstreamServer(&Directive{
+							NewUpstreamServerIgnoreErr(&Directive{
 								Name:       "server",
 								Parameters: []string{"127.0.0.1:9005", "weight=5"},
 							}),
-							NewUpstreamServer(&Directive{
+							NewUpstreamServerIgnoreErr(&Directive{
 								Name:       "server",
 								Parameters: []string{"127.0.0.2:9005", "weight=4", "down"},
 							}),
@@ -103,6 +103,11 @@ func TestUpstream_ToString(t *testing.T) {
 			}
 		})
 	}
+}
+
+func NewUpstreamServerIgnoreErr(directive IDirective) *UpstreamServer {
+	server, _ := NewUpstreamServer(directive)
+	return server
 }
 
 func TestUpstream_AddServer(t *testing.T) {
