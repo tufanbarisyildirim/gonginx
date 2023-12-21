@@ -167,9 +167,19 @@ func TestParser_UnendedMultiParams(t *testing.T) {
 	_, err := NewParserFromLexer(
 		lex(`
 	server { 
-	a_driective with mutli params /but/no/semicolon/to/panic }
+	default with mutli params /but/no/semicolon/to/panic }
 	`)).Parse()
-	assert.Error(t, err, "unexpected token BlockEnd (}) on line 3, column 59")
+	assert.Error(t, err, "unexpected token BlockEnd (}) on line 3, column 55")
+}
+
+func TestParser_UnknownDirective(t *testing.T) {
+	t.Parallel()
+	_, err := NewParserFromLexer(
+		lex(`
+	server { 
+	a_driective param { }
+	`)).Parse()
+	assert.Error(t, err, "unknown directive 'a_driective' on line 3, column 2")
 }
 
 func TestParser_SkipComment(t *testing.T) {

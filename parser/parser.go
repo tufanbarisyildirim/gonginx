@@ -230,6 +230,10 @@ func (p *Parser) parseStatement() (gonginx.IDirective, error) {
 		Name: p.currentToken.Literal,
 	}
 
+	if _, ok := ValidDirectives[d.Name]; !ok {
+		return nil, fmt.Errorf("unknown directive '%s' on line %d, column %d", d.Name, p.currentToken.Line, p.currentToken.Column)
+	}
+
 	//if we have a special parser for the directive, we use it.
 	if sp, ok := p.statementParsers[d.Name]; ok {
 		return sp()
