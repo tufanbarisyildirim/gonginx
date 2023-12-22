@@ -12,6 +12,7 @@ func (b *Block) GetDirectives() []IDirective {
 	return b.Directives
 }
 
+// GetCodeBlock returns the literal code block
 func (b *Block) GetCodeBlock() string {
 	return b.LiteralCode
 }

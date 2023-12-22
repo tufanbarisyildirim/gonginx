@@ -189,9 +189,8 @@ parsingLoop:
 		case p.curTokenIs(token.EOF):
 			if inBlock {
 				return nil, errors.New("unexpected eof in block")
-			} else {
-				break parsingLoop
 			}
+			break parsingLoop
 		case p.curTokenIs(token.LuaCode):
 			context.IsLuaBlock = true
 			context.LiteralCode = p.currentToken.Literal

@@ -84,6 +84,7 @@ func (us *Upstream) AddServer(server *UpstreamServer) {
 	us.UpstreamServers = append(us.UpstreamServers, server)
 }
 
+// GetCodeBlock returns the literal code block
 func (us *Upstream) GetCodeBlock() string {
 	return ""
 }

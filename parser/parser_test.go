@@ -33,17 +33,15 @@ func TestParser_CurrFollow(t *testing.T) {
 
 func TestParser_UnendedInclude(t *testing.T) {
 	t.Parallel()
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("The code did not panic")
-		}
-	}()
 
-	NewParserFromLexer(
+	_, err := NewParserFromLexer(
 		lex(`
 	server { 
-	include /but/no/semicolon before block;
-	`)).Parse()
+	include /but/no/semicolon before block
+	}`)).Parse()
+
+	assert.Error(t, err, "unexpected token BlockEnd (}) on line 4, column 2")
+
 }
 
 func TestParser_LocationNoParam(t *testing.T) {
@@ -70,7 +68,7 @@ func TestParser_LocationTooManyParam(t *testing.T) {
 
 func TestParser_ParseValidLocations(t *testing.T) {
 	t.Parallel()
-	NewParserFromLexer(
+	_, err := NewParserFromLexer(
 		lex(`
 	server { 
 		location  ~ /(.*)php/{
@@ -81,7 +79,9 @@ func TestParser_ParseValidLocations(t *testing.T) {
 
 			} #location with no param
 
-	`)).Parse()
+	}`)).Parse()
+
+	assert.NilError(t, err, "unexpected error")
 }
 
 func TestParser_ParseUpstream(t *testing.T) {
@@ -116,17 +116,18 @@ func TestParser_ParseFromFile(t *testing.T) {
 
 func TestParser_MultiParamDirecive(t *testing.T) {
 	t.Parallel()
-	NewParserFromLexer(
+	_, err := NewParserFromLexer(
 		lex(`
 http{
 		server { 
-			a_directive has multi params /and/ends;
+			upstream has multi params /and/ends;
 			location ~ /and/ends{
 				
 			}
 		}
 }
 	`)).Parse()
+	assert.NilError(t, err, "unexpected error")
 }
 
 func TestParser_Location(t *testing.T) {
@@ -184,13 +185,15 @@ func TestParser_UnknownDirective(t *testing.T) {
 
 func TestParser_SkipComment(t *testing.T) {
 	t.Parallel()
-	NewParserFromLexer(lex(`
+	_, err := NewParserFromLexer(lex(`
 if ($a ~* "")#comment
 #comment
 {#comment
 return 400;
 }
 `)).Parse()
+
+	assert.NilError(t, err, "unexpected error")
 }
 
 func TestParser_Include(t *testing.T) {
@@ -253,7 +256,7 @@ server_name big.server.com;
 access_log logs/big.server.access.log main;
 location / { proxy_pass http://big_server_com; } } }`
 	for n := 0; n < t.N; n++ {
-		NewParserFromLexer(
+		_, _ = NewParserFromLexer(
 			lex(fullconf)).Parse()
 	}
 }

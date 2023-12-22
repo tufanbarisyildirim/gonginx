@@ -67,6 +67,7 @@ func (lb *LuaBlock) FindDirectives(directiveName string) []IDirective {
 	return directives
 }
 
+// GetCodeBlock returns the literal code block
 func (lb *LuaBlock) GetCodeBlock() string {
 	return lb.LuaCode
 }
