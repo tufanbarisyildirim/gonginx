@@ -67,7 +67,10 @@ server_name big.server.com;
 access_log logs/big.server.access.log main;
 location / { proxy_pass http://big_server_com; } } }`)
 
-	c := p.Parse()
+	c, err := p.Parse()
+	if err != nil {
+		panic(err)
+	}
 	fmt.Println(gonginx.DumpConfig(c, gonginx.IndentedStyle))
 
 }

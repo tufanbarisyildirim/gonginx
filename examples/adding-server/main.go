@@ -15,7 +15,10 @@ func main() {
 	}
 	}`)
 
-	conf := p.Parse()
+	conf, err := p.Parse()
+	if err != nil {
+		panic(err)
+	}
 	upstreams := conf.FindUpstreams()
 
 	upstreams[0].AddServer(&gonginx.UpstreamServer{

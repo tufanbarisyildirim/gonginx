@@ -74,7 +74,7 @@ func (uss *UpstreamServer) GetDirective() *Directive {
 }
 
 // NewUpstreamServer creates an upstream server from a directive
-func NewUpstreamServer(directive IDirective) *UpstreamServer {
+func NewUpstreamServer(directive IDirective) (*UpstreamServer, error) {
 	uss := &UpstreamServer{
 		Flags:      make([]string, 0),
 		Parameters: make(map[string]string, 0),
@@ -96,5 +96,5 @@ func NewUpstreamServer(directive IDirective) *UpstreamServer {
 
 	uss.Comment = directive.GetComment()
 
-	return uss
+	return uss, nil
 }

@@ -87,6 +87,7 @@ func (h *HTTP) GetBlock() IBlock {
 	return h
 }
 
+// GetCodeBlock returns the literal code block
 func (h *HTTP) GetCodeBlock() string {
 	return ""
 }

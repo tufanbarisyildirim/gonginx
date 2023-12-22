@@ -63,7 +63,11 @@ func NewUpstream(directive IDirective) (*Upstream, error) {
 	if len(directive.GetBlock().GetDirectives()) > 0 {
 		for _, d := range directive.GetBlock().GetDirectives() {
 			if d.GetName() == "server" {
-				us.UpstreamServers = append(us.UpstreamServers, NewUpstreamServer(d))
+				uss, err := NewUpstreamServer(d)
+				if err != nil {
+					return nil, err
+				}
+				us.UpstreamServers = append(us.UpstreamServers, uss)
 			} else {
 				us.Directives = append(us.Directives, d)
 			}
@@ -80,6 +84,7 @@ func (us *Upstream) AddServer(server *UpstreamServer) {
 	us.UpstreamServers = append(us.UpstreamServers, server)
 }
 
+// GetCodeBlock returns the literal code block
 func (us *Upstream) GetCodeBlock() string {
 	return ""
 }
