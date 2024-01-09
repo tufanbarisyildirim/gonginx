@@ -19,6 +19,7 @@ type options struct {
 	parseInclude          bool
 	skipIncludeParsingErr bool
 	skipComments          bool
+	customDirectives      map[string]string
 }
 
 // Parser is an nginx config parser
@@ -83,6 +84,15 @@ func WithIncludeParsing() Option {
 	}
 }
 
+// WithCustomDirectives add your custom directives as valid directives
+func WithCustomDirectives(directives ...string) Option {
+	return func(p *Parser) {
+		for _, directive := range directives {
+			p.opts.customDirectives[directive] = directive
+		}
+	}
+}
+
 // NewStringParser parses nginx conf from string
 func NewStringParser(str string, opts ...Option) *Parser {
 	return NewParserFromLexer(lex(str), opts...)
@@ -106,7 +116,7 @@ func NewParserFromLexer(lexer *lexer, opts ...Option) *Parser {
 	configRoot, _ := filepath.Split(lexer.file)
 	parser := &Parser{
 		lexer:          lexer,
-		opts:           options{},
+		opts:           options{customDirectives: make(map[string]string)},
 		parsedIncludes: make(map[string]*gonginx.Config),
 		configRoot:     configRoot,
 	}
@@ -229,7 +239,10 @@ func (p *Parser) parseStatement() (gonginx.IDirective, error) {
 		Name: p.currentToken.Literal,
 	}
 
-	if _, ok := ValidDirectives[d.Name]; !ok {
+	_, ok := ValidDirectives[d.Name]
+	_, ok2 := p.opts.customDirectives[d.Name]
+
+	if !ok && !ok2 {
 		return nil, fmt.Errorf("unknown directive '%s' on line %d, column %d", d.Name, p.currentToken.Line, p.currentToken.Column)
 	}
 
