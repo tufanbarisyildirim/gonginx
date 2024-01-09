@@ -717,6 +717,7 @@ zone_sync_ssl_trusted_certificate
 zone_sync_ssl_verify
 zone_sync_ssl_verify_depth
 zone_sync_timeout
+check_status
 `
 
 // ValidDirectives mapped directives easily find
