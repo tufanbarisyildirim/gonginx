@@ -348,3 +348,14 @@ func TestParser_Issue31(t *testing.T) {
 		t.Fatal("error expected here")
 	}
 }
+
+func TestParser_Issue32(t *testing.T) {
+	t.Parallel()
+	p, err := NewParser("../testdata/issues/37.conf",
+		WithCustomDirectives("my_custom_directive", "my_custom_directive2"),
+		WithCustomDirectives("my_custom_directive3"),
+	)
+	assert.NilError(t, err, "no error expected here")
+	_, err = p.Parse()
+	assert.NilError(t, err, "no error expected here")
+}
