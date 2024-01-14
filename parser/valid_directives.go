@@ -1,8 +1,6 @@
 package parser
 
-import (
-	"strings"
-)
+import "strings"
 
 // got the list from: https://nginx.org/en/docs/dirindex.html
 var validDirectivesRawList = `absolute_redirect
@@ -719,6 +717,8 @@ zone_sync_ssl_verify_depth
 zone_sync_timeout
 `
 
+var extraValidDirectivesRawList = `''`
+
 // ValidDirectives mapped directives easily find
 // todo: this could handle the allowed blocks as well
 var ValidDirectives map[string]string = map[string]string{}
@@ -726,6 +726,10 @@ var ValidDirectives map[string]string = map[string]string{}
 func init() {
 	directives := strings.Split(validDirectivesRawList, "\n")
 	for _, directive := range directives {
+		ValidDirectives[strings.TrimSpace(directive)] = strings.TrimSpace(directive)
+	}
+	extraDirectives := strings.Split(extraValidDirectivesRawList, "\n")
+	for _, directive := range extraDirectives {
 		ValidDirectives[strings.TrimSpace(directive)] = strings.TrimSpace(directive)
 	}
 }
