@@ -16,10 +16,11 @@ import (
 type Option func(*Parser)
 
 type options struct {
-	parseInclude          bool
-	skipIncludeParsingErr bool
-	skipComments          bool
-	customDirectives      map[string]string
+	parseInclude           bool
+	skipIncludeParsingErr  bool
+	skipComments           bool
+	customDirectives       map[string]string
+	skipValidDirectivesErr bool
 }
 
 // Parser is an nginx config parser
@@ -90,6 +91,13 @@ func WithCustomDirectives(directives ...string) Option {
 		for _, directive := range directives {
 			p.opts.customDirectives[directive] = directive
 		}
+	}
+}
+
+// WithSkipValidDirectivesErr ignores unknown directive errors
+func WithSkipValidDirectivesErr() Option {
+	return func(p *Parser) {
+		p.opts.skipValidDirectivesErr = true
 	}
 }
 
@@ -239,11 +247,13 @@ func (p *Parser) parseStatement() (gonginx.IDirective, error) {
 		Name: p.currentToken.Literal,
 	}
 
-	_, ok := ValidDirectives[d.Name]
-	_, ok2 := p.opts.customDirectives[d.Name]
+	if !p.opts.skipValidDirectivesErr {
+		_, ok := ValidDirectives[d.Name]
+		_, ok2 := p.opts.customDirectives[d.Name]
 
-	if !ok && !ok2 {
-		return nil, fmt.Errorf("unknown directive '%s' on line %d, column %d", d.Name, p.currentToken.Line, p.currentToken.Column)
+		if !ok && !ok2 {
+			return nil, fmt.Errorf("unknown directive '%s' on line %d, column %d", d.Name, p.currentToken.Line, p.currentToken.Column)
+		}
 	}
 
 	//if we have a special parser for the directive, we use it.
