@@ -359,3 +359,52 @@ func TestParser_Issue32(t *testing.T) {
 	_, err = p.Parse()
 	assert.NilError(t, err, "no error expected here")
 }
+
+func TestParser_SkipBlock(t *testing.T) {
+	t.Parallel()
+	conf := `user root;
+sendfile on;
+tcp_nopush on;
+map $http_upgrade $connection_upgrade {
+	default upgrade;
+	'' close;
+	test '';
+}
+fake_map $http_upgrade $connection_upgrade {
+	default upgrade;
+	'' close;
+	test '';
+}
+`
+
+	p := NewStringParser(conf)
+	_, err := p.Parse()
+	assert.Error(t, err, "unknown directive 'fake_map' on line 9, column 1")
+
+	p = NewStringParser(conf, WithCustomDirectives("fake_map"), WithSkipValidBlocks("fake_map"))
+	_, err = p.Parse()
+	assert.NilError(t, err, "no error expected here")
+}
+
+func TestParser_SkipBlockSub(t *testing.T) {
+	t.Parallel()
+	conf := `server {
+		listen 80;
+		fake_location {
+			fake_root /var/www/html;
+		}
+	}
+`
+	p := NewStringParser(conf, WithSkipValidBlocks("server"))
+	_, err := p.Parse()
+	assert.NilError(t, err, "no error expected here")
+}
+
+func TestParser_TestFull(t *testing.T) {
+	t.Parallel()
+	p, err := NewParser("../testdata/full_conf/nginx.conf", WithIncludeParsing())
+	assert.NilError(t, err, "no error expected here")
+
+	_, err = p.Parse()
+	assert.NilError(t, err, "no error expected here")
+}
