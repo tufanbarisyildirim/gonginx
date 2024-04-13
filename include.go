@@ -5,6 +5,7 @@ type Include struct {
 	*Directive
 	IncludePath string
 	Configs     []*Config
+	Parent      IBlock
 }
 
 //TODO(tufan): move that part into dumper package
@@ -21,6 +22,14 @@ type Include struct {
 //	}
 //	return nil
 //}
+
+func (c *Include) GetParent() IBlock {
+	return c.Parent
+}
+
+func (c *Include) SetParent(parent IBlock) {
+	c.Parent = parent
+}
 
 // GetDirectives return all directives inside the included file
 func (c *Include) GetDirectives() []IDirective {

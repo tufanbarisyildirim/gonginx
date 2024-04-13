@@ -229,6 +229,7 @@ parsingLoop:
 			if err != nil {
 				return nil, err
 			}
+			s.SetParent(context)
 			context.Directives = append(context.Directives, s)
 			line = p.currentToken.Line
 		case p.curTokenIs(token.Comment):

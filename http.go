@@ -9,6 +9,15 @@ type HTTP struct {
 	Servers    []*Server
 	Directives []IDirective
 	Comment    []string
+	Parent     IBlock
+}
+
+func (h *HTTP) SetParent(parent IBlock) {
+	h.Parent = parent
+}
+
+func (h *HTTP) GetParent() IBlock {
+	return h.Parent
 }
 
 // GetComment comment of the HTTP directive
@@ -30,6 +39,7 @@ func NewHTTP(directive IDirective) (*HTTP, error) {
 		}
 		for _, directive := range block.GetDirectives() {
 			if server, ok := directive.(*Server); ok {
+				server.Parent = http
 				http.Servers = append(http.Servers, server)
 				continue
 			}

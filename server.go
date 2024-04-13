@@ -8,6 +8,15 @@ import (
 type Server struct {
 	Block   IBlock
 	Comment []string
+	Parent  IBlock
+}
+
+func (s *Server) SetParent(parent IBlock) {
+	s.Parent = parent
+}
+
+func (s *Server) GetParent() IBlock {
+	return s.Parent
 }
 
 // SetComment set comment of server directive

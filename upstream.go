@@ -11,6 +11,15 @@ type Upstream struct {
 	//Directives Other directives in upstream (ip_hash; etc)
 	Directives []IDirective
 	Comment    []string
+	Parent     IBlock
+}
+
+func (us *Upstream) SetParent(parent IBlock) {
+	us.Parent = parent
+}
+
+func (us *Upstream) GetParent() IBlock {
+	return us.Parent
 }
 
 // SetComment set comment of the directive
@@ -67,6 +76,7 @@ func NewUpstream(directive IDirective) (*Upstream, error) {
 				if err != nil {
 					return nil, err
 				}
+				uss.SetParent(us)
 				us.UpstreamServers = append(us.UpstreamServers, uss)
 			} else {
 				us.Directives = append(us.Directives, d)

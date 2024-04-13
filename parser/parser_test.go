@@ -408,3 +408,107 @@ func TestParser_TestFull(t *testing.T) {
 	_, err = p.Parse()
 	assert.NilError(t, err, "no error expected here")
 }
+
+func TestParser_EventsParent(t *testing.T) {
+	p := NewStringParser(`user www www;
+worker_processes 5;
+error_log logs/error.log;
+pid logs/nginx.pid;
+worker_rlimit_nofile 8192;
+events { worker_connections 4096; } 
+# http comment`)
+
+	conf, err := p.Parse()
+	assert.NilError(t, err, "no error expected here")
+
+	events := conf.FindDirectives("events")
+	assert.Assert(t, len(events) > 0, "cannot find events")
+
+	mainBlock, ok := events[0].GetParent().(*gonginx.Block)
+	assert.Equal(t, ok, true, "cannot convert parent to blcok")
+	allDire := mainBlock.GetDirectives()
+	assert.Assert(t, len(allDire) == 6, "num of sub directive in main block error")
+}
+
+func TestParser_ParentSubDirective1(t *testing.T) {
+	p := NewStringParser(`user www www;
+events { 
+	worker_connections 4096; 
+	use epoll;
+	} 
+# http comment`)
+
+	conf, err := p.Parse()
+	assert.NilError(t, err, "no error expected here")
+
+	workerConnections := conf.FindDirectives("worker_connections")
+	assert.Assert(t, len(workerConnections) == 1, "cannot find worker_connections")
+
+	events, ok := workerConnections[0].GetParent().(*gonginx.Block)
+	assert.Equal(t, ok, true, "cannot convert parent to blcok")
+	allDire := events.GetDirectives()
+	assert.Assert(t, len(allDire) == 2, "num of sub directive in events error")
+}
+
+func TestParser_ParentSubDirective2(t *testing.T) {
+	p := NewStringParser(`user www www;
+events { 
+	worker_connections 4096; 
+	use epoll;
+	} 
+
+http {
+	upstream backend {
+		server 127.0.0.1:8080;
+		server 127.0.0.1:8081;
+	}
+
+	server {
+		listen 80;
+		location / {
+			proxy_pass http://backend/;
+		}
+	}
+}
+`)
+	conf, err := p.Parse()
+	assert.NilError(t, err, "no error expected here")
+
+	server := conf.FindDirectives("server")
+	assert.Equal(t, len(server), 1, "num of server error")
+
+	upstreams := conf.FindUpstreams()
+	assert.Equal(t, len(upstreams), 1, "num of upstream error")
+	uServers := upstreams[0].UpstreamServers
+	assert.Equal(t, len(uServers), 2, "num of upstream server error")
+
+	_, ok := uServers[0].Parent.(*gonginx.Upstream)
+	assert.Equal(t, ok, true, "cannot convert upstream to blcok")
+
+}
+
+func TestParser_ParentSubDirective3(t *testing.T) {
+	p := NewStringParser(`user www www;
+http {
+	include mime.types;
+	server {
+		listen 80;
+		location / {
+			proxy_pass http://backend/;
+		}
+	}
+}
+`)
+	conf, err := p.Parse()
+	assert.NilError(t, err, "no error expected here")
+
+	server := conf.FindDirectives("server")
+	assert.Equal(t, len(server), 1, "num of server error")
+
+	httpBlock, ok := server[0].GetParent().(*gonginx.HTTP)
+	assert.Equal(t, ok, true, "cannot convert server parent to http")
+
+	includes := httpBlock.FindDirectives("include")
+
+	assert.Equal(t, len(includes), 1, "cannot find include directive in http block")
+}

@@ -6,6 +6,15 @@ type Directive struct {
 	Name       string
 	Parameters []string //TODO: Save parameters with their type
 	Comment    []string
+	Parent     IBlock
+}
+
+func (d *Directive) SetParent(parent IBlock) {
+	d.Parent = parent
+}
+
+func (d *Directive) GetParent() IBlock {
+	return d.Parent
 }
 
 // SetComment sets comment tied to this directive

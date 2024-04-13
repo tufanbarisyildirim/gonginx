@@ -12,6 +12,15 @@ type UpstreamServer struct {
 	Flags      []string
 	Parameters map[string]string
 	Comment    []string
+	Parent     IBlock
+}
+
+func (uss *UpstreamServer) SetParent(parent IBlock) {
+	uss.Parent = parent
+}
+
+func (uss *UpstreamServer) GetParent() IBlock {
+	return uss.Parent
 }
 
 // SetComment set comment of the directive

@@ -5,6 +5,15 @@ type Block struct {
 	Directives  []IDirective
 	IsLuaBlock  bool
 	LiteralCode string
+	Parent      IBlock
+}
+
+func (b *Block) SetParent(parent IBlock) {
+	b.Parent = parent
+}
+
+func (b *Block) GetParent() IBlock {
+	return b.Parent
 }
 
 // GetDirectives get all directives in this block
