@@ -3,7 +3,8 @@ package parser
 import (
 	"testing"
 
-	"github.com/tufanbarisyildirim/gonginx"
+	"github.com/tufanbarisyildirim/gonginx/config"
+	"github.com/tufanbarisyildirim/gonginx/dumper"
 	"github.com/tufanbarisyildirim/gonginx/parser/token"
 	"gotest.tools/v3/assert"
 )
@@ -140,7 +141,7 @@ func TestParser_Location(t *testing.T) {
 	`)).Parse()
 	assert.NilError(t, err, "no error expected here")
 
-	_, ok := c.Directives[0].(*gonginx.Location)
+	_, ok := c.Directives[0].(*config.Location)
 	assert.Assert(t, ok, "expecting a location as first statement")
 }
 
@@ -155,7 +156,7 @@ func TestParser_VariableAsParameter(t *testing.T) {
 
 	assert.NilError(t, err, "no error expected here")
 
-	d, ok := c.Directives[0].(*gonginx.Directive)
+	d, ok := c.Directives[0].(*config.Directive)
 	assert.Assert(t, ok, "expecting a directive(http) as first statement")
 	assert.Equal(t, d.Name, "map", "first directive needs to be ")
 	assert.Equal(t, len(d.Parameters), 2, "map must have 2 parameters here")
@@ -205,7 +206,7 @@ func TestParser_Include(t *testing.T) {
 
 	c, err := p.Parse()
 	assert.NilError(t, err, "no error expected here")
-	s := gonginx.DumpConfig(c, gonginx.IndentedStyle)
+	s := dumper.DumpConfig(c, dumper.IndentedStyle)
 
 	assert.Equal(t, `user www www;
 worker_processes 5;
@@ -270,7 +271,7 @@ func TestParser_Issue17(t *testing.T) {
 
 	c, err := p.Parse()
 	assert.NilError(t, err, "no error expected here")
-	s := gonginx.DumpConfig(c, gonginx.IndentedStyle)
+	s := dumper.DumpConfig(c, dumper.IndentedStyle)
 	assert.Equal(t, `location / {
     set $serve_URL $fullurl${uri}index.html;
     try_files $serve_URL $uri $uri/ /index.php$is_args$args;
@@ -316,13 +317,13 @@ func TestParser_Issue22(t *testing.T) {
 
 	c, err := p.Parse()
 	assert.NilError(t, err, "no error expected here")
-	st := &gonginx.Style{
+	st := &dumper.Style{
 		SortDirectives: false,
 		StartIndent:    0,
 		Indent:         4,
 		Debug:          false,
 	}
-	s := gonginx.DumpConfig(c, st)
+	s := dumper.DumpConfig(c, st)
 	assert.Equal(t, `server {
     location = /foo {
         rewrite_by_lua_block {
@@ -424,7 +425,7 @@ events { worker_connections 4096; }
 	events := conf.FindDirectives("events")
 	assert.Assert(t, len(events) > 0, "cannot find events")
 
-	mainBlock, ok := events[0].GetParent().(*gonginx.Block)
+	mainBlock, ok := events[0].GetParent().(*config.Block)
 	assert.Equal(t, ok, true, "cannot convert parent to blcok")
 	allDire := mainBlock.GetDirectives()
 	assert.Assert(t, len(allDire) == 6, "num of sub directive in main block error")
@@ -444,7 +445,7 @@ events {
 	workerConnections := conf.FindDirectives("worker_connections")
 	assert.Assert(t, len(workerConnections) == 1, "cannot find worker_connections")
 
-	events, ok := workerConnections[0].GetParent().(*gonginx.Block)
+	events, ok := workerConnections[0].GetParent().(*config.Block)
 	assert.Equal(t, ok, true, "cannot convert parent to blcok")
 	allDire := events.GetDirectives()
 	assert.Assert(t, len(allDire) == 2, "num of sub directive in events error")
@@ -482,7 +483,7 @@ http {
 	uServers := upstreams[0].UpstreamServers
 	assert.Equal(t, len(uServers), 2, "num of upstream server error")
 
-	_, ok := uServers[0].Parent.(*gonginx.Upstream)
+	_, ok := uServers[0].Parent.(*config.Upstream)
 	assert.Equal(t, ok, true, "cannot convert upstream to blcok")
 
 }
@@ -505,7 +506,7 @@ http {
 	server := conf.FindDirectives("server")
 	assert.Equal(t, len(server), 1, "num of server error")
 
-	httpBlock, ok := server[0].GetParent().(*gonginx.HTTP)
+	httpBlock, ok := server[0].GetParent().(*config.HTTP)
 	assert.Equal(t, ok, true, "cannot convert server parent to http")
 
 	includes := httpBlock.FindDirectives("include")

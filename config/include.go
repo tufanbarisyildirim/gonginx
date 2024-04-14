@@ -1,4 +1,8 @@
-package gonginx
+package config
+
+import (
+	"errors"
+)
 
 // Include include structure
 type Include struct {
@@ -59,4 +63,24 @@ func (c *Include) GetName() string {
 // SetComment set comment of include directive
 func (c *Include) SetComment(comment []string) {
 	c.Comment = comment
+}
+
+func NewInclude(dir IDirective) (*Include, error) {
+	directive, ok := dir.(*Directive)
+	if !ok {
+		return nil, errors.New("type error")
+	}
+	include := &Include{
+		Directive:   directive,
+		IncludePath: directive.Parameters[0],
+	}
+
+	if len(directive.Parameters) > 1 {
+		panic("include directive can not have multiple parameters")
+	}
+
+	if directive.Block != nil {
+		panic("include can not have a block, or missing semicolon at the end of include statement")
+	}
+	return include, nil
 }

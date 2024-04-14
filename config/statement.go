@@ -1,4 +1,4 @@
-package gonginx
+package config
 
 // IBlock represents any directive block
 type IBlock interface {

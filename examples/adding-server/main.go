@@ -3,7 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/tufanbarisyildirim/gonginx"
+	"github.com/tufanbarisyildirim/gonginx/config"
+	"github.com/tufanbarisyildirim/gonginx/dumper"
 	"github.com/tufanbarisyildirim/gonginx/parser"
 )
 
@@ -21,7 +22,7 @@ func main() {
 	}
 	upstreams := conf.FindUpstreams()
 
-	upstreams[0].AddServer(&gonginx.UpstreamServer{
+	upstreams[0].AddServer(&config.UpstreamServer{
 		Address: "127.0.0.1:443",
 		Parameters: map[string]string{
 			"weight": "5",
@@ -29,6 +30,6 @@ func main() {
 		Flags: []string{"down"},
 	})
 
-	fmt.Println(gonginx.DumpBlock(conf.Block, gonginx.IndentedStyle))
+	fmt.Println(dumper.DumpBlock(conf.Block, dumper.IndentedStyle))
 
 }

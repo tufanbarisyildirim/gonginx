@@ -1,4 +1,4 @@
-package gonginx
+package config
 
 // Block a block statement
 type Block struct {

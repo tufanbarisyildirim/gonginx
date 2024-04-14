@@ -1,4 +1,4 @@
-package gonginx
+package config
 
 // Directive represents any nginx directive
 type Directive struct {

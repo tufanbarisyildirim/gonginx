@@ -1,4 +1,4 @@
-package gonginx
+package dumper
 
 import (
 	"reflect"

@@ -1,4 +1,4 @@
-package gonginx
+package config
 
 import (
 	"errors"

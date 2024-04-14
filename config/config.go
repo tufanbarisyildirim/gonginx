@@ -1,10 +1,17 @@
-package gonginx
+package config
 
-//Config  represents a whole config file.
+// Config  represents a whole config file.
 type Config struct {
 	*Block
 	FilePath string
 }
+
+// global warpper
+var (
+	BlockWrappers     = map[string]func(*Directive) (IDirective, error){}
+	DirectiveWrappers = map[string]func(*Directive) (IDirective, error){}
+	IncludeWrappers   = map[string]func(*Directive) (IDirective, error){}
+)
 
 //TODO(tufan): move that part inti dumper package
 //SaveToFile save config to a file
@@ -38,12 +45,12 @@ type Config struct {
 //	return nil
 //}
 
-//FindDirectives find directives from whole config block
+// FindDirectives find directives from whole config block
 func (c *Config) FindDirectives(directiveName string) []IDirective {
 	return c.Block.FindDirectives(directiveName)
 }
 
-//FindUpstreams find directives from whole config block
+// FindUpstreams find directives from whole config block
 func (c *Config) FindUpstreams() []*Upstream {
 	var upstreams []*Upstream
 	directives := c.Block.FindDirectives("upstream")
@@ -52,4 +59,30 @@ func (c *Config) FindUpstreams() []*Upstream {
 		upstreams = append(upstreams, directive.(*Upstream))
 	}
 	return upstreams
+}
+
+func init() {
+	BlockWrappers["http"] = func(directive *Directive) (IDirective, error) {
+		return NewHTTP(directive)
+	}
+	BlockWrappers["location"] = func(directive *Directive) (IDirective, error) {
+		return NewLocation(directive)
+	}
+	BlockWrappers["_by_lua_block"] = func(directive *Directive) (IDirective, error) {
+		return NewLuaBlock(directive)
+	}
+	BlockWrappers["server"] = func(directive *Directive) (IDirective, error) {
+		return NewServer(directive)
+	}
+	BlockWrappers["upstream"] = func(directive *Directive) (IDirective, error) {
+		return NewUpstream(directive)
+	}
+
+	DirectiveWrappers["server"] = func(directive *Directive) (IDirective, error) {
+		return NewUpstreamServer(directive)
+	}
+
+	IncludeWrappers["include"] = func(directive *Directive) (IDirective, error) {
+		return NewInclude(directive)
+	}
 }

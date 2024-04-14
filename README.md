@@ -50,11 +50,11 @@ keyword     : Keyword
 
 #### TODO
 - [x]  associate comments with config objects to print them on config generation and make it configurable with `dumper.Style`
-- [ ]  move any context wrapper into their own file (remove from parser)
+- [x]  move any context wrapper into their own file (remove from parser)
 - [x]  Parse included files recusively, keep relative path on load, save all in a related structure and make that optional in dumper.Style
 - [ ]  Implement specific searches, like finding servers by server_name (domain) or any upstream by target etc.
 - [ ]  add more examples
-- [ ]  link the parent directive to any directive for easier manipulation
+- [x]  link the parent directive to any directive for easier manipulation
 
 ## Limitations
 There is no known limitations yet. PRs are more than welcome if you want to implement a specific directive / block, please read [Contributing](CONTRIBUTING.md) before your first PR.
