@@ -12,10 +12,12 @@ type HTTP struct {
 	Parent     IBlock
 }
 
+// SetParent change the parent block
 func (h *HTTP) SetParent(parent IBlock) {
 	h.Parent = parent
 }
 
+// GetParent the parent block
 func (h *HTTP) GetParent() IBlock {
 	return h.Parent
 }

@@ -14,10 +14,12 @@ type Upstream struct {
 	Parent     IBlock
 }
 
+// SetParent change the parent block
 func (us *Upstream) SetParent(parent IBlock) {
 	us.Parent = parent
 }
 
+// GetParent the parent block
 func (us *Upstream) GetParent() IBlock {
 	return us.Parent
 }

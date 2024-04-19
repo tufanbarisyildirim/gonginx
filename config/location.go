@@ -10,14 +10,17 @@ type Location struct {
 	Parent   IBlock
 }
 
+// SetParent change the parent block
 func (l *Location) SetParent(parent IBlock) {
 	l.Parent = parent
 }
 
+// GetParent the parent block
 func (l *Location) GetParent() IBlock {
 	return l.Parent
 }
 
+// NewLocation initialize a location block from a directive
 func NewLocation(directive IDirective) (*Location, error) {
 	dir, ok := directive.(*Directive)
 	if !ok {

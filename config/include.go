@@ -27,10 +27,12 @@ type Include struct {
 //	return nil
 //}
 
+// GetParent the parent block
 func (c *Include) GetParent() IBlock {
 	return c.Parent
 }
 
+// SetParent change the parent block
 func (c *Include) SetParent(parent IBlock) {
 	c.Parent = parent
 }
@@ -65,6 +67,7 @@ func (c *Include) SetComment(comment []string) {
 	c.Comment = comment
 }
 
+// NewInclude initialize an include block from a directive
 func NewInclude(dir IDirective) (*Include, error) {
 	directive, ok := dir.(*Directive)
 	if !ok {

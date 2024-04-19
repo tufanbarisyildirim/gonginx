@@ -306,7 +306,7 @@ func (p *Parser) parseStatement(isSkipValidDirective bool) (config.IDirective, e
 	return nil, fmt.Errorf("unexpected token %s (%s) on line %d, column %d", p.currentToken.Type.String(), p.currentToken.Literal, p.currentToken.Line, p.currentToken.Column)
 }
 
-// just parse include confs
+// ParseInclude just parse include confs
 func (p *Parser) ParseInclude(include *config.Include) (config.IDirective, error) {
 	if p.opts.parseInclude {
 		includePath := include.IncludePath

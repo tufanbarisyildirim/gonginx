@@ -11,10 +11,12 @@ type Server struct {
 	Parent  IBlock
 }
 
+// SetParent change the parent block
 func (s *Server) SetParent(parent IBlock) {
 	s.Parent = parent
 }
 
+// GetParent the parent block
 func (s *Server) GetParent() IBlock {
 	return s.Parent
 }

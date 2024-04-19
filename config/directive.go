@@ -9,10 +9,12 @@ type Directive struct {
 	Parent     IBlock
 }
 
+// SetParent  the parent block
 func (d *Directive) SetParent(parent IBlock) {
 	d.Parent = parent
 }
 
+// GetParent change the parent block
 func (d *Directive) GetParent() IBlock {
 	return d.Parent
 }

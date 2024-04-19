@@ -8,10 +8,12 @@ type Block struct {
 	Parent      IBlock
 }
 
+// SetParent change the parent block
 func (b *Block) SetParent(parent IBlock) {
 	b.Parent = parent
 }
 
+// GetParent the parent block
 func (b *Block) GetParent() IBlock {
 	return b.Parent
 }

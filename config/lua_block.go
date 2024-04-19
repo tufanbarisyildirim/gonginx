@@ -30,10 +30,12 @@ func NewLuaBlock(directive IDirective) (*LuaBlock, error) {
 	return nil, fmt.Errorf("%s must have a block", directive.GetName())
 }
 
+// SetParent change the parent block
 func (lb *LuaBlock) SetParent(parent IBlock) {
 	lb.Parent = parent
 }
 
+// GetParent the parent block
 func (lb *LuaBlock) GetParent() IBlock {
 	return lb.Parent
 }
