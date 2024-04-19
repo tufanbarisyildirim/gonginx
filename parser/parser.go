@@ -16,11 +16,12 @@ import (
 type Option func(*Parser)
 
 type options struct {
-	parseInclude           bool
-	skipIncludeParsingErr  bool
-	skipComments           bool
-	customDirectives       map[string]string
-	skipValidDirectivesErr bool
+	parseInclude               bool
+	skipIncludeParsingErr      bool
+	skipComments               bool
+	customDirectives           map[string]string
+	skipValidSubDirectiveBlock map[string]struct{}
+	skipValidDirectivesErr     bool
 }
 
 // Parser is an nginx config parser
@@ -94,6 +95,15 @@ func WithCustomDirectives(directives ...string) Option {
 	}
 }
 
+// WithSkipValidBlocks add your custom block as valid
+func WithSkipValidBlocks(directives ...string) Option {
+	return func(p *Parser) {
+		for _, directive := range directives {
+			p.opts.skipValidSubDirectiveBlock[directive] = struct{}{}
+		}
+	}
+}
+
 // WithSkipValidDirectivesErr ignores unknown directive errors
 func WithSkipValidDirectivesErr() Option {
 	return func(p *Parser) {
@@ -124,7 +134,7 @@ func NewParserFromLexer(lexer *lexer, opts ...Option) *Parser {
 	configRoot, _ := filepath.Split(lexer.file)
 	parser := &Parser{
 		lexer:          lexer,
-		opts:           options{customDirectives: make(map[string]string)},
+		opts:           options{customDirectives: make(map[string]string), skipValidSubDirectiveBlock: map[string]struct{}{}},
 		parsedIncludes: make(map[string]*gonginx.Config),
 		configRoot:     configRoot,
 	}
@@ -181,7 +191,7 @@ func (p *Parser) followingTokenIs(t token.Type) bool {
 
 // Parse the gonginx.
 func (p *Parser) Parse() (*gonginx.Config, error) {
-	parsedBlock, err := p.parseBlock(false)
+	parsedBlock, err := p.parseBlock(false, false)
 	if err != nil {
 		return nil, err
 	}
@@ -194,7 +204,7 @@ func (p *Parser) Parse() (*gonginx.Config, error) {
 }
 
 // ParseBlock parse a block statement
-func (p *Parser) parseBlock(inBlock bool) (*gonginx.Block, error) {
+func (p *Parser) parseBlock(inBlock bool, isSkipValidDirective bool) (*gonginx.Block, error) {
 
 	context := &gonginx.Block{
 		Directives: make([]gonginx.IDirective, 0),
@@ -215,7 +225,7 @@ parsingLoop:
 		case p.curTokenIs(token.BlockEnd):
 			break parsingLoop
 		case p.curTokenIs(token.Keyword) || p.curTokenIs(token.QuotedString):
-			s, err := p.parseStatement()
+			s, err := p.parseStatement(isSkipValidDirective)
 			if err != nil {
 				return nil, err
 			}
@@ -242,12 +252,12 @@ parsingLoop:
 	return context, nil
 }
 
-func (p *Parser) parseStatement() (gonginx.IDirective, error) {
+func (p *Parser) parseStatement(isSkipValidDirective bool) (gonginx.IDirective, error) {
 	d := &gonginx.Directive{
 		Name: p.currentToken.Literal,
 	}
 
-	if !p.opts.skipValidDirectivesErr {
+	if !p.opts.skipValidDirectivesErr && !isSkipValidDirective {
 		_, ok := ValidDirectives[d.Name]
 		_, ok2 := p.opts.customDirectives[d.Name]
 
@@ -289,7 +299,10 @@ func (p *Parser) parseStatement() (gonginx.IDirective, error) {
 
 	//ok, it does not end with a semicolon but a block starts, we will convert that block if we have a converter
 	if p.curTokenIs(token.BlockStart) {
-		b, err := p.parseBlock(true)
+		_, blockSkip1 := SkipValidBlocks[d.Name]
+		_, blockSkip2 := p.opts.skipValidSubDirectiveBlock[d.Name]
+		isSkipBlockSubDirective := blockSkip1 || blockSkip2 || isSkipValidDirective
+		b, err := p.parseBlock(true, isSkipBlockSubDirective)
 		if err != nil {
 			return nil, err
 		}
