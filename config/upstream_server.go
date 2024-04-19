@@ -1,4 +1,4 @@
-package gonginx
+package config
 
 import (
 	"fmt"
@@ -12,6 +12,17 @@ type UpstreamServer struct {
 	Flags      []string
 	Parameters map[string]string
 	Comment    []string
+	Parent     IBlock
+}
+
+// SetParent change the parent block
+func (uss *UpstreamServer) SetParent(parent IBlock) {
+	uss.Parent = parent
+}
+
+// GetParent the parent block
+func (uss *UpstreamServer) GetParent() IBlock {
+	return uss.Parent
 }
 
 // SetComment set comment of the directive

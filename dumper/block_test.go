@@ -1,14 +1,19 @@
-package gonginx
+package dumper
 
 import (
-	"reflect"
 	"testing"
+
+	"github.com/tufanbarisyildirim/gonginx/config"
 )
 
+func NewServerOrNill(directive config.IDirective) *config.Server {
+	s, _ := config.NewServer(directive)
+	return s
+}
 func TestBlock_ToString(t *testing.T) {
 	t.Parallel()
 	type fields struct {
-		Directives []IDirective
+		Directives []config.IDirective
 	}
 	tests := []struct {
 		name                        string
@@ -20,19 +25,19 @@ func TestBlock_ToString(t *testing.T) {
 		{
 			name: "empty block",
 			fields: fields{
-				Directives: make([]IDirective, 0),
+				Directives: make([]config.IDirective, 0),
 			},
 			want: "",
 		},
 		{
 			name: "statement list",
 			fields: fields{
-				Directives: []IDirective{
-					&Directive{
+				Directives: []config.IDirective{
+					&config.Directive{
 						Name:       "user",
 						Parameters: []string{"nginx", "nginx"},
 					},
-					&Directive{
+					&config.Directive{
 						Name:       "worker_processes",
 						Parameters: []string{"5"},
 					},
@@ -45,35 +50,35 @@ func TestBlock_ToString(t *testing.T) {
 		{
 			name: "statement list with wrapped directives",
 			fields: fields{
-				Directives: []IDirective{
-					&Directive{
+				Directives: []config.IDirective{
+					&config.Directive{
 						Name:       "user",
 						Parameters: []string{"nginx", "nginx"},
 					},
-					&Directive{
+					&config.Directive{
 						Name:       "worker_processes",
 						Parameters: []string{"5"},
 					},
-					&Include{
-						Directive: &Directive{
+					&config.Include{
+						Directive: &config.Directive{
 							Name:       "include",
 							Parameters: []string{"/etc/nginx/conf/*.conf"},
 						},
 						IncludePath: "/etc/nginx/conf/*.conf",
 					},
-					NewServerOrNill(&Directive{
-						Block: &Block{
-							Directives: []IDirective{
-								&Directive{
+					NewServerOrNill(&config.Directive{
+						Block: &config.Block{
+							Directives: []config.IDirective{
+								&config.Directive{
 									Name:       "user",
 									Parameters: []string{"nginx", "nginx"},
 								},
-								&Directive{
+								&config.Directive{
 									Name:       "worker_processes",
 									Parameters: []string{"5"},
 								},
-								&Include{
-									Directive: &Directive{
+								&config.Include{
+									Directive: &config.Directive{
 										Name:       "include",
 										Parameters: []string{"/etc/nginx/conf/*.conf"},
 									},
@@ -92,7 +97,7 @@ func TestBlock_ToString(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			b := &Block{
+			b := &config.Block{
 				Directives: tt.fields.Directives,
 			}
 			if got := DumpBlock(b, NoIndentStyle); got != tt.want {
@@ -103,108 +108,6 @@ func TestBlock_ToString(t *testing.T) {
 			}
 			if got := DumpBlock(b, NoIndentSortedSpaceStyle); got != tt.wantSortedSpaceBeforeBlocks {
 				t.Errorf("Block.ToString(NoIndentSortedSpaceStyle) = \"%v\", want \"%v\"", got, tt.wantSortedSpaceBeforeBlocks)
-			}
-		})
-	}
-}
-
-func NewServerOrNill(directive IDirective) *Server {
-	s, _ := NewServer(directive)
-	return s
-}
-
-func TestBlock_FindDirectives(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		directiveName string
-	}
-	tests := []struct {
-		name  string
-		block *Block
-		args  args
-		want  []IDirective
-	}{
-		{
-			name: "find all servers",
-			block: &Block{
-				Directives: []IDirective{
-					&Server{
-						Block: &Block{
-							Directives: []IDirective{
-								&Directive{
-									Name:       "server_name",
-									Parameters: []string{"gonginx.dev"},
-								},
-							},
-						},
-					},
-					&Server{
-						Block: &Block{
-							Directives: []IDirective{
-								&Directive{
-									Name:       "server_name",
-									Parameters: []string{"gonginx2.dev"},
-								},
-							},
-						},
-					},
-					&HTTP{
-						Servers: []*Server{
-							{
-								Block: &Block{
-									Directives: []IDirective{
-										&Directive{
-											Name:       "server_name",
-											Parameters: []string{"gonginx3.dev"},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			want: []IDirective{
-				&Server{
-					Block: &Block{
-						Directives: []IDirective{
-							&Directive{
-								Name:       "server_name",
-								Parameters: []string{"gonginx.dev"},
-							},
-						},
-					},
-				},
-				&Server{
-					Block: &Block{
-						Directives: []IDirective{
-							&Directive{
-								Name:       "server_name",
-								Parameters: []string{"gonginx2.dev"},
-							},
-						},
-					},
-				},
-				&Server{
-					Block: &Block{
-						Directives: []IDirective{
-							&Directive{
-								Name:       "server_name",
-								Parameters: []string{"gonginx3.dev"},
-							},
-						},
-					},
-				},
-			},
-			args: args{
-				directiveName: "server",
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.block.FindDirectives(tt.args.directiveName); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Block.FindDirectives() = %v want %v", got, tt.want)
 			}
 		})
 	}

@@ -1,4 +1,4 @@
-package gonginx
+package config
 
 import (
 	"fmt"
@@ -10,6 +10,7 @@ type LuaBlock struct {
 	Name       string
 	Comment    []string
 	LuaCode    string
+	Parent     IBlock
 }
 
 // NewLuaBlock creates a lua block
@@ -27,6 +28,16 @@ func NewLuaBlock(directive IDirective) (*LuaBlock, error) {
 		return lb, nil
 	}
 	return nil, fmt.Errorf("%s must have a block", directive.GetName())
+}
+
+// SetParent change the parent block
+func (lb *LuaBlock) SetParent(parent IBlock) {
+	lb.Parent = parent
+}
+
+// GetParent the parent block
+func (lb *LuaBlock) GetParent() IBlock {
+	return lb.Parent
 }
 
 // GetName get directive name to construct the statment string

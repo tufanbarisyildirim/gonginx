@@ -1,13 +1,15 @@
-package gonginx
+package dumper
 
 import (
 	"testing"
+
+	"github.com/tufanbarisyildirim/gonginx/config"
 )
 
 func TestServer_ToString(t *testing.T) {
 	t.Parallel()
 	type fields struct {
-		Directive *Directive
+		Directive *config.Directive
 	}
 	tests := []struct {
 		name   string
@@ -18,9 +20,9 @@ func TestServer_ToString(t *testing.T) {
 		{
 			name: "empty server block",
 			fields: fields{
-				Directive: &Directive{
-					Block: &Block{
-						Directives: make([]IDirective, 0),
+				Directive: &config.Directive{
+					Block: &config.Block{
+						Directives: make([]config.IDirective, 0),
 					},
 					Name: "server",
 				},
@@ -31,14 +33,14 @@ func TestServer_ToString(t *testing.T) {
 		{
 			name: "styled server block with some directives",
 			fields: fields{
-				Directive: &Directive{
-					Block: &Block{
-						Directives: []IDirective{
-							&Directive{
+				Directive: &config.Directive{
+					Block: &config.Block{
+						Directives: []config.IDirective{
+							&config.Directive{
 								Name:       "server_name",
 								Parameters: []string{"gonginx.dev"},
 							},
-							&Directive{
+							&config.Directive{
 								Name:       "root",
 								Parameters: []string{"/var/sites/gonginx"},
 							},
@@ -56,7 +58,7 @@ func TestServer_ToString(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s, err := NewServer(tt.fields.Directive)
+			s, err := config.NewServer(tt.fields.Directive)
 			if err != nil {
 				t.Error("NewServer(tt.fields.Directive) failed")
 			}

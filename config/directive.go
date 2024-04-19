@@ -1,4 +1,4 @@
-package gonginx
+package config
 
 // Directive represents any nginx directive
 type Directive struct {
@@ -6,6 +6,17 @@ type Directive struct {
 	Name       string
 	Parameters []string //TODO: Save parameters with their type
 	Comment    []string
+	Parent     IBlock
+}
+
+// SetParent  the parent block
+func (d *Directive) SetParent(parent IBlock) {
+	d.Parent = parent
+}
+
+// GetParent change the parent block
+func (d *Directive) GetParent() IBlock {
+	return d.Parent
 }
 
 // SetComment sets comment tied to this directive

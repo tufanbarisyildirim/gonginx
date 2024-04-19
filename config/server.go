@@ -1,4 +1,4 @@
-package gonginx
+package config
 
 import (
 	"errors"
@@ -8,6 +8,17 @@ import (
 type Server struct {
 	Block   IBlock
 	Comment []string
+	Parent  IBlock
+}
+
+// SetParent change the parent block
+func (s *Server) SetParent(parent IBlock) {
+	s.Parent = parent
+}
+
+// GetParent the parent block
+func (s *Server) GetParent() IBlock {
+	return s.Parent
 }
 
 // SetComment set comment of server directive

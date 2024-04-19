@@ -1,7 +1,9 @@
-package gonginx
+package dumper
 
 import (
 	"testing"
+
+	"github.com/tufanbarisyildirim/gonginx/config"
 )
 
 func TestDirective_ToString(t *testing.T) {
@@ -84,7 +86,7 @@ func TestDirective_ToString(t *testing.T) {
 		tt2 := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			d := &Directive{
+			d := &config.Directive{
 				Name:       tt2.fields.Name,
 				Parameters: tt2.fields.Parameters,
 			}

@@ -1,4 +1,4 @@
-package gonginx
+package dumper
 
 import (
 	"bytes"
@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/tufanbarisyildirim/gonginx/config"
 )
 
 var (
@@ -76,7 +78,7 @@ func (s *Style) Iterate() *Style {
 }
 
 // DumpDirective convert a directive to a string
-func DumpDirective(d IDirective, style *Style) string {
+func DumpDirective(d config.IDirective, style *Style) string {
 	if d == nil {
 		return ""
 	}
@@ -108,7 +110,7 @@ func DumpDirective(d IDirective, style *Style) string {
 }
 
 // DumpBlock convert a directive to a string
-func DumpBlock(b IBlock, style *Style) string {
+func DumpBlock(b config.IBlock, style *Style) string {
 	var buf bytes.Buffer
 
 	if b.GetCodeBlock() != "" {
@@ -147,12 +149,12 @@ func DumpBlock(b IBlock, style *Style) string {
 }
 
 // DumpConfig dump whole config
-func DumpConfig(c *Config, style *Style) string {
+func DumpConfig(c *config.Config, style *Style) string {
 	return DumpBlock(c.Block, style)
 }
 
 // DumpInclude dump(stringify) the included AST
-func DumpInclude(i *Include, style *Style) map[string]string {
+func DumpInclude(i *config.Include, style *Style) map[string]string {
 	mp := make(map[string]string)
 	for _, cfg := range i.Configs {
 		mp[cfg.FilePath] = DumpConfig(cfg, style)
@@ -161,11 +163,11 @@ func DumpInclude(i *Include, style *Style) map[string]string {
 }
 
 // WriteConfig writes config
-func WriteConfig(c *Config, style *Style, writeInclude bool) error {
+func WriteConfig(c *config.Config, style *Style, writeInclude bool) error {
 	if writeInclude {
 		includes := c.FindDirectives("include")
 		for _, include := range includes {
-			i, ok := include.(*Include)
+			i, ok := include.(*config.Include)
 			if !ok {
 				panic("bug in FindDirective")
 			}

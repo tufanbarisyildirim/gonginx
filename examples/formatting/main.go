@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/tufanbarisyildirim/gonginx"
+	"github.com/tufanbarisyildirim/gonginx/dumper"
 	"github.com/tufanbarisyildirim/gonginx/parser"
 )
 
@@ -71,6 +71,6 @@ location / { proxy_pass http://big_server_com; } } }`)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(gonginx.DumpConfig(c, gonginx.IndentedStyle))
+	fmt.Println(dumper.DumpConfig(c, dumper.IndentedStyle))
 
 }

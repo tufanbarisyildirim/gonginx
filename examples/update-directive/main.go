@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/tufanbarisyildirim/gonginx"
+	"github.com/tufanbarisyildirim/gonginx/dumper"
 	"github.com/tufanbarisyildirim/gonginx/parser"
 )
 
@@ -73,6 +73,6 @@ http {
 		}
 	}
 
-	fmt.Println(gonginx.DumpBlock(c.Block, gonginx.IndentedStyle))
+	fmt.Println(dumper.DumpBlock(c.Block, dumper.IndentedStyle))
 
 }

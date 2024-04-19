@@ -1,13 +1,15 @@
-package gonginx
+package dumper
 
 import (
 	"testing"
+
+	"github.com/tufanbarisyildirim/gonginx/config"
 )
 
 func TestLocation_ToString(t *testing.T) {
 	t.Parallel()
 	type fields struct {
-		Directive *Directive
+		Directive *config.Directive
 		Modifier  string
 		Match     string
 	}
@@ -19,11 +21,11 @@ func TestLocation_ToString(t *testing.T) {
 		{
 			name: "empty bloc and one match location empty block",
 			fields: fields{
-				Directive: &Directive{
+				Directive: &config.Directive{
 					Name:       "location",
 					Parameters: []string{"/admin"},
-					Block: &Block{
-						Directives: make([]IDirective, 0),
+					Block: &config.Block{
+						Directives: make([]config.IDirective, 0),
 					},
 				},
 				Modifier: "",
@@ -34,7 +36,7 @@ func TestLocation_ToString(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			l := &Location{
+			l := &config.Location{
 				Directive: tt.fields.Directive,
 				Modifier:  tt.fields.Modifier,
 				Match:     tt.fields.Match,

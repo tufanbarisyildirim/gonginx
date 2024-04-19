@@ -2,9 +2,7 @@ PWD := $(shell pwd)
 export GO111MODULE=on
 
 test:
-	go test -race -cover ${PWD}/parser/token
-	go test -race -cover ${PWD}/parser
-	go test -race -cover ${PWD}
+	go test -race -cover ${PWD}/{config,dumper,parser,parser/token}
 
 test-parser:
 	go test -race -cover ${PWD}/parser/parser.go

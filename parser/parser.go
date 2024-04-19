@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/tufanbarisyildirim/gonginx"
+	"github.com/tufanbarisyildirim/gonginx/config"
 	"github.com/tufanbarisyildirim/gonginx/parser/token"
 )
 
@@ -31,12 +31,14 @@ type Parser struct {
 	lexer             *lexer
 	currentToken      token.Token
 	followingToken    token.Token
-	parsedIncludes    map[string]*gonginx.Config
-	statementParsers  map[string]func() (gonginx.IDirective, error)
-	blockWrappers     map[string]func(*gonginx.Directive) (gonginx.IDirective, error)
-	directiveWrappers map[string]func(*gonginx.Directive) (gonginx.IDirective, error)
-	commentBuffer     []string
-	file              *os.File
+	parsedIncludes    map[*config.Include]*config.Config
+	statementParsers  map[string]func() (config.IDirective, error)
+	blockWrappers     map[string]func(*config.Directive) (config.IDirective, error)
+	directiveWrappers map[string]func(*config.Directive) (config.IDirective, error)
+	includeWrappers   map[string]func(*config.Directive) (config.IDirective, error)
+
+	commentBuffer []string
+	file          *os.File
 }
 
 // WithSameOptions copy options from another parser
@@ -46,7 +48,7 @@ func WithSameOptions(p *Parser) Option {
 	}
 }
 
-func withParsedIncludes(parsedIncludes map[string]*gonginx.Config) Option {
+func withParsedIncludes(parsedIncludes map[*config.Include]*config.Config) Option {
 	return func(p *Parser) {
 		p.parsedIncludes = parsedIncludes
 	}
@@ -135,7 +137,7 @@ func NewParserFromLexer(lexer *lexer, opts ...Option) *Parser {
 	parser := &Parser{
 		lexer:          lexer,
 		opts:           options{customDirectives: make(map[string]string), skipValidSubDirectiveBlock: map[string]struct{}{}},
-		parsedIncludes: make(map[string]*gonginx.Config),
+		parsedIncludes: make(map[*config.Include]*config.Config),
 		configRoot:     configRoot,
 	}
 
@@ -146,33 +148,9 @@ func NewParserFromLexer(lexer *lexer, opts ...Option) *Parser {
 	parser.nextToken()
 	parser.nextToken()
 
-	parser.blockWrappers = map[string]func(*gonginx.Directive) (gonginx.IDirective, error){
-		"http": func(directive *gonginx.Directive) (gonginx.IDirective, error) {
-			return parser.wrapHTTP(directive)
-		},
-		"server": func(directive *gonginx.Directive) (gonginx.IDirective, error) {
-			return parser.wrapServer(directive)
-		},
-		"location": func(directive *gonginx.Directive) (gonginx.IDirective, error) {
-			return parser.wrapLocation(directive)
-		},
-		"upstream": func(directive *gonginx.Directive) (gonginx.IDirective, error) {
-			return parser.wrapUpstream(directive)
-		},
-		"_by_lua_block": func(directive *gonginx.Directive) (gonginx.IDirective, error) {
-			return parser.wrapLuaBlock(directive)
-		},
-	}
-
-	parser.directiveWrappers = map[string]func(*gonginx.Directive) (gonginx.IDirective, error){
-		"server": func(directive *gonginx.Directive) (gonginx.IDirective, error) {
-			return parser.parseUpstreamServer(directive)
-		},
-		"include": func(directive *gonginx.Directive) (gonginx.IDirective, error) {
-			return parser.parseInclude(directive)
-		},
-	}
-
+	parser.blockWrappers = config.BlockWrappers
+	parser.directiveWrappers = config.DirectiveWrappers
+	parser.includeWrappers = config.IncludeWrappers
 	return parser
 }
 
@@ -190,12 +168,12 @@ func (p *Parser) followingTokenIs(t token.Type) bool {
 }
 
 // Parse the gonginx.
-func (p *Parser) Parse() (*gonginx.Config, error) {
+func (p *Parser) Parse() (*config.Config, error) {
 	parsedBlock, err := p.parseBlock(false, false)
 	if err != nil {
 		return nil, err
 	}
-	c := &gonginx.Config{
+	c := &config.Config{
 		FilePath: p.lexer.file, //TODO: set filepath here,
 		Block:    parsedBlock,
 	}
@@ -204,12 +182,12 @@ func (p *Parser) Parse() (*gonginx.Config, error) {
 }
 
 // ParseBlock parse a block statement
-func (p *Parser) parseBlock(inBlock bool, isSkipValidDirective bool) (*gonginx.Block, error) {
+func (p *Parser) parseBlock(inBlock bool, isSkipValidDirective bool) (*config.Block, error) {
 
-	context := &gonginx.Block{
-		Directives: make([]gonginx.IDirective, 0),
+	context := &config.Block{
+		Directives: make([]config.IDirective, 0),
 	}
-	var s gonginx.IDirective
+	var s config.IDirective
 	var line int
 parsingLoop:
 	for {
@@ -229,6 +207,7 @@ parsingLoop:
 			if err != nil {
 				return nil, err
 			}
+			s.SetParent(context)
 			context.Directives = append(context.Directives, s)
 			line = p.currentToken.Line
 		case p.curTokenIs(token.Comment):
@@ -252,8 +231,8 @@ parsingLoop:
 	return context, nil
 }
 
-func (p *Parser) parseStatement(isSkipValidDirective bool) (gonginx.IDirective, error) {
-	d := &gonginx.Directive{
+func (p *Parser) parseStatement(isSkipValidDirective bool) (config.IDirective, error) {
+	d := &config.Directive{
 		Name: p.currentToken.Literal,
 	}
 
@@ -283,7 +262,13 @@ func (p *Parser) parseStatement(isSkipValidDirective bool) (gonginx.IDirective, 
 
 	//if we find a semicolon it is a directive, we will check directive converters
 	if p.curTokenIs(token.Semicolon) {
-		if dw, ok := p.directiveWrappers[d.Name]; ok {
+		if iw, ok := p.includeWrappers[d.Name]; ok {
+			include, err := iw(d)
+			if err != nil {
+				return nil, err
+			}
+			return p.ParseInclude(include.(*config.Include))
+		} else if dw, ok := p.directiveWrappers[d.Name]; ok {
 			return dw(d)
 		}
 		return d, nil
@@ -321,21 +306,8 @@ func (p *Parser) parseStatement(isSkipValidDirective bool) (gonginx.IDirective, 
 	return nil, fmt.Errorf("unexpected token %s (%s) on line %d, column %d", p.currentToken.Type.String(), p.currentToken.Literal, p.currentToken.Line, p.currentToken.Column)
 }
 
-// TODO: move this into gonginx.Include
-func (p *Parser) parseInclude(directive *gonginx.Directive) (*gonginx.Include, error) {
-	include := &gonginx.Include{
-		Directive:   directive,
-		IncludePath: directive.Parameters[0],
-	}
-
-	if len(directive.Parameters) > 1 {
-		panic("include directive can not have multiple parameters")
-	}
-
-	if directive.Block != nil {
-		panic("include can not have a block, or missing semicolon at the end of include statement")
-	}
-
+// ParseInclude just parse include confs
+func (p *Parser) ParseInclude(include *config.Include) (config.IDirective, error) {
 	if p.opts.parseInclude {
 		includePath := include.IncludePath
 		if !filepath.IsAbs(includePath) {
@@ -346,13 +318,13 @@ func (p *Parser) parseInclude(directive *gonginx.Directive) (*gonginx.Include, e
 			return nil, err
 		}
 		for _, includePath := range includePaths {
-			if conf, ok := p.parsedIncludes[includePath]; ok {
+			if conf, ok := p.parsedIncludes[include]; ok {
 				// same file includes itself? don't blow up the parser
 				if conf == nil {
 					continue
 				}
 			} else {
-				p.parsedIncludes[includePath] = nil
+				p.parsedIncludes[include] = nil
 			}
 
 			parser, err := NewParser(includePath,
@@ -369,55 +341,12 @@ func (p *Parser) parseInclude(directive *gonginx.Directive) (*gonginx.Include, e
 			if err != nil {
 				return nil, err
 			}
-			p.parsedIncludes[includePath] = config
+			//TODO: link parent config or include direcitve?
+			p.parsedIncludes[include] = config
 			include.Configs = append(include.Configs, config)
 		}
 	}
-
 	return include, nil
-}
-
-// TODO: move this into gonginx.Location
-func (p *Parser) wrapLocation(directive *gonginx.Directive) (*gonginx.Location, error) {
-	location := &gonginx.Location{
-		Modifier:  "",
-		Match:     "",
-		Directive: directive,
-	}
-
-	if len(directive.Parameters) == 0 {
-		return nil, errors.New("no enough parameter for location")
-	}
-
-	if len(directive.Parameters) == 1 {
-		location.Match = directive.Parameters[0]
-		return location, nil
-	} else if len(directive.Parameters) == 2 {
-		location.Modifier = directive.Parameters[0]
-		location.Match = directive.Parameters[1]
-		return location, nil
-	}
-	return nil, errors.New("too many arguments for location directive")
-}
-
-func (p *Parser) wrapServer(directive *gonginx.Directive) (*gonginx.Server, error) {
-	return gonginx.NewServer(directive)
-}
-
-func (p *Parser) wrapUpstream(directive *gonginx.Directive) (*gonginx.Upstream, error) {
-	return gonginx.NewUpstream(directive)
-}
-
-func (p *Parser) wrapLuaBlock(directive *gonginx.Directive) (*gonginx.LuaBlock, error) {
-	return gonginx.NewLuaBlock(directive)
-}
-
-func (p *Parser) wrapHTTP(directive *gonginx.Directive) (*gonginx.HTTP, error) {
-	return gonginx.NewHTTP(directive)
-}
-
-func (p *Parser) parseUpstreamServer(directive *gonginx.Directive) (*gonginx.UpstreamServer, error) {
-	return gonginx.NewUpstreamServer(directive)
 }
 
 // Close closes the file handler and releases the resources

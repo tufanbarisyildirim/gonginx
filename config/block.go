@@ -1,10 +1,21 @@
-package gonginx
+package config
 
 // Block a block statement
 type Block struct {
 	Directives  []IDirective
 	IsLuaBlock  bool
 	LiteralCode string
+	Parent      IBlock
+}
+
+// SetParent change the parent block
+func (b *Block) SetParent(parent IBlock) {
+	b.Parent = parent
+}
+
+// GetParent the parent block
+func (b *Block) GetParent() IBlock {
+	return b.Parent
 }
 
 // GetDirectives get all directives in this block

@@ -1,10 +1,12 @@
-package gonginx
+package config
 
 // IBlock represents any directive block
 type IBlock interface {
 	GetDirectives() []IDirective
 	FindDirectives(directiveName string) []IDirective
 	GetCodeBlock() string
+	SetParent(IBlock)
+	GetParent() IBlock
 }
 
 // IDirective represents any directive
@@ -14,6 +16,8 @@ type IDirective interface {
 	GetBlock() IBlock
 	GetComment() []string
 	SetComment(comment []string)
+	SetParent(IBlock)
+	GetParent() IBlock
 }
 
 // FileDirective a statement that saves its own file
