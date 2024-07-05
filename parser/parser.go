@@ -258,6 +258,9 @@ func (p *Parser) parseStatement(isSkipValidDirective bool) (config.IDirective, e
 	//parse parameters until the end.
 	for p.nextToken(); p.currentToken.IsParameterEligible(); p.nextToken() {
 		d.Parameters = append(d.Parameters, p.currentToken.Literal)
+		if p.followingToken.Is(token.BlockEnd) {
+			return d, nil
+		}
 	}
 
 	//if we find a semicolon it is a directive, we will check directive converters
