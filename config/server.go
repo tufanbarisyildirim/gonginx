@@ -8,7 +8,8 @@ import (
 type Server struct {
 	Block   IBlock
 	Comment []string
-	Parent  IBlock
+	DefaultInline
+	Parent IBlock
 }
 
 // SetParent change the parent block
@@ -35,8 +36,9 @@ func (s *Server) GetComment() []string {
 func NewServer(directive IDirective) (*Server, error) {
 	if block := directive.GetBlock(); block != nil {
 		return &Server{
-			Block:   block,
-			Comment: directive.GetComment(),
+			Block:         block,
+			Comment:       directive.GetComment(),
+			DefaultInline: DefaultInline{InlineComment: directive.GetInlineComment()},
 		}, nil
 	}
 	return nil, errors.New("server directive must have a block")

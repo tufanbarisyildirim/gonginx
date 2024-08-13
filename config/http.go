@@ -9,7 +9,8 @@ type HTTP struct {
 	Servers    []*Server
 	Directives []IDirective
 	Comment    []string
-	Parent     IBlock
+	DefaultInline
+	Parent IBlock
 }
 
 // SetParent change the parent block
@@ -48,6 +49,7 @@ func NewHTTP(directive IDirective) (*HTTP, error) {
 			http.Directives = append(http.Directives, directive)
 		}
 		http.Comment = directive.GetComment()
+		http.InlineComment = directive.GetInlineComment()
 
 		return http, nil
 	}

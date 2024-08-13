@@ -12,7 +12,8 @@ type UpstreamServer struct {
 	Flags      []string
 	Parameters map[string]string
 	Comment    []string
-	Parent     IBlock
+	DefaultInline
+	Parent IBlock
 }
 
 // SetParent change the parent block
@@ -106,6 +107,7 @@ func NewUpstreamServer(directive IDirective) (*UpstreamServer, error) {
 	}
 
 	uss.Comment = directive.GetComment()
+	uss.InlineComment = directive.GetInlineComment()
 
 	return uss, nil
 }

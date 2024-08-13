@@ -188,6 +188,7 @@ func (p *Parser) parseBlock(inBlock bool, isSkipValidDirective bool) (*config.Bl
 		Directives: make([]config.IDirective, 0),
 	}
 	var s config.IDirective
+	var err error
 	var line int
 parsingLoop:
 	for {
@@ -203,7 +204,7 @@ parsingLoop:
 		case p.curTokenIs(token.BlockEnd):
 			break parsingLoop
 		case p.curTokenIs(token.Keyword) || p.curTokenIs(token.QuotedString):
-			s, err := p.parseStatement(isSkipValidDirective)
+			s, err = p.parseStatement(isSkipValidDirective)
 			if err != nil {
 				return nil, err
 			}
@@ -214,14 +215,15 @@ parsingLoop:
 			if p.opts.skipComments {
 				break
 			}
-			p.commentBuffer = append(p.commentBuffer, p.currentToken.Literal)
 			// inline comment
 			if line == p.currentToken.Line {
 				if s == nil && len(context.Directives) > 0 {
 					s = context.Directives[len(context.Directives)-1]
 				}
-				s.SetComment(p.commentBuffer)
+				s.SetInlineComment(p.currentToken.Literal)
 				p.commentBuffer = nil
+			} else {
+				p.commentBuffer = append(p.commentBuffer, p.currentToken.Literal)
 			}
 
 		}

@@ -11,7 +11,8 @@ type Upstream struct {
 	//Directives Other directives in upstream (ip_hash; etc)
 	Directives []IDirective
 	Comment    []string
-	Parent     IBlock
+	DefaultInline
+	Parent IBlock
 }
 
 // SetParent change the parent block
@@ -87,6 +88,7 @@ func NewUpstream(directive IDirective) (*Upstream, error) {
 	}
 
 	us.Comment = directive.GetComment()
+	us.InlineComment = directive.GetInlineComment()
 
 	return us, nil
 }
