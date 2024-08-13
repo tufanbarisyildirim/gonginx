@@ -12,7 +12,7 @@ type UpstreamServer struct {
 	Flags      []string
 	Parameters map[string]string
 	Comment    []string
-	DefaultInline
+	DefaultInlineComment
 	Parent IBlock
 }
 

@@ -8,7 +8,7 @@ import (
 type Server struct {
 	Block   IBlock
 	Comment []string
-	DefaultInline
+	DefaultInlineComment
 	Parent IBlock
 }
 
@@ -36,9 +36,9 @@ func (s *Server) GetComment() []string {
 func NewServer(directive IDirective) (*Server, error) {
 	if block := directive.GetBlock(); block != nil {
 		return &Server{
-			Block:         block,
-			Comment:       directive.GetComment(),
-			DefaultInline: DefaultInline{InlineComment: directive.GetInlineComment()},
+			Block:                block,
+			Comment:              directive.GetComment(),
+			DefaultInlineComment: DefaultInlineComment{InlineComment: directive.GetInlineComment()},
 		}, nil
 	}
 	return nil, errors.New("server directive must have a block")

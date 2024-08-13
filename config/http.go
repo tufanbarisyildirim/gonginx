@@ -9,7 +9,7 @@ type HTTP struct {
 	Servers    []*Server
 	Directives []IDirective
 	Comment    []string
-	DefaultInline
+	DefaultInlineComment
 	Parent IBlock
 }
 

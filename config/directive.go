@@ -6,7 +6,7 @@ type Directive struct {
 	Name       string
 	Parameters []string //TODO: Save parameters with their type
 	Comment    []string
-	DefaultInline
+	DefaultInlineComment
 	Parent IBlock
 }
 

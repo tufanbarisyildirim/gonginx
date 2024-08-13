@@ -11,7 +11,7 @@ type Upstream struct {
 	//Directives Other directives in upstream (ip_hash; etc)
 	Directives []IDirective
 	Comment    []string
-	DefaultInline
+	DefaultInlineComment
 	Parent IBlock
 }
 

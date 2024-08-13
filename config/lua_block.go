@@ -9,7 +9,7 @@ type LuaBlock struct {
 	Directives []IDirective
 	Name       string
 	Comment    []string
-	DefaultInline
+	DefaultInlineComment
 	LuaCode string
 	Parent  IBlock
 }

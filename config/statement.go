@@ -26,15 +26,15 @@ type InlineCommenter interface {
 	SetInlineComment(comment string)
 }
 
-type DefaultInline struct {
+type DefaultInlineComment struct {
 	InlineComment string
 }
 
-func (d *DefaultInline) GetInlineComment() string {
+func (d *DefaultInlineComment) GetInlineComment() string {
 	return d.InlineComment
 }
 
-func (d *DefaultInline) SetInlineComment(comment string) {
+func (d *DefaultInlineComment) SetInlineComment(comment string) {
 	d.InlineComment = comment
 }
 
