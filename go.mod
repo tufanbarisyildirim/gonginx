@@ -1,7 +1,7 @@
 module github.com/tufanbarisyildirim/gonginx
 
-go 1.19
+go 1.23.0
 
-require gotest.tools/v3 v3.4.0
+require gotest.tools/v3 v3.5.1
 
-require github.com/google/go-cmp v0.5.5 // indirect
+require github.com/google/go-cmp v0.6.0 // indirect
