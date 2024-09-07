@@ -1,6 +1,6 @@
 module github.com/tufanbarisyildirim/gonginx
 
-go 1.23.0
+go 1.23
 
 require gotest.tools/v3 v3.5.1
 
