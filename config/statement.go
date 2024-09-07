@@ -18,6 +18,28 @@ type IDirective interface {
 	SetComment(comment []string)
 	SetParent(IBlock)
 	GetParent() IBlock
+	InlineCommenter
+}
+
+// InlineCommenter represents the inline comment holder
+type InlineCommenter interface {
+	GetInlineComment() string
+	SetInlineComment(comment string)
+}
+
+// DefaultInlineComment represents the default inline comment holder
+type DefaultInlineComment struct {
+	InlineComment string
+}
+
+// GetInlineComment returns the inline comment
+func (d *DefaultInlineComment) GetInlineComment() string {
+	return d.InlineComment
+}
+
+// SetInlineComment sets the inline comment
+func (d *DefaultInlineComment) SetInlineComment(comment string) {
+	d.InlineComment = comment
 }
 
 // FileDirective a statement that saves its own file

@@ -9,8 +9,9 @@ type LuaBlock struct {
 	Directives []IDirective
 	Name       string
 	Comment    []string
-	LuaCode    string
-	Parent     IBlock
+	DefaultInlineComment
+	LuaCode string
+	Parent  IBlock
 }
 
 // NewLuaBlock creates a lua block
@@ -24,6 +25,7 @@ func NewLuaBlock(directive IDirective) (*LuaBlock, error) {
 
 		lb.Directives = append(lb.Directives, block.GetDirectives()...)
 		lb.Comment = directive.GetComment()
+		lb.InlineComment = directive.GetInlineComment()
 
 		return lb, nil
 	}

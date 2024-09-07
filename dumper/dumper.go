@@ -101,6 +101,7 @@ func DumpDirective(d config.IDirective, style *Style) string {
 		if d.GetName() != "" {
 			buf.WriteRune(';')
 		}
+		buf.WriteString(d.GetInlineComment())
 	} else {
 		buf.WriteString(" {\n")
 		buf.WriteString(DumpBlock(d.GetBlock(), style.Iterate()))

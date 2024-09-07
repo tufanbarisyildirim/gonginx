@@ -49,7 +49,7 @@ server_name domain2.com www.domain2.com;
 access_log logs/domain2.access.log main;
 location ~ ^/(images|javascript|js|css|flash|media|static)/ {
 root /var/www/virtual/big.server.com/htdocs;
-expires 30d;
+expires 30d; # inline comment: expires 30d
 } location / { proxy_pass http://127.0.0.1:8080; } }
 # comment: big_server_com
 # comment: upstream big_server_com
@@ -61,7 +61,7 @@ server 192.168.0.1:8001;
 }
 # comment: server
 server { # comment: listen
-listen 80;
+listen 80; # inline comment: listen 80
 server_name big.server.com;
 # comment: access_log
 access_log logs/big.server.access.log main;
