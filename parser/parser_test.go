@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"os"
 	"testing"
 
 	"github.com/tufanbarisyildirim/gonginx/config"
@@ -359,6 +360,18 @@ func TestParser_Issue32(t *testing.T) {
 	assert.NilError(t, err, "no error expected here")
 	_, err = p.Parse()
 	assert.NilError(t, err, "no error expected here")
+}
+
+func TestParser_Issue50(t *testing.T) {
+	t.Parallel()
+	p, err := NewParser("../testdata/issues/50.conf")
+	assert.NilError(t, err, "no error expected here")
+	data, err := os.ReadFile("../testdata/issues/50.conf")
+	assert.NilError(t, err, "no error expected here")
+	c, err := p.Parse()
+	assert.NilError(t, err, "no error expected here")
+	content := dumper.DumpConfig(c, dumper.IndentedStyle)
+	assert.Equal(t, content, string(data))
 }
 
 func TestParser_SkipBlock(t *testing.T) {
