@@ -24,6 +24,17 @@ type options struct {
 	skipValidDirectivesErr     bool
 }
 
+func defaultOptions() options {
+	return options{
+		parseInclude:               false,
+		skipIncludeParsingErr:      false,
+		skipComments:               false,
+		customDirectives:           map[string]string{},
+		skipValidSubDirectiveBlock: map[string]struct{}{},
+		skipValidDirectivesErr:     false,
+	}
+}
+
 // Parser is an nginx config parser
 type Parser struct {
 	opts              options
@@ -70,7 +81,7 @@ func WithSkipIncludeParsingErr() Option {
 // WithDefaultOptions default options
 func WithDefaultOptions() Option {
 	return func(p *Parser) {
-		p.opts = options{}
+		p.opts = defaultOptions()
 	}
 }
 
@@ -136,7 +147,7 @@ func NewParserFromLexer(lexer *lexer, opts ...Option) *Parser {
 	configRoot, _ := filepath.Split(lexer.file)
 	parser := &Parser{
 		lexer:          lexer,
-		opts:           options{customDirectives: make(map[string]string), skipValidSubDirectiveBlock: map[string]struct{}{}},
+		opts:           defaultOptions(),
 		parsedIncludes: make(map[*config.Include]*config.Config),
 		configRoot:     configRoot,
 	}
