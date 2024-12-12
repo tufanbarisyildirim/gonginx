@@ -8,6 +8,17 @@ type Location struct {
 	Modifier string
 	Match    string
 	Parent   IBlock
+	Line     int
+}
+
+// SetLine Set line number
+func (l *Location) SetLine(line int) {
+	l.Line = line
+}
+
+// GetLine Get the line number
+func (l *Location) GetLine() int {
+	return l.Line
 }
 
 // SetParent change the parent block

@@ -14,6 +14,17 @@ type UpstreamServer struct {
 	Comment    []string
 	DefaultInlineComment
 	Parent IBlock
+	Line   int
+}
+
+// SetLine Set line number
+func (uss *UpstreamServer) SetLine(line int) {
+	uss.Line = line
+}
+
+// GetLine Get the line number
+func (uss *UpstreamServer) GetLine() int {
+	return uss.Line
 }
 
 // SetParent change the parent block

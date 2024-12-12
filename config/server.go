@@ -10,6 +10,17 @@ type Server struct {
 	Comment []string
 	DefaultInlineComment
 	Parent IBlock
+	Line   int
+}
+
+// SetLine Set line number
+func (s *Server) SetLine(line int) {
+	s.Line = line
+}
+
+// GetLine Get the line number
+func (s *Server) GetLine() int {
+	return s.Line
 }
 
 // SetParent change the parent block

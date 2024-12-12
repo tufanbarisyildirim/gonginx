@@ -13,6 +13,17 @@ type Upstream struct {
 	Comment    []string
 	DefaultInlineComment
 	Parent IBlock
+	Line   int
+}
+
+// SetLine Set line number
+func (us *Upstream) SetLine(line int) {
+	us.Line = line
+}
+
+// GetLine Get the line number
+func (us *Upstream) GetLine() int {
+	return us.Line
 }
 
 // SetParent change the parent block
@@ -80,6 +91,7 @@ func NewUpstream(directive IDirective) (*Upstream, error) {
 					return nil, err
 				}
 				uss.SetParent(us)
+				uss.SetLine(d.GetLine())
 				us.UpstreamServers = append(us.UpstreamServers, uss)
 			} else {
 				us.Directives = append(us.Directives, d)

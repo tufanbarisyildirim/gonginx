@@ -18,6 +18,8 @@ type IDirective interface {
 	SetComment(comment []string)
 	SetParent(IBlock)
 	GetParent() IBlock
+	GetLine() int
+	SetLine(int)
 	InlineCommenter
 }
 

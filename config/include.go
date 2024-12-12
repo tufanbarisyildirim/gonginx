@@ -27,6 +27,16 @@ type Include struct {
 //	return nil
 //}
 
+// SetLine Set line number
+func (c *Include) SetLine(line int) {
+	c.Line = line
+}
+
+// GetLine Get the line number
+func (c *Include) GetLine() int {
+	return c.Line
+}
+
 // GetParent the parent block
 func (c *Include) GetParent() IBlock {
 	return c.Parent
