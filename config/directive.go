@@ -4,7 +4,7 @@ package config
 type Directive struct {
 	Block      IBlock
 	Name       string
-	Parameters []string //TODO: Save parameters with their type
+	Parameters []Parameter //TODO: Save parameters with their type
 	Comment    []string
 	DefaultInlineComment
 	Parent IBlock
@@ -31,7 +31,7 @@ func (d *Directive) GetName() string {
 }
 
 // GetParameters get all parameters of a directive
-func (d *Directive) GetParameters() []string {
+func (d *Directive) GetParameters() []Parameter {
 	return d.Parameters
 }
 

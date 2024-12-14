@@ -68,8 +68,8 @@ http {
 	directives := c.FindDirectives("proxy_pass")
 	for _, directive := range directives {
 		fmt.Println("found a proxy_pass :  ", directive.GetName(), directive.GetParameters())
-		if directive.GetParameters()[0] == "http://www.google.com/" {
-			directive.GetParameters()[0] = "http://www.duckduckgo.com/"
+		if directive.GetParameters()[0].GetValue() == "http://www.google.com/" {
+			directive.GetParameters()[0].SetValue("http://www.duckduckgo.com/")
 		}
 	}
 

@@ -38,11 +38,11 @@ func TestServer_ToString(t *testing.T) {
 						Directives: []config.IDirective{
 							&config.Directive{
 								Name:       "server_name",
-								Parameters: []string{"gonginx.dev"},
+								Parameters: []config.Parameter{{Value: "gonginx.dev"}},
 							},
 							&config.Directive{
 								Name:       "root",
-								Parameters: []string{"/var/sites/gonginx"},
+								Parameters: []config.Parameter{{Value: "/var/sites/gonginx"}},
 							},
 						},
 					},

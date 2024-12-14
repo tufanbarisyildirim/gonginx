@@ -30,7 +30,7 @@ func TestBlock_FindDirectives(t *testing.T) {
 							Directives: []IDirective{
 								&Directive{
 									Name:       "server_name",
-									Parameters: []string{"gonginx.dev"},
+									Parameters: []Parameter{{Value: "gonginx.dev"}},
 								},
 							},
 						},
@@ -40,7 +40,7 @@ func TestBlock_FindDirectives(t *testing.T) {
 							Directives: []IDirective{
 								&Directive{
 									Name:       "server_name",
-									Parameters: []string{"gonginx2.dev"},
+									Parameters: []Parameter{{Value: "gonginx2.dev"}},
 								},
 							},
 						},
@@ -52,7 +52,7 @@ func TestBlock_FindDirectives(t *testing.T) {
 									Directives: []IDirective{
 										&Directive{
 											Name:       "server_name",
-											Parameters: []string{"gonginx3.dev"},
+											Parameters: []Parameter{{Value: "gonginx3.dev"}},
 										},
 									},
 								},
@@ -67,7 +67,7 @@ func TestBlock_FindDirectives(t *testing.T) {
 						Directives: []IDirective{
 							&Directive{
 								Name:       "server_name",
-								Parameters: []string{"gonginx.dev"},
+								Parameters: []Parameter{{Value: "gonginx.dev"}},
 							},
 						},
 					},
@@ -77,7 +77,7 @@ func TestBlock_FindDirectives(t *testing.T) {
 						Directives: []IDirective{
 							&Directive{
 								Name:       "server_name",
-								Parameters: []string{"gonginx2.dev"},
+								Parameters: []Parameter{{Value: "gonginx2.dev"}},
 							},
 						},
 					},
@@ -87,7 +87,7 @@ func TestBlock_FindDirectives(t *testing.T) {
 						Directives: []IDirective{
 							&Directive{
 								Name:       "server_name",
-								Parameters: []string{"gonginx3.dev"},
+								Parameters: []Parameter{{Value: "gonginx3.dev"}},
 							},
 						},
 					},

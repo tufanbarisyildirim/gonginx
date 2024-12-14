@@ -161,8 +161,8 @@ func TestParser_VariableAsParameter(t *testing.T) {
 	assert.Assert(t, ok, "expecting a directive(http) as first statement")
 	assert.Equal(t, d.Name, "map", "first directive needs to be ")
 	assert.Equal(t, len(d.Parameters), 2, "map must have 2 parameters here")
-	assert.Equal(t, d.Parameters[0], "$host", "invalid first parameter")
-	assert.Equal(t, d.Parameters[1], "$clientname", "invalid second parameter")
+	assert.Equal(t, d.Parameters[0].GetValue(), "$host", "invalid first parameter")
+	assert.Equal(t, d.Parameters[1].GetValue(), "$clientname", "invalid second parameter")
 }
 
 func TestParser_UnendedMultiParams(t *testing.T) {
@@ -525,4 +525,31 @@ http {
 	includes := httpBlock.FindDirectives("include")
 
 	assert.Equal(t, len(includes), 1, "cannot find include directive in http block")
+}
+
+func TestParser_KeepDataInMultiLine01(t *testing.T) {
+	p := NewStringParser(`log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+'$status $body_bytes_sent "$http_referer" '
+'"$http_user_agent" "$http_x_forwarded_for"';`)
+	conf, err := p.Parse()
+	assert.NilError(t, err, "no error expected here")
+	s := dumper.DumpConfig(conf, dumper.IndentedStyle)
+	assert.Equal(t, `log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+'$status $body_bytes_sent "$http_referer" '
+'"$http_user_agent" "$http_x_forwarded_for"';`, s)
+
+}
+
+func TestParser_KeepDataInMultiLine02(t *testing.T) {
+	p := NewStringParser(`events {
+	worker_connections
+	4096;}`)
+	conf, err := p.Parse()
+	assert.NilError(t, err, "no error expected here")
+	s := dumper.DumpConfig(conf, dumper.IndentedStyle)
+	assert.Equal(t, `events {
+    worker_connections
+    4096;
+}`, s)
+
 }

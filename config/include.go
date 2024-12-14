@@ -75,7 +75,7 @@ func NewInclude(dir IDirective) (*Include, error) {
 	}
 	include := &Include{
 		Directive:   directive,
-		IncludePath: directive.Parameters[0],
+		IncludePath: directive.Parameters[0].GetValue(),
 	}
 
 	if len(directive.Parameters) > 1 {

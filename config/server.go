@@ -50,8 +50,8 @@ func (s *Server) GetName() string { //the directive name.
 }
 
 // GetParameters get directive parameters if any
-func (s *Server) GetParameters() []string {
-	return []string{}
+func (s *Server) GetParameters() []Parameter {
+	return []Parameter{}
 }
 
 // GetBlock get block if any

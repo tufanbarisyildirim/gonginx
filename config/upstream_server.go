@@ -47,7 +47,7 @@ func (uss *UpstreamServer) GetBlock() IBlock {
 }
 
 // GetParameters block of an upstream, basically nil
-func (uss *UpstreamServer) GetParameters() []string {
+func (uss *UpstreamServer) GetParameters() []Parameter {
 	return uss.GetDirective().Parameters
 }
 
@@ -56,12 +56,12 @@ func (uss *UpstreamServer) GetDirective() *Directive {
 	//First, generate a new directive from upstream server
 	directive := &Directive{
 		Name:       "server",
-		Parameters: make([]string, 0),
+		Parameters: make([]Parameter, 0),
 		Block:      nil,
 	}
 
 	//address it the first parameter of an upstream directive
-	directive.Parameters = append(directive.Parameters, uss.Address)
+	directive.Parameters = append(directive.Parameters, Parameter{Value: uss.Address})
 
 	//Iterations are random in golang maps https://blog.golang.org/maps#TOC_7.
 	//we sort keys in different slice and print them sorted.
@@ -74,11 +74,13 @@ func (uss *UpstreamServer) GetDirective() *Directive {
 
 	//append named parameters first
 	for _, k := range paramNames {
-		directive.Parameters = append(directive.Parameters, fmt.Sprintf("%s=%s", k, uss.Parameters[k]))
+		directive.Parameters = append(directive.Parameters, Parameter{Value: fmt.Sprintf("%s=%s", k, uss.Parameters[k])})
 	}
 
 	//append flags to the end of the directive.
-	directive.Parameters = append(directive.Parameters, uss.Flags...)
+	for _, flag := range uss.Flags {
+		directive.Parameters = append(directive.Parameters, Parameter{Value: flag})
+	}
 
 	directive.Comment = uss.GetComment()
 
@@ -95,14 +97,14 @@ func NewUpstreamServer(directive IDirective) (*UpstreamServer, error) {
 
 	for i, parameter := range directive.GetParameters() {
 		if i == 0 { // alright, we asuume that firstone should be a server address
-			uss.Address = parameter
+			uss.Address = parameter.GetValue()
 			continue
 		}
-		if strings.Contains(parameter, "=") { //a parameter like weight=5
-			s := strings.SplitN(parameter, "=", 2)
+		if strings.Contains(parameter.GetValue(), "=") { //a parameter like weight=5
+			s := strings.SplitN(parameter.GetValue(), "=", 2)
 			uss.Parameters[s[0]] = s[1]
 		} else {
-			uss.Flags = append(uss.Flags, parameter)
+			uss.Flags = append(uss.Flags, parameter.GetValue())
 		}
 	}
 

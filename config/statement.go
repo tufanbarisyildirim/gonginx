@@ -12,7 +12,7 @@ type IBlock interface {
 // IDirective represents any directive
 type IDirective interface {
 	GetName() string //the directive name.
-	GetParameters() []string
+	GetParameters() []Parameter
 	GetBlock() IBlock
 	GetComment() []string
 	SetComment(comment []string)
@@ -50,4 +50,30 @@ type FileDirective interface {
 // IncludeDirective represents include statement in nginx
 type IncludeDirective interface {
 	FileDirective
+}
+
+// Parameter represents a parameter in a directive
+type Parameter struct {
+	Value             string
+	RelativeLineIndex int // relative line index to the directive
+}
+
+func (p *Parameter) String() string {
+	return p.Value
+}
+
+func (p *Parameter) SetValue(v string) {
+	p.Value = v
+}
+
+func (p *Parameter) GetValue() string {
+	return p.Value
+}
+
+func (p *Parameter) SetRelativeLineIndex(i int) {
+	p.RelativeLineIndex = i
+}
+
+func (p *Parameter) GetRelativeLineIndex() int {
+	return p.RelativeLineIndex
 }
