@@ -12,6 +12,7 @@ type LuaBlock struct {
 	DefaultInlineComment
 	LuaCode string
 	Parent  IBlock
+	Line    int
 }
 
 // NewLuaBlock creates a lua block
@@ -30,6 +31,16 @@ func NewLuaBlock(directive IDirective) (*LuaBlock, error) {
 		return lb, nil
 	}
 	return nil, fmt.Errorf("%s must have a block", directive.GetName())
+}
+
+// SetLine Set line number
+func (lb *LuaBlock) SetLine(line int) {
+	lb.Line = line
+}
+
+// GetLine Get the line number
+func (lb *LuaBlock) GetLine() int {
+	return lb.Line
 }
 
 // SetParent change the parent block

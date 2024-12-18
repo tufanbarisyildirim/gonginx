@@ -220,8 +220,9 @@ parsingLoop:
 				return nil, err
 			}
 			s.SetParent(context)
-			context.Directives = append(context.Directives, s)
 			line = p.currentToken.Line
+			s.SetLine(line)
+			context.Directives = append(context.Directives, s)
 		case p.curTokenIs(token.Comment):
 			if p.opts.skipComments {
 				break
@@ -232,6 +233,7 @@ parsingLoop:
 					s = context.Directives[len(context.Directives)-1]
 				}
 				s.SetInlineComment(p.currentToken.Literal)
+				s.SetLine(line)
 				p.commentBuffer = nil
 			} else {
 				p.commentBuffer = append(p.commentBuffer, p.currentToken.Literal)

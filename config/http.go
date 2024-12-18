@@ -11,6 +11,17 @@ type HTTP struct {
 	Comment    []string
 	DefaultInlineComment
 	Parent IBlock
+	Line   int
+}
+
+// SetLine Set line number
+func (h *HTTP) SetLine(line int) {
+	h.Line = line
+}
+
+// GetLine Get the line number
+func (h *HTTP) GetLine() int {
+	return h.Line
 }
 
 // SetParent change the parent block

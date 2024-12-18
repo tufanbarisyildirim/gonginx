@@ -8,6 +8,17 @@ type Directive struct {
 	Comment    []string
 	DefaultInlineComment
 	Parent IBlock
+	Line   int
+}
+
+// SetLine Set line number
+func (d *Directive) SetLine(line int) {
+	d.Line = line
+}
+
+// GetLine Get the line number
+func (d *Directive) GetLine() int {
+	return d.Line
 }
 
 // SetParent  the parent block
