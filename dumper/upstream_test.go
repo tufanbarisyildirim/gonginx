@@ -23,7 +23,7 @@ func TestUpstream_ToString(t *testing.T) {
 			fields: fields{
 				Directive: &config.Directive{
 					Name:       "upstream",
-					Parameters: []string{"gonginx_upstream"},
+					Parameters: []config.Parameter{{Value: "gonginx_upstream"}},
 					Block: &config.Block{
 						Directives: make([]config.IDirective, 0),
 					},
@@ -36,12 +36,12 @@ func TestUpstream_ToString(t *testing.T) {
 			fields: fields{
 				Directive: &config.Directive{
 					Name:       "upstream",
-					Parameters: []string{"gonginx_upstream"},
+					Parameters: []config.Parameter{{Value: "gonginx_upstream"}},
 					Block: &config.Block{
 						Directives: []config.IDirective{
 							NewUpstreamServerIgnoreErr(&config.Directive{
 								Name:       "server",
-								Parameters: []string{"127.0.0.1:9005"},
+								Parameters: []config.Parameter{{Value: "127.0.0.1:9005"}},
 							}),
 						},
 					},
@@ -54,16 +54,16 @@ func TestUpstream_ToString(t *testing.T) {
 			fields: fields{
 				Directive: &config.Directive{
 					Name:       "upstream",
-					Parameters: []string{"gonginx_upstream"},
+					Parameters: []config.Parameter{{Value: "gonginx_upstream"}},
 					Block: &config.Block{
 						Directives: []config.IDirective{
 							NewUpstreamServerIgnoreErr(&config.Directive{
 								Name:       "server",
-								Parameters: []string{"127.0.0.1:9005"},
+								Parameters: []config.Parameter{{Value: "127.0.0.1:9005"}},
 							}),
 							NewUpstreamServerIgnoreErr(&config.Directive{
 								Name:       "server",
-								Parameters: []string{"127.0.0.2:9005"},
+								Parameters: []config.Parameter{{Value: "127.0.0.2:9005"}},
 							}),
 						},
 					},
@@ -76,16 +76,16 @@ func TestUpstream_ToString(t *testing.T) {
 			fields: fields{
 				Directive: &config.Directive{
 					Name:       "upstream",
-					Parameters: []string{"gonginx_upstream"},
+					Parameters: []config.Parameter{{Value: "gonginx_upstream"}},
 					Block: &config.Block{
 						Directives: []config.IDirective{
 							NewUpstreamServerIgnoreErr(&config.Directive{
 								Name:       "server",
-								Parameters: []string{"127.0.0.1:9005", "weight=5"},
+								Parameters: []config.Parameter{{Value: "127.0.0.1:9005"}, {Value: "weight=5"}},
 							}),
 							NewUpstreamServerIgnoreErr(&config.Directive{
 								Name:       "server",
-								Parameters: []string{"127.0.0.2:9005", "weight=4", "down"},
+								Parameters: []config.Parameter{{Value: "127.0.0.2:9005"}, {Value: "weight=4"}, {Value: "down"}},
 							}),
 						},
 					},

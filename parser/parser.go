@@ -271,8 +271,12 @@ func (p *Parser) parseStatement(isSkipValidDirective bool) (config.IDirective, e
 	}
 
 	//parse parameters until the end.
+	// keep track of the line index of the directive
+	directiveLineIndex := p.currentToken.Line
 	for p.nextToken(); p.currentToken.IsParameterEligible(); p.nextToken() {
-		d.Parameters = append(d.Parameters, p.currentToken.Literal)
+		d.Parameters = append(d.Parameters, config.Parameter{
+			Value:             p.currentToken.Literal,
+			RelativeLineIndex: p.currentToken.Line - directiveLineIndex}) // save the relative line index of the parameter
 		if p.currentToken.Is(token.BlockEnd) {
 			return d, nil
 		}

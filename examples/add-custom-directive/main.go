@@ -24,7 +24,7 @@ func addCustomDirective(fullConf string, blockName string, directiveName string,
 	block := blocks[0].GetBlock()
 	newDirective := &config.Directive{
 		Name:       directiveName,
-		Parameters: []string{directiveValue},
+		Parameters: []config.Parameter{{Value: directiveValue}},
 	}
 	realBlock := block.(*config.Block)
 	realBlock.Directives = append(realBlock.Directives, newDirective)

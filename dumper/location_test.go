@@ -23,7 +23,7 @@ func TestLocation_ToString(t *testing.T) {
 			fields: fields{
 				Directive: &config.Directive{
 					Name:       "location",
-					Parameters: []string{"/admin"},
+					Parameters: []config.Parameter{{Value: "/admin"}},
 					Block: &config.Block{
 						Directives: make([]config.IDirective, 0),
 					},

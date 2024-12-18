@@ -95,7 +95,18 @@ func DumpDirective(d config.IDirective, style *Style) string {
 	}
 	buf.WriteString(fmt.Sprintf("%s%s", strings.Repeat(" ", style.StartIndent), d.GetName()))
 	if len(d.GetParameters()) > 0 {
-		buf.WriteString(fmt.Sprintf(" %s", strings.Join(d.GetParameters(), " ")))
+		// Use relative line index to handle different line number arrangements of instruction parameters
+		relativeLineIndex := 0
+		for _, parameter := range d.GetParameters() {
+			// If the parameter line index is not the same as the previous one, add a new line
+			if parameter.GetRelativeLineIndex() != relativeLineIndex {
+				buf.WriteString("\n")
+				buf.WriteString(fmt.Sprintf("%s%s", strings.Repeat(" ", style.StartIndent), parameter.GetValue()))
+				relativeLineIndex = parameter.GetRelativeLineIndex()
+			} else {
+				buf.WriteString(fmt.Sprintf(" %s", parameter.GetValue()))
+			}
+		}
 	}
 	if d.GetBlock() == nil {
 		if d.GetName() != "" {

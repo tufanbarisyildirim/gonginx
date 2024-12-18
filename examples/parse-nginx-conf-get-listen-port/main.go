@@ -21,7 +21,9 @@ func parseConfigAndGetPorts(filePath string) ([]string, error) {
 		listens := server.GetBlock().FindDirectives("listen")
 		if len(listens) > 0 {
 			listenPorts := listens[0].GetParameters()
-			ports = append(ports, listenPorts...)
+			for _, port := range listenPorts {
+				ports = append(ports, port.GetValue())
+			}
 		}
 	}
 	return ports, nil
