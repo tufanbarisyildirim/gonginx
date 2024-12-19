@@ -58,22 +58,27 @@ type Parameter struct {
 	RelativeLineIndex int // relative line index to the directive
 }
 
+// String returns the value of the parameter
 func (p *Parameter) String() string {
 	return p.Value
 }
 
+// SetValue sets the value of the parameter
 func (p *Parameter) SetValue(v string) {
 	p.Value = v
 }
 
+// GetValue returns the value of the parameter
 func (p *Parameter) GetValue() string {
 	return p.Value
 }
 
+// SetRelativeLineIndex sets the relative line index of the parameter
 func (p *Parameter) SetRelativeLineIndex(i int) {
 	p.RelativeLineIndex = i
 }
 
+// GetRelativeLineIndex returns the relative line index of the parameter
 func (p *Parameter) GetRelativeLineIndex() int {
 	return p.RelativeLineIndex
 }
