@@ -39,11 +39,11 @@ func TestHttp_ToString(t *testing.T) {
 						Directives: []config.IDirective{
 							&config.Directive{
 								Name:       "access_log",
-								Parameters: []string{"logs/access.log", "main"},
+								Parameters: []config.Parameter{{Value: "logs/access.log"}, {Value: "main"}},
 							},
 							&config.Directive{
 								Name:       "default_type",
-								Parameters: []string{"application/octet-stream"},
+								Parameters: []config.Parameter{{Value: "application/octet-stream"}},
 							},
 						},
 					},

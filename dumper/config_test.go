@@ -23,17 +23,20 @@ func TestConfig_ToString(t *testing.T) {
 				Block: &config.Block{
 					Directives: []config.IDirective{
 						&config.Directive{
-							Name:       "user",
-							Parameters: []string{"nginx", "nginx"},
+							Name: "user",
+							Parameters: []config.Parameter{
+								{Value: "nginx"},
+								{Value: "nginx"},
+							},
 						},
 						&config.Directive{
 							Name:       "worker_processes",
-							Parameters: []string{"5"},
+							Parameters: []config.Parameter{{Value: "5"}},
 						},
 						&config.Include{
 							Directive: &config.Directive{
 								Name:       "include",
-								Parameters: []string{"/etc/nginx/conf/*.conf"},
+								Parameters: []config.Parameter{{Value: "/etc/nginx/conf/*.conf"}},
 							},
 							IncludePath: "/etc/nginx/conf/*.conf",
 						},

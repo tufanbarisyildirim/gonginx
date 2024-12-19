@@ -23,9 +23,9 @@ func updateServerListenPort(filePath string, oldPort string, newPort string) (st
 	for _, server := range servers {
 		listens := server.GetBlock().FindDirectives("listen")
 		for _, listen := range listens {
-			if listen.GetParameters()[0] == oldPort {
+			if listen.GetParameters()[0].GetValue() == oldPort {
 				listenDirective := listen.(*config.Directive)
-				listenDirective.Parameters[0] = newPort
+				listenDirective.Parameters[0].SetValue(newPort)
 			}
 		}
 	}

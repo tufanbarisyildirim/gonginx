@@ -24,7 +24,7 @@ func TestNewUpstreamServer(t *testing.T) {
 			args: args{
 				directive: &config.Directive{
 					Name:       "server",
-					Parameters: []string{"127.0.0.1:8080"},
+					Parameters: []config.Parameter{{Value: "127.0.0.1:8080"}},
 				},
 			},
 			want: &config.UpstreamServer{
@@ -39,7 +39,7 @@ func TestNewUpstreamServer(t *testing.T) {
 			args: args{
 				directive: &config.Directive{
 					Name:       "server",
-					Parameters: []string{"127.0.0.1:8080", "weight=5"},
+					Parameters: []config.Parameter{{Value: "127.0.0.1:8080"}, {Value: "weight=5"}},
 				},
 			},
 			want: &config.UpstreamServer{
@@ -56,7 +56,7 @@ func TestNewUpstreamServer(t *testing.T) {
 			args: args{
 				directive: &config.Directive{
 					Name:       "server",
-					Parameters: []string{"127.0.0.1:8080", "weight=5", "down"},
+					Parameters: []config.Parameter{{Value: "127.0.0.1:8080"}, {Value: "weight=5"}, {Value: "down"}},
 				},
 			},
 			want: &config.UpstreamServer{

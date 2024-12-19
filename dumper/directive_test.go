@@ -10,7 +10,7 @@ func TestDirective_ToString(t *testing.T) {
 	t.Parallel()
 	type fields struct {
 		Name       string
-		Parameters []string
+		Parameters []config.Parameter
 	}
 	tests := []struct {
 		name   string
@@ -21,10 +21,10 @@ func TestDirective_ToString(t *testing.T) {
 			name: "server_name direction",
 			fields: fields{
 				Name: "server_name",
-				Parameters: []string{
-					"gonginx.dev",
-					"gonginx.local",
-					"microspector.com",
+				Parameters: []config.Parameter{
+					{Value: "gonginx.dev"},
+					{Value: "gonginx.local"},
+					{Value: "microspector.com"},
 				},
 			},
 			want: "server_name gonginx.dev gonginx.local microspector.com;",
@@ -33,8 +33,8 @@ func TestDirective_ToString(t *testing.T) {
 			name: "proxy_pass direction",
 			fields: fields{
 				Name: "proxy_pass",
-				Parameters: []string{
-					"http://127.0.0.1/",
+				Parameters: []config.Parameter{
+					{Value: "http://127.0.0.1/"},
 				},
 			},
 			want: "proxy_pass http://127.0.0.1/;",
@@ -43,9 +43,9 @@ func TestDirective_ToString(t *testing.T) {
 			name: "proxy_set_header direction",
 			fields: fields{
 				Name: "proxy_set_header",
-				Parameters: []string{
-					"Host",
-					"$host",
+				Parameters: []config.Parameter{
+					{Value: "Host"},
+					{Value: "$host"},
 				},
 			},
 			want: "proxy_set_header Host $host;",
@@ -54,9 +54,9 @@ func TestDirective_ToString(t *testing.T) {
 			name: "proxy_buffers direction",
 			fields: fields{
 				Name: "proxy_buffers",
-				Parameters: []string{
-					"4",
-					"32k",
+				Parameters: []config.Parameter{
+					{Value: "4"},
+					{Value: "32k"},
 				},
 			},
 			want: "proxy_buffers 4 32k;",
@@ -65,8 +65,8 @@ func TestDirective_ToString(t *testing.T) {
 			name: "charset direction",
 			fields: fields{
 				Name: "charset",
-				Parameters: []string{
-					"koi8-r",
+				Parameters: []config.Parameter{
+					{Value: "koi8-r"},
 				},
 			},
 			want: "charset koi8-r;",
@@ -75,8 +75,8 @@ func TestDirective_ToString(t *testing.T) {
 			name: "'' close",
 			fields: fields{
 				Name: "''",
-				Parameters: []string{
-					"close",
+				Parameters: []config.Parameter{
+					{Value: "close"},
 				},
 			},
 			want: "'' close;",

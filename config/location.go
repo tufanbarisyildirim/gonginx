@@ -47,11 +47,11 @@ func NewLocation(directive IDirective) (*Location, error) {
 		Directive: dir,
 	}
 	if len(dir.Parameters) == 1 {
-		location.Match = dir.Parameters[0]
+		location.Match = dir.Parameters[0].GetValue()
 		return location, nil
 	} else if len(dir.Parameters) == 2 {
-		location.Modifier = dir.Parameters[0]
-		location.Match = dir.Parameters[1]
+		location.Modifier = dir.Parameters[0].GetValue()
+		location.Match = dir.Parameters[1].GetValue()
 		return location, nil
 	}
 	return nil, errors.New("too many arguments for location directive")
