@@ -12,7 +12,7 @@ func TestConfig_IncludeToString(t *testing.T) {
 	include := &config.Include{
 		Directive: &config.Directive{
 			Name:       "include",
-			Parameters: []string{"/etc/nginx/conf.d/*.conf"},
+			Parameters: []config.Parameter{{Value: "/etc/nginx/conf.d/*.conf"}},
 		},
 		IncludePath: "/etc/nginx/conf.d/*.conf",
 	}

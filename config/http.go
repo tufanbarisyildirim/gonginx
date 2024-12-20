@@ -73,8 +73,8 @@ func (h *HTTP) GetName() string { //the directive name.
 }
 
 // GetParameters get directive parameters if any
-func (h *HTTP) GetParameters() []string {
-	return []string{}
+func (h *HTTP) GetParameters() []Parameter {
+	return []Parameter{}
 }
 
 // GetDirectives get all directives in http

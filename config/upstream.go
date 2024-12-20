@@ -47,8 +47,8 @@ func (us *Upstream) GetName() string {
 }
 
 // GetParameters upsrema parameters
-func (us *Upstream) GetParameters() []string {
-	return []string{us.UpstreamName} //the only parameter for an upstream is its name
+func (us *Upstream) GetParameters() []Parameter {
+	return []Parameter{{Value: us.UpstreamName}} //the only parameter for an upstream is its name
 }
 
 // GetBlock upstream does not have block
@@ -76,7 +76,7 @@ func (us *Upstream) GetDirectives() []IDirective {
 func NewUpstream(directive IDirective) (*Upstream, error) {
 	parameters := directive.GetParameters()
 	us := &Upstream{
-		UpstreamName: parameters[0], //first parameter of the directive is the upstream name
+		UpstreamName: parameters[0].GetValue(), //first parameter of the directive is the upstream name
 	}
 
 	if directive.GetBlock() == nil {

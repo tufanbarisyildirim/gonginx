@@ -59,8 +59,8 @@ func (lb *LuaBlock) GetName() string { //the directive name.
 }
 
 // GetParameters get directive parameters if any
-func (lb *LuaBlock) GetParameters() []string {
-	return []string{}
+func (lb *LuaBlock) GetParameters() []Parameter {
+	return []Parameter{}
 }
 
 // GetDirectives get all directives in lua block
