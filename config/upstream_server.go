@@ -13,7 +13,7 @@ type UpstreamServer struct {
 	Parameters map[string]string
 	Comment    []string
 	DefaultInlineComment
-	Parent IBlock
+	Parent IDirective
 	Line   int
 }
 
@@ -28,12 +28,12 @@ func (uss *UpstreamServer) GetLine() int {
 }
 
 // SetParent change the parent block
-func (uss *UpstreamServer) SetParent(parent IBlock) {
+func (uss *UpstreamServer) SetParent(parent IDirective) {
 	uss.Parent = parent
 }
 
 // GetParent the parent block
-func (uss *UpstreamServer) GetParent() IBlock {
+func (uss *UpstreamServer) GetParent() IDirective {
 	return uss.Parent
 }
 

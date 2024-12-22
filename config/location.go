@@ -7,7 +7,7 @@ type Location struct {
 	*Directive
 	Modifier string
 	Match    string
-	Parent   IBlock
+	Parent   IDirective
 	Line     int
 }
 
@@ -22,12 +22,12 @@ func (l *Location) GetLine() int {
 }
 
 // SetParent change the parent block
-func (l *Location) SetParent(parent IBlock) {
+func (l *Location) SetParent(parent IDirective) {
 	l.Parent = parent
 }
 
 // GetParent the parent block
-func (l *Location) GetParent() IBlock {
+func (l *Location) GetParent() IDirective {
 	return l.Parent
 }
 
@@ -55,4 +55,20 @@ func NewLocation(directive IDirective) (*Location, error) {
 		return location, nil
 	}
 	return nil, errors.New("too many arguments for location directive")
+}
+
+func (l *Location) FindDirectives(directiveName string) []IDirective {
+	block := l.GetBlock()
+	if block == nil {
+		return []IDirective{}
+	}
+	return block.FindDirectives(directiveName)
+}
+
+func (l *Location) GetDirectives() []IDirective {
+	block := l.GetBlock()
+	if block == nil {
+		return []IDirective{}
+	}
+	return block.GetDirectives()
 }

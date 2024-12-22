@@ -219,7 +219,16 @@ parsingLoop:
 			if err != nil {
 				return nil, err
 			}
-			s.SetParent(context)
+			if s.GetBlock() == nil {
+				s.SetParent(s)
+			} else {
+				// each directive should have a parent directive, not a block
+				// find each directive in the block and set the parent directive
+				b := s.GetBlock()
+				for _, dir := range b.GetDirectives() {
+					dir.SetParent(s)
+				}
+			}
 			line = p.currentToken.Line
 			s.SetLine(line)
 			context.Directives = append(context.Directives, s)

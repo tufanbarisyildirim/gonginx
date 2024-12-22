@@ -10,7 +10,7 @@ type HTTP struct {
 	Directives []IDirective
 	Comment    []string
 	DefaultInlineComment
-	Parent IBlock
+	Parent IDirective
 	Line   int
 }
 
@@ -25,12 +25,12 @@ func (h *HTTP) GetLine() int {
 }
 
 // SetParent change the parent block
-func (h *HTTP) SetParent(parent IBlock) {
+func (h *HTTP) SetParent(parent IDirective) {
 	h.Parent = parent
 }
 
 // GetParent the parent block
-func (h *HTTP) GetParent() IBlock {
+func (h *HTTP) GetParent() IDirective {
 	return h.Parent
 }
 

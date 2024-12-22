@@ -437,11 +437,8 @@ events { worker_connections 4096; }
 
 	events := conf.FindDirectives("events")
 	assert.Assert(t, len(events) > 0, "cannot find events")
-
-	mainBlock, ok := events[0].GetParent().(*config.Block)
-	assert.Equal(t, ok, true, "cannot convert parent to blcok")
-	allDire := mainBlock.GetDirectives()
-	assert.Assert(t, len(allDire) == 6, "num of sub directive in main block error")
+	mainBlock := events[0].GetParent()
+	assert.Assert(t, mainBlock == nil, "the events block should not have a parent block")
 }
 
 func TestParser_ParentSubDirective1(t *testing.T) {
@@ -458,9 +455,8 @@ events {
 	workerConnections := conf.FindDirectives("worker_connections")
 	assert.Assert(t, len(workerConnections) == 1, "cannot find worker_connections")
 
-	events, ok := workerConnections[0].GetParent().(*config.Block)
-	assert.Equal(t, ok, true, "cannot convert parent to blcok")
-	allDire := events.GetDirectives()
+	events := workerConnections[0].GetParent()
+	allDire := events.GetBlock().GetDirectives()
 	assert.Assert(t, len(allDire) == 2, "num of sub directive in events error")
 }
 
@@ -525,6 +521,55 @@ http {
 	includes := httpBlock.FindDirectives("include")
 
 	assert.Equal(t, len(includes), 1, "cannot find include directive in http block")
+}
+
+func TestParser_ParentSubDirective4(t *testing.T) {
+	p := NewStringParser(`user www www;
+http {
+	include mime.types;
+	server {
+		listen 80;
+		location / {
+			proxy_pass http://backend/;
+		}
+	}
+}
+`)
+	conf, err := p.Parse()
+	assert.NilError(t, err, "no error expected here")
+
+	listens := conf.FindDirectives("listen")
+	assert.Equal(t, len(listens), 1, "num of listen error")
+
+	serverIBlock := listens[0].GetParent()
+	server, ok := serverIBlock.(*config.Server)
+
+	assert.Equal(t, ok, true, "cannot convert listen parent to server")
+
+	_, ok = server.GetParent().(*config.HTTP)
+	assert.Equal(t, ok, true, "cannot convert server parent to http")
+
+}
+
+func TestParser_ParentSubDirective5(t *testing.T) {
+	p := NewStringParser(`user www www;
+stream {
+	upstream ssh_backend {
+		server 192.168.1.10:22;
+	}
+	server {
+		listen 2345;
+		proxy_pass ssh_backend;
+	}
+}
+
+`)
+	conf, err := p.Parse()
+	assert.NilError(t, err, "no error expected here")
+
+	servers := conf.FindDirectives("server")
+	assert.Equal(t, len(servers), 1, "num of server error")
+
 }
 
 func TestParser_KeepDataInMultiLine01(t *testing.T) {

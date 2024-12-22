@@ -11,7 +11,7 @@ type LuaBlock struct {
 	Comment    []string
 	DefaultInlineComment
 	LuaCode string
-	Parent  IBlock
+	Parent  IDirective
 	Line    int
 }
 
@@ -44,12 +44,12 @@ func (lb *LuaBlock) GetLine() int {
 }
 
 // SetParent change the parent block
-func (lb *LuaBlock) SetParent(parent IBlock) {
+func (lb *LuaBlock) SetParent(parent IDirective) {
 	lb.Parent = parent
 }
 
 // GetParent the parent block
-func (lb *LuaBlock) GetParent() IBlock {
+func (lb *LuaBlock) GetParent() IDirective {
 	return lb.Parent
 }
 
