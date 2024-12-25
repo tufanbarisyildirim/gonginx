@@ -7,7 +7,7 @@ type Directive struct {
 	Parameters []Parameter //TODO: Save parameters with their type
 	Comment    []string
 	DefaultInlineComment
-	Parent IBlock
+	Parent IDirective
 	Line   int
 }
 
@@ -22,12 +22,12 @@ func (d *Directive) GetLine() int {
 }
 
 // SetParent  the parent block
-func (d *Directive) SetParent(parent IBlock) {
+func (d *Directive) SetParent(parent IDirective) {
 	d.Parent = parent
 }
 
 // GetParent change the parent block
-func (d *Directive) GetParent() IBlock {
+func (d *Directive) GetParent() IDirective {
 	return d.Parent
 }
 

@@ -9,7 +9,7 @@ type Include struct {
 	*Directive
 	IncludePath string
 	Configs     []*Config
-	Parent      IBlock
+	Parent      IDirective
 }
 
 //TODO(tufan): move that part into dumper package
@@ -38,12 +38,12 @@ func (c *Include) GetLine() int {
 }
 
 // GetParent the parent block
-func (c *Include) GetParent() IBlock {
+func (c *Include) GetParent() IDirective {
 	return c.Parent
 }
 
 // SetParent change the parent block
-func (c *Include) SetParent(parent IBlock) {
+func (c *Include) SetParent(parent IDirective) {
 	c.Parent = parent
 }
 

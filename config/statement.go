@@ -5,8 +5,8 @@ type IBlock interface {
 	GetDirectives() []IDirective
 	FindDirectives(directiveName string) []IDirective
 	GetCodeBlock() string
-	SetParent(IBlock)
-	GetParent() IBlock
+	SetParent(IDirective)
+	GetParent() IDirective
 }
 
 // IDirective represents any directive
@@ -16,8 +16,8 @@ type IDirective interface {
 	GetBlock() IBlock
 	GetComment() []string
 	SetComment(comment []string)
-	SetParent(IBlock)
-	GetParent() IBlock
+	SetParent(IDirective)
+	GetParent() IDirective
 	GetLine() int
 	SetLine(int)
 	InlineCommenter

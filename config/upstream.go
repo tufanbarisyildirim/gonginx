@@ -12,7 +12,7 @@ type Upstream struct {
 	Directives []IDirective
 	Comment    []string
 	DefaultInlineComment
-	Parent IBlock
+	Parent IDirective
 	Line   int
 }
 
@@ -27,12 +27,12 @@ func (us *Upstream) GetLine() int {
 }
 
 // SetParent change the parent block
-func (us *Upstream) SetParent(parent IBlock) {
+func (us *Upstream) SetParent(parent IDirective) {
 	us.Parent = parent
 }
 
 // GetParent the parent block
-func (us *Upstream) GetParent() IBlock {
+func (us *Upstream) GetParent() IDirective {
 	return us.Parent
 }
 

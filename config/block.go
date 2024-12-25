@@ -5,16 +5,16 @@ type Block struct {
 	Directives  []IDirective
 	IsLuaBlock  bool
 	LiteralCode string
-	Parent      IBlock
+	Parent      IDirective
 }
 
 // SetParent change the parent block
-func (b *Block) SetParent(parent IBlock) {
+func (b *Block) SetParent(parent IDirective) {
 	b.Parent = parent
 }
 
 // GetParent the parent block
-func (b *Block) GetParent() IBlock {
+func (b *Block) GetParent() IDirective {
 	return b.Parent
 }
 

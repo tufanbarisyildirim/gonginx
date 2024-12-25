@@ -364,8 +364,8 @@ type IDirective interface {
 	GetBlock() IBlock
 	GetComment() []string
 	SetComment(comment []string)
-	SetParent(IBlock)
-	GetParent() IBlock
+	SetParent(IDirective)
+	GetParent() IDirective
 }
 ```
 + GetName() string: the directive name.
@@ -373,21 +373,21 @@ type IDirective interface {
 + GetBlock() IBlock: the directive block.
 + GetComment() []string: the directive comment.
 + SetComment(comment []string): the directive comment.
-+ GetParent() IBlock: the directive parent block.
++ GetParent() IDirective: the directive that contains or encloses the current directive.
 #### IBlock
 ```go
 type IBlock interface {
 	GetDirectives() []IDirective
 	FindDirectives(directiveName string) []IDirective
 	GetCodeBlock() string
-	SetParent(IBlock)
-	GetParent() IBlock
+	SetParent(IDirective)
+	GetParent() IDirective
 }
 ```
 + GetDirectives() []IDirective: the block directives.
 + FindDirectives(directiveName string) []IDirective: the block directives.
 + GetCodeBlock() string: the block code.
-+ GetParent() IBlock: the block parent block.
++ GetParent() IDirective: the directive that contains or encloses the current directive.
 
 #### Directive (impl IDirective)
 ```go

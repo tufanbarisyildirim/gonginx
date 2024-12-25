@@ -9,7 +9,7 @@ type Server struct {
 	Block   IBlock
 	Comment []string
 	DefaultInlineComment
-	Parent IBlock
+	Parent IDirective
 	Line   int
 }
 
@@ -24,12 +24,12 @@ func (s *Server) GetLine() int {
 }
 
 // SetParent change the parent block
-func (s *Server) SetParent(parent IBlock) {
+func (s *Server) SetParent(parent IDirective) {
 	s.Parent = parent
 }
 
 // GetParent the parent block
-func (s *Server) GetParent() IBlock {
+func (s *Server) GetParent() IDirective {
 	return s.Parent
 }
 
@@ -68,4 +68,33 @@ func (s *Server) GetParameters() []Parameter {
 // GetBlock get block if any
 func (s *Server) GetBlock() IBlock {
 	return s.Block
+}
+
+// FindDirectives find directives
+func (s *Server) FindDirectives(directiveName string) []IDirective {
+	directives := make([]IDirective, 0)
+	for _, directive := range s.GetDirectives() {
+		if directive.GetName() == directiveName {
+			directives = append(directives, directive)
+		}
+		if include, ok := directive.(*Include); ok {
+			for _, c := range include.Configs {
+				directives = append(directives, c.FindDirectives(directiveName)...)
+			}
+		}
+		if directive.GetBlock() != nil {
+			directives = append(directives, directive.GetBlock().FindDirectives(directiveName)...)
+		}
+	}
+
+	return directives
+}
+
+// GetDirectives get all directives in Server
+func (s *Server) GetDirectives() []IDirective {
+	block := s.GetBlock()
+	if block == nil {
+		return []IDirective{}
+	}
+	return block.GetDirectives()
 }
