@@ -454,7 +454,6 @@ resolver_timeout
 return
 return
 rewrite
-rewrite_by_lua_block
 rewrite_log
 root
 satisfy
@@ -719,12 +718,95 @@ zone_sync_ssl_verify_depth
 zone_sync_timeout
 `
 
+// https://github.com/openresty/lua-nginx-module?tab=readme-ov-file#directives
+var validLuaDirectivesRawList = `lua_load_resty_core
+lua_capture_error_log
+lua_use_default_type
+lua_malloc_trim
+lua_code_cache
+lua_thread_cache_max_entries
+lua_regex_cache_max_entries
+lua_regex_match_limit
+lua_package_path
+lua_package_cpath
+init_by_lua
+init_by_lua_block
+init_by_lua_file
+init_worker_by_lua
+init_worker_by_lua_block
+init_worker_by_lua_file
+exit_worker_by_lua_block
+exit_worker_by_lua_file
+set_by_lua
+set_by_lua_block
+set_by_lua_file
+content_by_lua
+content_by_lua_block
+content_by_lua_file
+server_rewrite_by_lua_block
+server_rewrite_by_lua_file
+rewrite_by_lua
+rewrite_by_lua_block
+rewrite_by_lua_file
+access_by_lua
+access_by_lua_block
+access_by_lua_file
+header_filter_by_lua
+header_filter_by_lua_block
+header_filter_by_lua_file
+body_filter_by_lua
+body_filter_by_lua_block
+body_filter_by_lua_file
+log_by_lua
+log_by_lua_block
+log_by_lua_file
+balancer_by_lua_block
+balancer_by_lua_file
+balancer_keepalive
+lua_need_request_body
+ssl_client_hello_by_lua_block
+ssl_client_hello_by_lua_file
+ssl_certificate_by_lua_block
+ssl_certificate_by_lua_file
+ssl_session_fetch_by_lua_block
+ssl_session_fetch_by_lua_file
+ssl_session_store_by_lua_block
+ssl_session_store_by_lua_file
+lua_shared_dict
+lua_socket_connect_timeout
+lua_socket_send_timeout
+lua_socket_send_lowat
+lua_socket_read_timeout
+lua_socket_buffer_size
+lua_socket_pool_size
+lua_socket_keepalive_timeout
+lua_socket_log_errors
+lua_ssl_ciphers
+lua_ssl_crl
+lua_ssl_protocols
+lua_ssl_certificate
+lua_ssl_certificate_key
+lua_ssl_trusted_certificate
+lua_ssl_verify_depth
+lua_ssl_conf_command
+lua_http10_buffering
+rewrite_by_lua_no_postpone
+access_by_lua_no_postpone
+lua_transform_underscores_in_response_headers
+lua_check_client_abort
+lua_max_pending_timers
+lua_max_running_timers
+lua_sa_restart
+lua_worker_thread_vm_pool_size
+`
+
 // ValidDirectives mapped directives easily find
 // todo: this could handle the allowed blocks as well
 var ValidDirectives map[string]string = map[string]string{}
 
 func init() {
-	directives := strings.Split(validDirectivesRawList, "\n")
+	validDirective := validDirectivesRawList + validLuaDirectivesRawList
+	directives := strings.Split(validDirective, "\n")
 	for _, directive := range directives {
 		ValidDirectives[strings.TrimSpace(directive)] = strings.TrimSpace(directive)
 	}
