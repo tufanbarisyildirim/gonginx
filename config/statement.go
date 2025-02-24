@@ -85,4 +85,5 @@ func (p *Parameter) GetRelativeLineIndex() int {
 	return p.RelativeLineIndex
 }
 
+// InlineComment represents an inline comment
 type InlineComment Parameter
