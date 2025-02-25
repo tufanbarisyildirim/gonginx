@@ -88,31 +88,45 @@ func DumpDirective(d config.IDirective, style *Style) string {
 	if style.SpaceBeforeBlocks && d.GetBlock() != nil {
 		buf.WriteString("\n")
 	}
+	// outline comment
 	if len(d.GetComment()) > 0 {
 		for _, comment := range d.GetComment() {
 			buf.WriteString(fmt.Sprintf("%s%s\n", strings.Repeat(" ", style.StartIndent), comment))
 		}
 	}
 	buf.WriteString(fmt.Sprintf("%s%s", strings.Repeat(" ", style.StartIndent), d.GetName()))
-	if len(d.GetParameters()) > 0 {
-		// Use relative line index to handle different line number arrangements of instruction parameters
-		relativeLineIndex := 0
-		for _, parameter := range d.GetParameters() {
-			// If the parameter line index is not the same as the previous one, add a new line
-			if parameter.GetRelativeLineIndex() != relativeLineIndex {
-				buf.WriteString("\n")
-				buf.WriteString(fmt.Sprintf("%s%s", strings.Repeat(" ", style.StartIndent), parameter.GetValue()))
-				relativeLineIndex = parameter.GetRelativeLineIndex()
+
+	inlineComments := make(map[int]config.InlineComment)
+	for _, comment := range d.GetInlineComment() {
+		inlineComments[comment.RelativeLineIndex] = comment
+	}
+
+	// Use relative line index to handle different line number arrangements of instruction parameters
+	relativeLineIndex := 0
+	for _, parameter := range d.GetParameters() {
+		// If the parameter line index is not the same as the previous one, add a new line
+		if parameter.GetRelativeLineIndex() != relativeLineIndex {
+			// write param comment
+			if comment, ok := inlineComments[relativeLineIndex]; ok {
+				buf.WriteString(fmt.Sprintf(" %s\n", comment.Value))
 			} else {
-				buf.WriteString(fmt.Sprintf(" %s", parameter.GetValue()))
+				buf.WriteString("\n")
 			}
+			buf.WriteString(fmt.Sprintf("%s%s", strings.Repeat(" ", style.StartIndent+style.Indent), parameter.GetValue()))
+			relativeLineIndex = parameter.GetRelativeLineIndex()
+		} else {
+			buf.WriteString(fmt.Sprintf(" %s", parameter.GetValue()))
 		}
 	}
+
 	if d.GetBlock() == nil {
 		if d.GetName() != "" {
 			buf.WriteRune(';')
 		}
-		buf.WriteString(d.GetInlineComment())
+		// the last inline comment
+		if comment, ok := inlineComments[relativeLineIndex]; ok {
+			buf.WriteString(comment.Value)
+		}
 	} else {
 		buf.WriteString(" {\n")
 		buf.WriteString(DumpBlock(d.GetBlock(), style.Iterate()))

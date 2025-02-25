@@ -236,18 +236,8 @@ parsingLoop:
 			if p.opts.skipComments {
 				break
 			}
-			// inline comment
-			if line == p.currentToken.Line {
-				if s == nil && len(context.Directives) > 0 {
-					s = context.Directives[len(context.Directives)-1]
-				}
-				s.SetInlineComment(p.currentToken.Literal)
-				s.SetLine(line)
-				p.commentBuffer = nil
-			} else {
-				p.commentBuffer = append(p.commentBuffer, p.currentToken.Literal)
-			}
-
+			// outline comment
+			p.commentBuffer = append(p.commentBuffer, p.currentToken.Literal)
 		}
 		p.nextToken()
 	}
@@ -274,67 +264,74 @@ func (p *Parser) parseStatement(isSkipValidDirective bool) (config.IDirective, e
 		return sp()
 	}
 
+	// set outline comment
 	if len(p.commentBuffer) > 0 {
 		d.Comment = p.commentBuffer
-		p.commentBuffer = nil
+		p.commentBuffer = make([]string, 0)
 	}
 
-	//parse parameters until the end.
-	// keep track of the line index of the directive
-	directiveLineIndex := p.currentToken.Line
-	for p.nextToken(); p.currentToken.IsParameterEligible(); p.nextToken() {
-		d.Parameters = append(d.Parameters, config.Parameter{
-			Value:             p.currentToken.Literal,
-			RelativeLineIndex: p.currentToken.Line - directiveLineIndex}) // save the relative line index of the parameter
-		if p.currentToken.Is(token.BlockEnd) {
+	directiveLineIndex := p.currentToken.Line // keep track of the line index of the directive
+	// Parse parameters until reaching the semicolon that ends the directive.
+	for {
+		p.nextToken()
+		if p.currentToken.IsParameterEligible() {
+			d.Parameters = append(d.Parameters, config.Parameter{
+				Value:             p.currentToken.Literal,
+				RelativeLineIndex: p.currentToken.Line - directiveLineIndex}) // save the relative line index of the parameter
+			if p.currentToken.Is(token.BlockEnd) {
+				return d, nil
+			}
+		} else if p.curTokenIs(token.Semicolon) {
+			// inline comment in following token
+			if !p.opts.skipComments {
+				if p.followingTokenIs(token.Comment) && p.followingToken.Line == p.currentToken.Line {
+					// if following token is a comment, then it is an inline comment, fetch next token
+					p.nextToken()
+					d.SetInlineComment(config.InlineComment{
+						Value:             p.currentToken.Literal,
+						RelativeLineIndex: p.currentToken.Line - directiveLineIndex,
+					})
+				}
+			}
+			if iw, ok := p.includeWrappers[d.Name]; ok {
+				include, err := iw(d)
+				if err != nil {
+					return nil, err
+				}
+				return p.ParseInclude(include.(*config.Include))
+			} else if dw, ok := p.directiveWrappers[d.Name]; ok {
+				return dw(d)
+			}
 			return d, nil
-		}
-	}
+		} else if p.curTokenIs(token.Comment) {
+			// param comment
+			d.SetInlineComment(config.InlineComment{
+				Value:             p.currentToken.Literal,
+				RelativeLineIndex: p.currentToken.Line - directiveLineIndex,
+			})
+		} else if p.curTokenIs(token.BlockStart) {
+			_, blockSkip1 := SkipValidBlocks[d.Name]
+			_, blockSkip2 := p.opts.skipValidSubDirectiveBlock[d.Name]
+			isSkipBlockSubDirective := blockSkip1 || blockSkip2 || isSkipValidDirective
 
-	//if we find a semicolon it is a directive, we will check directive converters
-	if p.curTokenIs(token.Semicolon) {
-		if iw, ok := p.includeWrappers[d.Name]; ok {
-			include, err := iw(d)
+			b, err := p.parseBlock(true, isSkipBlockSubDirective)
 			if err != nil {
 				return nil, err
 			}
-			return p.ParseInclude(include.(*config.Include))
-		} else if dw, ok := p.directiveWrappers[d.Name]; ok {
-			return dw(d)
-		}
-		return d, nil
-	}
-	for {
-		if p.curTokenIs(token.Comment) {
-			p.commentBuffer = append(p.commentBuffer, p.currentToken.Literal)
-			p.nextToken()
+			d.Block = b
+
+			if strings.HasSuffix(d.Name, "_by_lua_block") {
+				return p.blockWrappers["_by_lua_block"](d)
+			}
+
+			if bw, ok := p.blockWrappers[d.Name]; ok {
+				return bw(d)
+			}
+			return d, nil
 		} else {
-			break
+			return nil, fmt.Errorf("unexpected token %s (%s) on line %d, column %d", p.currentToken.Type.String(), p.currentToken.Literal, p.currentToken.Line, p.currentToken.Column)
 		}
 	}
-
-	//ok, it does not end with a semicolon but a block starts, we will convert that block if we have a converter
-	if p.curTokenIs(token.BlockStart) {
-		_, blockSkip1 := SkipValidBlocks[d.Name]
-		_, blockSkip2 := p.opts.skipValidSubDirectiveBlock[d.Name]
-		isSkipBlockSubDirective := blockSkip1 || blockSkip2 || isSkipValidDirective
-		b, err := p.parseBlock(true, isSkipBlockSubDirective)
-		if err != nil {
-			return nil, err
-		}
-		d.Block = b
-
-		if strings.HasSuffix(d.Name, "_by_lua_block") {
-			return p.blockWrappers["_by_lua_block"](d)
-		}
-
-		if bw, ok := p.blockWrappers[d.Name]; ok {
-			return bw(d)
-		}
-		return d, nil
-	}
-
-	return nil, fmt.Errorf("unexpected token %s (%s) on line %d, column %d", p.currentToken.Type.String(), p.currentToken.Literal, p.currentToken.Line, p.currentToken.Column)
 }
 
 // ParseInclude just parse include confs

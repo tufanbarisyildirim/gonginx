@@ -57,6 +57,7 @@ func NewLocation(directive IDirective) (*Location, error) {
 	return nil, errors.New("too many arguments for location directive")
 }
 
+// FindDirectives find directives by name
 func (l *Location) FindDirectives(directiveName string) []IDirective {
 	block := l.GetBlock()
 	if block == nil {
@@ -65,6 +66,7 @@ func (l *Location) FindDirectives(directiveName string) []IDirective {
 	return block.FindDirectives(directiveName)
 }
 
+// GetDirectives get all directives
 func (l *Location) GetDirectives() []IDirective {
 	block := l.GetBlock()
 	if block == nil {

@@ -25,23 +25,23 @@ type IDirective interface {
 
 // InlineCommenter represents the inline comment holder
 type InlineCommenter interface {
-	GetInlineComment() string
-	SetInlineComment(comment string)
+	GetInlineComment() []InlineComment
+	SetInlineComment(comment InlineComment)
 }
 
 // DefaultInlineComment represents the default inline comment holder
 type DefaultInlineComment struct {
-	InlineComment string
+	InlineComment []InlineComment
 }
 
 // GetInlineComment returns the inline comment
-func (d *DefaultInlineComment) GetInlineComment() string {
+func (d *DefaultInlineComment) GetInlineComment() []InlineComment {
 	return d.InlineComment
 }
 
 // SetInlineComment sets the inline comment
-func (d *DefaultInlineComment) SetInlineComment(comment string) {
-	d.InlineComment = comment
+func (d *DefaultInlineComment) SetInlineComment(comment InlineComment) {
+	d.InlineComment = append(d.InlineComment, comment)
 }
 
 // FileDirective a statement that saves its own file
@@ -84,3 +84,6 @@ func (p *Parameter) SetRelativeLineIndex(i int) {
 func (p *Parameter) GetRelativeLineIndex() int {
 	return p.RelativeLineIndex
 }
+
+// InlineComment represents an inline comment
+type InlineComment Parameter

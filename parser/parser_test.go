@@ -574,14 +574,14 @@ stream {
 
 func TestParser_KeepDataInMultiLine01(t *testing.T) {
 	p := NewStringParser(`log_format main '$remote_addr - $remote_user [$time_local] "$request" '
-'$status $body_bytes_sent "$http_referer" '
-'"$http_user_agent" "$http_x_forwarded_for"';`)
+    '$status $body_bytes_sent "$http_referer" '
+    '"$http_user_agent" "$http_x_forwarded_for"';`)
 	conf, err := p.Parse()
 	assert.NilError(t, err, "no error expected here")
 	s := dumper.DumpConfig(conf, dumper.IndentedStyle)
 	assert.Equal(t, `log_format main '$remote_addr - $remote_user [$time_local] "$request" '
-'$status $body_bytes_sent "$http_referer" '
-'"$http_user_agent" "$http_x_forwarded_for"';`, s)
+    '$status $body_bytes_sent "$http_referer" '
+    '"$http_user_agent" "$http_x_forwarded_for"';`, s)
 
 }
 
@@ -594,7 +594,25 @@ func TestParser_KeepDataInMultiLine02(t *testing.T) {
 	s := dumper.DumpConfig(conf, dumper.IndentedStyle)
 	assert.Equal(t, `events {
     worker_connections
-    4096;
+        4096;
 }`, s)
 
+}
+
+func TestParser_QuotedString_ISSUE65(t *testing.T) {
+	p := NewStringParser(`log_format json_analytics escape=json '{' # json start
+	'"msec": "$msec", ' # request unixtime in seconds with a milliseconds resolution
+    '"connection": "$connection", ' # connection serial number
+    '"connection_requests": "$connection_requests", ' # number of requests made in connection
+    '}'; # inline comment
+error_log off; # error_log inline comment`)
+	conf, err := p.Parse()
+	assert.NilError(t, err, "no error expected here")
+	s := dumper.DumpConfig(conf, dumper.IndentedStyle)
+	assert.Equal(t, `log_format json_analytics escape=json '{' # json start
+    '"msec": "$msec", ' # request unixtime in seconds with a milliseconds resolution
+    '"connection": "$connection", ' # connection serial number
+    '"connection_requests": "$connection_requests", ' # number of requests made in connection
+    '}';# inline comment
+error_log off;# error_log inline comment`, s)
 }
