@@ -21,3 +21,5 @@
 # GoLand
 .idea
 
+# macOS
+.DS_Store

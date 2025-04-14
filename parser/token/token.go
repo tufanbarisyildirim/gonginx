@@ -26,6 +26,8 @@ const (
 	Semicolon
 	//Comment #comment
 	Comment
+	//EndOfLine \n or \r
+	EndOfLine
 	//Illegal a token that should never happen
 	Illegal
 	//Regex any reg expression
@@ -44,6 +46,7 @@ var (
 		BlockEnd:     "BlockEnd",
 		Semicolon:    "Semicolon",
 		Comment:      "Comment",
+		EndOfLine:    "EndOfLine",
 		Illegal:      "Illegal",
 		Regex:        "Regex",
 	}

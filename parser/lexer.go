@@ -75,6 +75,8 @@ reToken:
 		return s.NewToken(token.BlockEnd).Lit(string(s.read()))
 	case ch == '#':
 		return s.scanComment()
+	case isEndOfLine(ch):
+		return s.NewToken(token.EndOfLine).Lit(string(s.read()))
 	case isQuote(ch):
 		return s.scanQuotedString(ch)
 	default:
@@ -217,7 +219,7 @@ func (s *lexer) scanKeyword() token.Token {
 		ch := s.peek()
 
 		//space, ;  and file ending definitely ends the keyword.
-		if isSpace(ch) || isEOF(ch) || ch == ';' {
+		if isSpace(ch) || isEOF(ch) || ch == ';' || isEndOfLine(ch) {
 			break
 		}
 
@@ -258,7 +260,7 @@ func isQuote(ch rune) bool {
 }
 
 func isSpace(ch rune) bool {
-	return ch == ' ' || ch == '\t' || isEndOfLine(ch)
+	return ch == ' ' || ch == '\t'
 }
 
 func isEOF(ch rune) bool {
