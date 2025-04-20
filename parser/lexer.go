@@ -279,24 +279,6 @@ func (s *lexer) scanKeyword() token.Token {
 	return tok.Lit(buf.String())
 }
 
-// isVariableContext returns true if the character is part of a variable reference context
-func isVariableContext(r rune) bool {
-	return r == '$' || r == '{' || r == '_' || r == '-' ||
-		(r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9')
-}
-
-// peekNext looks at the character after the next one without consuming
-func (s *lexer) peekNext() rune {
-	// Read first rune
-	s.reader.ReadRune()
-	// Read second rune
-	r2, _, _ := s.reader.ReadRune()
-	// Unread both runes
-	s.reader.UnreadRune()
-	s.reader.UnreadRune()
-	return r2
-}
-
 func (s *lexer) read() rune {
 	ch, _, err := s.reader.ReadRune()
 	if err != nil {
