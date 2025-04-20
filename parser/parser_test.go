@@ -355,6 +355,13 @@ func TestParser_Issue20(t *testing.T) {
         }
         return 403 "Random number: $random";
     }
+}
+server {
+    listen 80;
+    server_name _;
+    location = /unexpected-eof {
+        rewrite ^(.*)$ https://${server_name}$1 permanent;
+    }
 }`, s)
 }
 

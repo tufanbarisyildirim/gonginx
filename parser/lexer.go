@@ -98,9 +98,16 @@ func (s *lexer) readUntil(until runeCheck) string {
 	buf.WriteRune(s.read())
 
 	for {
-		if ch := s.peek(); isEOF(ch) {
+		ch := s.peek()
+		if isEOF(ch) {
 			break
 		} else if until(ch) {
+			// Check if this is a $ followed by a variable like ${var}
+			// If so, don't break - this is part of the token
+			if ch == '}' && s.maybeLookingAtVariableClose() {
+				buf.WriteRune(s.read())
+				continue
+			}
 			break
 		} else {
 			buf.WriteRune(s.read())
@@ -108,6 +115,21 @@ func (s *lexer) readUntil(until runeCheck) string {
 	}
 
 	return buf.String()
+}
+
+// maybeLookingAtVariableClose checks if we're possibly inside a variable reference
+// This is a heuristic to determine if a closing brace is part of a variable reference
+func (s *lexer) maybeLookingAtVariableClose() bool {
+	// Try to peek ahead to see if this looks like a variable pattern
+
+	// Read and immediately unread to preserve our position
+	s.reader.ReadRune()
+	ch := s.peek()
+	s.reader.UnreadRune()
+
+	// If the next character after } is $, 1-9, or a letter, we might be in a variable context
+	return ch == '$' || (ch >= '0' && ch <= '9') ||
+		(ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')
 }
 
 // NewToken creates a new Token with its line and column
@@ -178,7 +200,7 @@ func (s *lexer) scanLuaCode() token.Token {
 
 /*
 *
-\” – To escape “ within double quoted string.
+\” – To escape " within double quoted string.
 \\ – To escape the backslash.
 \n – To add line breaks between string.
 \t – To add tab space.
@@ -215,29 +237,64 @@ func (s *lexer) scanKeyword() token.Token {
 	tok := s.NewToken(token.Keyword)
 	prev := s.read()
 	buf.WriteRune(prev)
+	inVarRef := false
+
 	for {
 		ch := s.peek()
 
-		//space, ;  and file ending definitely ends the keyword.
+		// Space, semicolon, and file ending definitely end the keyword
 		if isSpace(ch) || isEOF(ch) || ch == ';' || isEndOfLine(ch) {
 			break
 		}
 
-		//the keyword could contain a variable with like ${var}
+		// Block start character ends the keyword unless we're in a variable reference
 		if ch == '{' {
 			if prev == '$' {
-				buf.WriteString(s.readUntil(func(r rune) bool {
-					return r == '}'
-				}))
-				buf.WriteRune(s.read()) //consume latest '}'
+				// Starting a ${var} variable reference
+				inVarRef = true
+				buf.WriteRune(s.read()) // consume '{'
+			} else if !inVarRef {
+				// This is a real block start, end the keyword
+				break
 			} else {
+				// Otherwise, just consume it as part of the keyword
+				buf.WriteRune(s.read())
+			}
+		} else if ch == '}' {
+			if inVarRef {
+				// End of the variable reference
+				inVarRef = false
+				buf.WriteRune(s.read()) // consume '}'
+			} else {
+				// This is a real block end, end the keyword
 				break
 			}
+		} else {
+			// Any other character is part of the keyword
+			prev = s.read()
+			buf.WriteRune(prev)
 		}
-		buf.WriteRune(s.read())
 	}
 
 	return tok.Lit(buf.String())
+}
+
+// isVariableContext returns true if the character is part of a variable reference context
+func isVariableContext(r rune) bool {
+	return r == '$' || r == '{' || r == '_' || r == '-' ||
+		(r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9')
+}
+
+// peekNext looks at the character after the next one without consuming
+func (s *lexer) peekNext() rune {
+	// Read first rune
+	s.reader.ReadRune()
+	// Read second rune
+	r2, _, _ := s.reader.ReadRune()
+	// Unread both runes
+	s.reader.UnreadRune()
+	s.reader.UnreadRune()
+	return r2
 }
 
 func (s *lexer) read() rune {
