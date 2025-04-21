@@ -1,8 +1,6 @@
 module github.com/tufanbarisyildirim/gonginx
 
-go 1.24
-
-toolchain go1.24.2
+go 1.22
 
 require (
 	github.com/imega/luaformatter v0.0.0-20211025140405-86b0a68d6bef
