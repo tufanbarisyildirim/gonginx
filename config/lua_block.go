@@ -10,9 +10,10 @@ type LuaBlock struct {
 	Name       string
 	Comment    []string
 	DefaultInlineComment
-	LuaCode string
-	Parent  IDirective
-	Line    int
+	LuaCode    string
+	Parent     IDirective
+	Line       int
+	Parameters []Parameter
 }
 
 // NewLuaBlock creates a lua block
@@ -22,6 +23,7 @@ func NewLuaBlock(directive IDirective) (*LuaBlock, error) {
 			Directives: []IDirective{},
 			Name:       directive.GetName(),
 			LuaCode:    block.GetCodeBlock(),
+			Parameters: directive.GetParameters(),
 		}
 
 		lb.Directives = append(lb.Directives, block.GetDirectives()...)
@@ -60,7 +62,7 @@ func (lb *LuaBlock) GetName() string { //the directive name.
 
 // GetParameters get directive parameters if any
 func (lb *LuaBlock) GetParameters() []Parameter {
-	return []Parameter{}
+	return lb.Parameters
 }
 
 // GetDirectives get all directives in lua block

@@ -314,20 +314,70 @@ func (p *Parser) parseStatement(isSkipValidDirective bool) (config.IDirective, e
 			_, blockSkip2 := p.opts.skipValidSubDirectiveBlock[d.Name]
 			isSkipBlockSubDirective := blockSkip1 || blockSkip2 || isSkipValidDirective
 
+			// Special handling for *_by_lua_block directives
+			if strings.HasSuffix(d.Name, "_by_lua_block") {
+				// For Lua blocks, we need to capture the content without parsing it as nginx directives
+				b := &config.Block{
+					IsLuaBlock:  true,
+					Directives:  []config.IDirective{},
+					LiteralCode: "",
+				}
+
+				// Skip past the opening brace
+				p.nextToken()
+
+				// Collect all content until the matching closing brace
+				// We need to count braces to handle nested blocks within Lua code
+				braceCount := 1
+				var luaCode strings.Builder
+
+				for braceCount > 0 && !p.curTokenIs(token.EOF) {
+					if p.curTokenIs(token.BlockStart) {
+						braceCount++
+					} else if p.curTokenIs(token.BlockEnd) {
+						braceCount--
+						if braceCount == 0 {
+							// This is the closing brace of the Lua block
+							break
+						}
+					}
+
+					// Append token to Lua code if it's not the closing brace
+					if !(p.curTokenIs(token.BlockEnd) && braceCount == 0) {
+						luaCode.WriteString(p.currentToken.Literal)
+						// Add space between tokens for readability
+						if p.followingToken.Type != token.BlockEnd &&
+							p.followingToken.Type != token.Semicolon &&
+							p.followingToken.Type != token.EndOfLine {
+							luaCode.WriteString(" ")
+						}
+					}
+
+					p.nextToken()
+				}
+
+				b.LiteralCode = strings.TrimSpace(luaCode.String())
+				d.Block = b
+
+				// Use the appropriate wrapper based on the directive name
+				if strings.HasSuffix(d.Name, "_by_lua_block") {
+					return p.blockWrappers["_by_lua_block"](d)
+				}
+				return d, nil
+			}
+
 			b, err := p.parseBlock(true, isSkipBlockSubDirective)
 			if err != nil {
 				return nil, err
 			}
 			d.Block = b
 
-			if strings.HasSuffix(d.Name, "_by_lua_block") {
-				return p.blockWrappers["_by_lua_block"](d)
-			}
-
 			if bw, ok := p.blockWrappers[d.Name]; ok {
 				return bw(d)
 			}
 			return d, nil
+		} else if p.currentToken.Is(token.EndOfLine) {
+			continue
 		} else {
 			return nil, fmt.Errorf("unexpected token %s (%s) on line %d, column %d", p.currentToken.Type.String(), p.currentToken.Literal, p.currentToken.Line, p.currentToken.Column)
 		}

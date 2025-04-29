@@ -137,20 +137,11 @@ func DumpDirective(d config.IDirective, style *Style) string {
 
 // DumpBlock convert a directive to a string
 func DumpBlock(b config.IBlock, style *Style) string {
-	var buf bytes.Buffer
-
 	if b.GetCodeBlock() != "" {
-		luaLines := strings.Split(b.GetCodeBlock(), "\n")
-		for i, line := range luaLines {
-			buf.WriteString(fmt.Sprintf("%s%s", strings.Repeat(" ", style.StartIndent), line))
-			if i != len(luaLines)-1 {
-				buf.WriteString("\n")
-			}
-		}
-
-		return buf.String()
+		return DumpLuaBlock(b, style)
 	}
 
+	var buf bytes.Buffer
 	directives := b.GetDirectives()
 	if style.SortDirectives {
 		sort.SliceStable(directives, func(i, j int) bool {

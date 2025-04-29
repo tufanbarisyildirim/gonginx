@@ -18,6 +18,9 @@ func TestParser_CurrFollow(t *testing.T) {
 	`
 	p := NewStringParser(conf)
 	//assert.Assert(t, tokens, 1)
+	assert.Assert(t, p.curTokenIs(token.EndOfLine))
+	assert.Assert(t, p.followingTokenIs(token.Keyword))
+	p.nextToken()
 	assert.Assert(t, p.curTokenIs(token.Keyword))
 	assert.Assert(t, p.followingTokenIs(token.BlockStart))
 }
@@ -309,6 +312,59 @@ location /.well-known/acme-challenge {
 }`, s)
 }
 
+func TestParser_Issue20(t *testing.T) {
+	t.Parallel()
+	p, err := NewParser("../testdata/issues/20.conf")
+	assert.NilError(t, err, "no error expected here")
+
+	c, err := p.Parse()
+	assert.NilError(t, err, "no error expected here")
+
+	s := dumper.DumpBlock(c, dumper.IndentedStyle)
+
+	p = NewStringParser(s)
+	c, err = p.Parse()
+	assert.NilError(t, err, "no error expected here")
+
+	s = dumper.DumpConfig(c, dumper.IndentedStyle)
+	assert.Equal(t, `server {
+    listen 80;
+    listen [::]:80;
+    server_name _;
+    location / {
+        content_by_lua_block {
+            # comment
+            local foo = "bar" # comment
+        }
+    }
+    location = /random {
+        set_by_lua_block $file_name {
+            # comment contained unexpect '{'
+            local t = ngx.var.uri
+            local query = string.find(t, "?", 1)
+
+            if query ~= nil then
+             t = string.sub(t, 1, query - 1)
+            end
+
+            return t
+        }
+        set_by_lua_block $random {
+            # comment contained unexpect '{'
+            return math.random(1, 100)
+        }
+        return 403 "Random number: $random";
+    }
+}
+server {
+    listen 80;
+    server_name _;
+    location = /unexpected-eof {
+        rewrite ^(.*)$ https://${server_name}$1 permanent;
+    }
+}`, s)
+}
+
 func TestParser_Issue22(t *testing.T) {
 	t.Parallel()
 	p, err := NewParser("../testdata/issues/22.conf")
@@ -328,13 +384,9 @@ func TestParser_Issue22(t *testing.T) {
 	assert.Equal(t, `server {
     location = /foo {
         rewrite_by_lua_block {
-            
-            res = ngx.location.capture("/memc",
-            { args = { cmd = "incr", key = ngx.var.uri } } # comment contained unexpect '{'
+            res = ngx.location.capture("/memc", {args = {cmd = "incr", key = ngx.var.uri}}) # comment contained unexpect '{'
             # comment contained unexpect '}'
-            )
-            t = { key="foo", val="bar" }
-            
+            t = {key = "foo", val = "bar"}
         }
     }
 }`, s)
@@ -615,4 +667,22 @@ error_log off; # error_log inline comment`)
     '"connection_requests": "$connection_requests", ' # number of requests made in connection
     '}';# inline comment
 error_log off;# error_log inline comment`, s)
+}
+
+func TestParser_LuaError(t *testing.T) {
+	t.Parallel()
+	p := NewStringParser(`location / {
+        content_by_lua_block { -- comment
+local foo = if -- comment }
+    }`)
+	c, err := p.Parse()
+	assert.NilError(t, err, "no error expected here")
+	s := dumper.DumpConfig(c, dumper.IndentedStyle)
+
+	assert.Equal(t, `location / {
+    content_by_lua_block {
+-- comment
+local foo = if -- comment
+    }
+}`, s)
 }
