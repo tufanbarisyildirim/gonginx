@@ -1,12 +1,12 @@
 package config
 
-// Config  represents a whole config file.
+// Config represents a complete nginx configuration file.
 type Config struct {
 	*Block
 	FilePath string
 }
 
-// global warpper
+// Global wrappers provide extension points for custom directive handling.
 var (
 	BlockWrappers     = map[string]func(*Directive) (IDirective, error){}
 	DirectiveWrappers = map[string]func(*Directive) (IDirective, error){}

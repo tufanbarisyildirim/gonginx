@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// UpstreamServer represents `server` directive in `upstream{}` block
+// UpstreamServer represents a `server` directive in an `upstream{}` block.
 type UpstreamServer struct {
 	Address    string
 	Flags      []string
@@ -17,52 +17,52 @@ type UpstreamServer struct {
 	Line   int
 }
 
-// SetLine Set line number
+// SetLine sets the line number.
 func (uss *UpstreamServer) SetLine(line int) {
 	uss.Line = line
 }
 
-// GetLine Get the line number
+// GetLine returns the line number.
 func (uss *UpstreamServer) GetLine() int {
 	return uss.Line
 }
 
-// SetParent change the parent block
+// SetParent sets the parent directive.
 func (uss *UpstreamServer) SetParent(parent IDirective) {
 	uss.Parent = parent
 }
 
-// GetParent the parent block
+// GetParent returns the parent directive.
 func (uss *UpstreamServer) GetParent() IDirective {
 	return uss.Parent
 }
 
-// SetComment set comment of the directive
+// SetComment sets the directive comment.
 func (uss *UpstreamServer) SetComment(comment []string) {
 	uss.Comment = comment
 }
 
-// GetComment get comment of the directive
+// GetComment returns the directive comment.
 func (uss *UpstreamServer) GetComment() []string {
 	return uss.Comment
 }
 
-// GetName return directive name, Statement  interface
+// GetName implements the Statement interface.
 func (uss *UpstreamServer) GetName() string {
 	return "server"
 }
 
-// GetBlock block of an upstream, basically nil
+// GetBlock returns nil because upstream servers do not have blocks.
 func (uss *UpstreamServer) GetBlock() IBlock {
 	return nil
 }
 
-// GetParameters block of an upstream, basically nil
+// GetParameters returns parameters for the upstream server.
 func (uss *UpstreamServer) GetParameters() []Parameter {
 	return uss.GetDirective().Parameters
 }
 
-// GetDirective get directive of the upstreamserver
+// GetDirective returns the directive representation of the upstream server.
 func (uss *UpstreamServer) GetDirective() *Directive {
 	//First, generate a new directive from upstream server
 	directive := &Directive{
@@ -98,7 +98,7 @@ func (uss *UpstreamServer) GetDirective() *Directive {
 	return directive
 }
 
-// NewUpstreamServer creates an upstream server from a directive
+// NewUpstreamServer creates an UpstreamServer from a directive.
 func NewUpstreamServer(directive IDirective) (*UpstreamServer, error) {
 	uss := &UpstreamServer{
 		Flags:      make([]string, 0),

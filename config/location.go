@@ -2,7 +2,7 @@ package config
 
 import "errors"
 
-// Location represents a location in nginx config
+// Location represents a location block in an nginx configuration.
 type Location struct {
 	*Directive
 	Modifier string
@@ -11,27 +11,27 @@ type Location struct {
 	Line     int
 }
 
-// SetLine Set line number
+// SetLine sets the line number.
 func (l *Location) SetLine(line int) {
 	l.Line = line
 }
 
-// GetLine Get the line number
+// GetLine returns the line number.
 func (l *Location) GetLine() int {
 	return l.Line
 }
 
-// SetParent change the parent block
+// SetParent sets the parent directive.
 func (l *Location) SetParent(parent IDirective) {
 	l.Parent = parent
 }
 
-// GetParent the parent block
+// GetParent returns the parent directive.
 func (l *Location) GetParent() IDirective {
 	return l.Parent
 }
 
-// NewLocation initialize a location block from a directive
+// NewLocation initializes a Location from a directive.
 func NewLocation(directive IDirective) (*Location, error) {
 	dir, ok := directive.(*Directive)
 	if !ok {
@@ -57,7 +57,7 @@ func NewLocation(directive IDirective) (*Location, error) {
 	return nil, errors.New("too many arguments for location directive")
 }
 
-// FindDirectives find directives by name
+// FindDirectives finds directives by name.
 func (l *Location) FindDirectives(directiveName string) []IDirective {
 	block := l.GetBlock()
 	if block == nil {
@@ -66,7 +66,7 @@ func (l *Location) FindDirectives(directiveName string) []IDirective {
 	return block.FindDirectives(directiveName)
 }
 
-// GetDirectives get all directives
+// GetDirectives returns all directives in the location block.
 func (l *Location) GetDirectives() []IDirective {
 	block := l.GetBlock()
 	if block == nil {
