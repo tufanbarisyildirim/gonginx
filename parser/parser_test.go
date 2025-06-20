@@ -2,6 +2,7 @@ package parser
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/tufanbarisyildirim/gonginx/config"
@@ -216,6 +217,36 @@ func TestParser_Include(t *testing.T) {
 worker_processes 5;
 include events.conf;
 include http.conf;`, s)
+}
+
+func TestParser_IncludeParserError(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	badLink := filepath.Join(dir, "bad.conf")
+	os.Symlink(filepath.Join(dir, "missing.conf"), badLink)
+
+	p := NewStringParser("include "+badLink+";", WithIncludeParsing())
+	_, err := p.Parse()
+	assert.ErrorContains(t, err, "no such file or directory")
+}
+
+func TestParser_IncludeParserErrorSkip(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	badLink := filepath.Join(dir, "bad.conf")
+	os.Symlink(filepath.Join(dir, "missing.conf"), badLink)
+
+	p := NewStringParser("include "+badLink+";", WithIncludeParsing(), WithSkipIncludeParsingErr())
+	c, err := p.Parse()
+	assert.NilError(t, err)
+
+	incs := c.FindDirectives("include")
+	assert.Equal(t, len(incs), 1)
+	inc, ok := incs[0].(*config.Include)
+	assert.Assert(t, ok)
+	assert.Equal(t, len(inc.Configs), 0)
 }
 
 func Benchmark_ParseFullExample(t *testing.B) {

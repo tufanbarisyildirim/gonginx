@@ -411,8 +411,11 @@ func (p *Parser) ParseInclude(include *config.Include) (config.IDirective, error
 				withConfigRoot(p.configRoot),
 			)
 
-			if err != nil && !p.opts.skipIncludeParsingErr {
-				panic(err)
+			if err != nil {
+				if p.opts.skipIncludeParsingErr {
+					continue
+				}
+				return nil, err
 			}
 
 			config, err := parser.Parse()
