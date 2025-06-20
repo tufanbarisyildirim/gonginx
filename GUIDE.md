@@ -1,7 +1,17 @@
 # Gonginx Guide
 
-## Quick Start 
-you can find the all example in [examples](/examples)
+This guide explains how to parse, modify and regenerate Nginx configuration
+files with Gonginx. The [examples](./examples) directory contains runnable
+programs showing each feature.
+
+## Table of Contents
+- [Quick Start](#quick-start)
+- [Tips for Coding Agents](#tips-for-coding-agents)
+- [Examples](#examples)
+- [Library Reference](#library-reference)
+
+## Quick Start
+You can find all examples in [examples](./examples).
 ### Parse nginx config file
 Parse Nginx config file, Get server listen port
 ```go
@@ -111,10 +121,25 @@ location / { proxy_pass http://big_server_com; } } }`
 	// dump config with indented style
 	dumpConfigToFile(fullConf, "nginx-temp.conf")
 
-	// dump config to file whit indented style
-	dumpAndWriteConfigFile(fullConf, "./nginx-temp2.conf")
+        // dump config to file with indented style
+        dumpAndWriteConfigFile(fullConf, "./nginx-temp2.conf")
 }
 ```
+
+## Tips for Coding Agents
+The Gonginx API exposes small, composable functions. Prefer operating on
+`config.Config` objects and helper methods like `FindDirectives` or `AddServer`
+instead of editing raw text.
+
+## Examples
+
+The `examples` directory contains small programs you can run directly. Useful
+entries include:
+
+- `adding-server` – append a server to an upstream block.
+- `update-directive` – modify a directive in place.
+- `dump-nginx-config` – format and write a full configuration.
+- `update-server-listen-port` – change the listen port of an existing server.
 
 ### Add server in upstream
 ```go
@@ -318,7 +343,7 @@ func main() {
 
 ## Library Reference
 ### Parser
-Parser is the main package that analyzes and turns nginx structred files into objects. It basically has 3 libraries, `lexer` explodes it into `token`s and `parser` turns tokens into config objects which are in their own package.
+Parser is the main package that analyzes and turns nginx structured files into objects. It basically has three pieces: `lexer` breaks the file into tokens and `parser` converts tokens into configuration objects defined in the `config` package.
 
 #### ```NewParser(filePath string, opts ...Option) (*Parser, error)```
 + filePath is the path to the nginx config file.
@@ -349,7 +374,7 @@ Parse parses the config file(or from config strings) and returns a config object
 
 ----
 ### Config
-Config package is representation of any context, directive or their parameters in golang. So basically they are models and also AST。
+The `config` package models contexts and directives in Go and forms the AST.
 
 #### ```func (c *Config) FindDirectives(directiveName string) []IDirective```
 FindDirectives finds all directives with the given name.
