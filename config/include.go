@@ -4,7 +4,7 @@ import (
 	"errors"
 )
 
-// Include include structure
+// Include represents an include directive.
 type Include struct {
 	*Directive
 	IncludePath string
@@ -27,27 +27,27 @@ type Include struct {
 //	return nil
 //}
 
-// SetLine Set line number
+// SetLine sets the line number.
 func (c *Include) SetLine(line int) {
 	c.Line = line
 }
 
-// GetLine Get the line number
+// GetLine returns the line number.
 func (c *Include) GetLine() int {
 	return c.Line
 }
 
-// GetParent the parent block
+// GetParent returns the parent directive.
 func (c *Include) GetParent() IDirective {
 	return c.Parent
 }
 
-// SetParent change the parent block
+// SetParent sets the parent directive.
 func (c *Include) SetParent(parent IDirective) {
 	c.Parent = parent
 }
 
-// GetDirectives return all directives inside the included file
+// GetDirectives returns all directives inside the included file.
 func (c *Include) GetDirectives() []IDirective {
 	directives := make([]IDirective, 0)
 	for _, config := range c.Configs {
@@ -57,7 +57,7 @@ func (c *Include) GetDirectives() []IDirective {
 	return directives
 }
 
-// FindDirectives find a specific directive in included file
+// FindDirectives finds a specific directive in the included file.
 func (c *Include) FindDirectives(directiveName string) []IDirective {
 	directives := make([]IDirective, 0)
 	for _, config := range c.Configs {
@@ -67,17 +67,17 @@ func (c *Include) FindDirectives(directiveName string) []IDirective {
 	return directives
 }
 
-// GetName get directive name
+// GetName returns the directive name.
 func (c *Include) GetName() string {
 	return c.Directive.Name
 }
 
-// SetComment set comment of include directive
+// SetComment sets the comment of the include directive.
 func (c *Include) SetComment(comment []string) {
 	c.Comment = comment
 }
 
-// NewInclude initialize an include block from a directive
+// NewInclude initializes an Include from a directive.
 func NewInclude(dir IDirective) (*Include, error) {
 	directive, ok := dir.(*Directive)
 	if !ok {

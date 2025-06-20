@@ -4,7 +4,7 @@ import (
 	"errors"
 )
 
-// Server represents server block
+// Server represents a server block.
 type Server struct {
 	Block   IBlock
 	Comment []string
@@ -13,37 +13,37 @@ type Server struct {
 	Line   int
 }
 
-// SetLine Set line number
+// SetLine sets the line number.
 func (s *Server) SetLine(line int) {
 	s.Line = line
 }
 
-// GetLine Get the line number
+// GetLine returns the line number.
 func (s *Server) GetLine() int {
 	return s.Line
 }
 
-// SetParent change the parent block
+// SetParent sets the parent directive.
 func (s *Server) SetParent(parent IDirective) {
 	s.Parent = parent
 }
 
-// GetParent the parent block
+// GetParent returns the parent directive.
 func (s *Server) GetParent() IDirective {
 	return s.Parent
 }
 
-// SetComment set comment of server directive
+// SetComment sets the comment of the server directive.
 func (s *Server) SetComment(comment []string) {
 	s.Comment = comment
 }
 
-// GetComment get comment of server directive
+// GetComment returns the comment of the server directive.
 func (s *Server) GetComment() []string {
 	return s.Comment
 }
 
-// NewServer create a server block from a directive with block
+// NewServer creates a server block from a directive with a block.
 func NewServer(directive IDirective) (*Server, error) {
 	if block := directive.GetBlock(); block != nil {
 		return &Server{
@@ -55,22 +55,22 @@ func NewServer(directive IDirective) (*Server, error) {
 	return nil, errors.New("server directive must have a block")
 }
 
-// GetName get directive name to construct the statment string
+// GetName returns the directive name to construct the statement string.
 func (s *Server) GetName() string { //the directive name.
 	return "server"
 }
 
-// GetParameters get directive parameters if any
+// GetParameters returns directive parameters if any.
 func (s *Server) GetParameters() []Parameter {
 	return []Parameter{}
 }
 
-// GetBlock get block if any
+// GetBlock returns the block if any.
 func (s *Server) GetBlock() IBlock {
 	return s.Block
 }
 
-// FindDirectives find directives
+// FindDirectives finds directives within the server block.
 func (s *Server) FindDirectives(directiveName string) []IDirective {
 	directives := make([]IDirective, 0)
 	for _, directive := range s.GetDirectives() {
@@ -90,7 +90,7 @@ func (s *Server) FindDirectives(directiveName string) []IDirective {
 	return directives
 }
 
-// GetDirectives get all directives in Server
+// GetDirectives returns all directives in the server.
 func (s *Server) GetDirectives() []IDirective {
 	block := s.GetBlock()
 	if block == nil {

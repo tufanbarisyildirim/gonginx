@@ -4,7 +4,7 @@ import (
 	"errors"
 )
 
-// Upstream represents `upstream{}` block
+// Upstream represents an `upstream{}` block.
 type Upstream struct {
 	UpstreamName    string
 	UpstreamServers []*UpstreamServer
@@ -16,52 +16,52 @@ type Upstream struct {
 	Line   int
 }
 
-// SetLine Set line number
+// SetLine sets the line number.
 func (us *Upstream) SetLine(line int) {
 	us.Line = line
 }
 
-// GetLine Get the line number
+// GetLine returns the line number.
 func (us *Upstream) GetLine() int {
 	return us.Line
 }
 
-// SetParent change the parent block
+// SetParent sets the parent directive.
 func (us *Upstream) SetParent(parent IDirective) {
 	us.Parent = parent
 }
 
-// GetParent the parent block
+// GetParent returns the parent directive.
 func (us *Upstream) GetParent() IDirective {
 	return us.Parent
 }
 
-// SetComment set comment of the directive
+// SetComment sets the directive comment.
 func (us *Upstream) SetComment(comment []string) {
 	us.Comment = comment
 }
 
-// GetName Statement interface
+// GetName implements the Statement interface.
 func (us *Upstream) GetName() string {
 	return "upstream"
 }
 
-// GetParameters upsrema parameters
+// GetParameters returns the upstream parameters.
 func (us *Upstream) GetParameters() []Parameter {
 	return []Parameter{{Value: us.UpstreamName}} //the only parameter for an upstream is its name
 }
 
-// GetBlock upstream does not have block
+// GetBlock returns the upstream itself, which implements IBlock.
 func (us *Upstream) GetBlock() IBlock {
 	return us
 }
 
-// GetComment get directive comment
+// GetComment returns the directive comment.
 func (us *Upstream) GetComment() []string {
 	return us.Comment
 }
 
-// GetDirectives get sub directives of upstream
+// GetDirectives returns sub directives of the upstream.
 func (us *Upstream) GetDirectives() []IDirective {
 	directives := make([]IDirective, 0)
 	directives = append(directives, us.Directives...)
@@ -72,7 +72,7 @@ func (us *Upstream) GetDirectives() []IDirective {
 	return directives
 }
 
-// NewUpstream creaste new upstream from a directive
+// NewUpstream creates a new Upstream from a directive.
 func NewUpstream(directive IDirective) (*Upstream, error) {
 	parameters := directive.GetParameters()
 	us := &Upstream{
@@ -105,17 +105,17 @@ func NewUpstream(directive IDirective) (*Upstream, error) {
 	return us, nil
 }
 
-// AddServer add a server to upstream
+// AddServer adds a server to the upstream.
 func (us *Upstream) AddServer(server *UpstreamServer) {
 	us.UpstreamServers = append(us.UpstreamServers, server)
 }
 
-// GetCodeBlock returns the literal code block
+// GetCodeBlock returns the literal code block.
 func (us *Upstream) GetCodeBlock() string {
 	return ""
 }
 
-// FindDirectives find directives in block recursively
+// FindDirectives finds directives in the block recursively.
 func (us *Upstream) FindDirectives(directiveName string) []IDirective {
 	directives := make([]IDirective, 0)
 	for _, directive := range us.Directives {

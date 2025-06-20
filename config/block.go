@@ -1,6 +1,6 @@
 package config
 
-// Block a block statement
+// Block represents a block statement.
 type Block struct {
 	Directives  []IDirective
 	IsLuaBlock  bool
@@ -8,27 +8,27 @@ type Block struct {
 	Parent      IDirective
 }
 
-// SetParent change the parent block
+// SetParent sets the parent directive.
 func (b *Block) SetParent(parent IDirective) {
 	b.Parent = parent
 }
 
-// GetParent the parent block
+// GetParent returns the parent directive.
 func (b *Block) GetParent() IDirective {
 	return b.Parent
 }
 
-// GetDirectives get all directives in this block
+// GetDirectives returns all directives in this block.
 func (b *Block) GetDirectives() []IDirective {
 	return b.Directives
 }
 
-// GetCodeBlock returns the literal code block
+// GetCodeBlock returns the literal code block.
 func (b *Block) GetCodeBlock() string {
 	return b.LiteralCode
 }
 
-// FindDirectives find directives in block recursively
+// FindDirectives finds directives in the block recursively.
 func (b *Block) FindDirectives(directiveName string) []IDirective {
 	directives := make([]IDirective, 0)
 	for _, directive := range b.GetDirectives() {

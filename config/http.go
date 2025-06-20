@@ -4,7 +4,7 @@ import (
 	"errors"
 )
 
-// HTTP represents http block
+// HTTP represents an http block.
 type HTTP struct {
 	Servers    []*Server
 	Directives []IDirective
@@ -14,37 +14,37 @@ type HTTP struct {
 	Line   int
 }
 
-// SetLine Set line number
+// SetLine sets the line number.
 func (h *HTTP) SetLine(line int) {
 	h.Line = line
 }
 
-// GetLine Get the line number
+// GetLine returns the line number.
 func (h *HTTP) GetLine() int {
 	return h.Line
 }
 
-// SetParent change the parent block
+// SetParent sets the parent directive.
 func (h *HTTP) SetParent(parent IDirective) {
 	h.Parent = parent
 }
 
-// GetParent the parent block
+// GetParent returns the parent directive.
 func (h *HTTP) GetParent() IDirective {
 	return h.Parent
 }
 
-// GetComment comment of the HTTP directive
+// GetComment returns the comment of the HTTP directive.
 func (h *HTTP) GetComment() []string {
 	return h.Comment
 }
 
-// SetComment set the comment of the HTTP directive
+// SetComment sets the comment of the HTTP directive.
 func (h *HTTP) SetComment(comment []string) {
 	h.Comment = comment
 }
 
-// NewHTTP create an http block from a directive which has a block
+// NewHTTP creates an HTTP block from a directive that has a block.
 func NewHTTP(directive IDirective) (*HTTP, error) {
 	if block := directive.GetBlock(); block != nil {
 		http := &HTTP{
@@ -67,17 +67,17 @@ func NewHTTP(directive IDirective) (*HTTP, error) {
 	return nil, errors.New("http directive must have a block")
 }
 
-// GetName get directive name to construct the statment string
+// GetName returns the directive name to construct the statement string.
 func (h *HTTP) GetName() string { //the directive name.
 	return "http"
 }
 
-// GetParameters get directive parameters if any
+// GetParameters returns directive parameters, if any.
 func (h *HTTP) GetParameters() []Parameter {
 	return []Parameter{}
 }
 
-// GetDirectives get all directives in http
+// GetDirectives returns all directives in the http block.
 func (h *HTTP) GetDirectives() []IDirective {
 	directives := make([]IDirective, 0)
 	directives = append(directives, h.Directives...)
@@ -87,7 +87,7 @@ func (h *HTTP) GetDirectives() []IDirective {
 	return directives
 }
 
-// FindDirectives find directives
+// FindDirectives finds directives in the http block.
 func (h *HTTP) FindDirectives(directiveName string) []IDirective {
 	directives := make([]IDirective, 0)
 	for _, directive := range h.GetDirectives() {
@@ -107,12 +107,12 @@ func (h *HTTP) FindDirectives(directiveName string) []IDirective {
 	return directives
 }
 
-// GetBlock get block if any
+// GetBlock returns the block itself.
 func (h *HTTP) GetBlock() IBlock {
 	return h
 }
 
-// GetCodeBlock returns the literal code block
+// GetCodeBlock returns the literal code block.
 func (h *HTTP) GetCodeBlock() string {
 	return ""
 }
