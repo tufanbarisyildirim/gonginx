@@ -386,6 +386,8 @@ func (p *Parser) parseStatement(isSkipValidDirective bool) (config.IDirective, e
 
 // ParseInclude just parse include confs
 func (p *Parser) ParseInclude(include *config.Include) (config.IDirective, error) {
+	var filteredIncludes []string
+
 	if p.opts.parseInclude {
 		includePath := include.IncludePath
 		if !filepath.IsAbs(includePath) {
@@ -395,7 +397,23 @@ func (p *Parser) ParseInclude(include *config.Include) (config.IDirective, error
 		if err != nil && !p.opts.skipIncludeParsingErr {
 			return nil, err
 		}
-		for _, includePath := range includePaths {
+		// NGINX globbing and filepath.Glob globbing behave slightly differently.
+		// https://github.com/tufanbarisyildirim/gonginx/issues/64
+		if len(includePaths) == 0 {
+			return nil, nil
+		}
+		filteredIncludes = make([]string, 0, len(includePaths))
+		for _, origIncludePath := range includePaths {
+			// TODO: Does NGINX on Windows skip dot-prefix, or does it skip
+			// 	  syscall.FILE_ATTRIBUTE_HIDDEN?
+			if !strings.HasPrefix(origIncludePath, ".") {
+				filteredIncludes = append(filteredIncludes, origIncludePath)
+			}
+		}
+		if len(filteredIncludes) == 0 {
+			return nil, nil
+		}
+		for _, includePath := range filteredIncludes {
 			if conf, ok := p.parsedIncludes[include]; ok {
 				// same file includes itself? don't blow up the parser
 				if conf == nil {
