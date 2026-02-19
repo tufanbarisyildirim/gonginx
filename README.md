@@ -63,5 +63,21 @@ keyword     : Keyword
 ## Limitations
 There is no known limitations yet. PRs are more than welcome if you want to implement a specific directive / block, please read [Contributing](CONTRIBUTING.md) before your first PR.
 
+## Behavior Notes
+- Parser APIs return errors for malformed input; malformed configs should not crash your process.
+- Include parsing (`parser.WithIncludeParsing()`) deduplicates includes by canonical path and skips cyclic include branches by default.
+- Use `parser.WithIncludeCycleErr()` to fail fast on include-cycle detection.
+- `dumper.NoIndentSortedStyle` / sorted dump options no longer mutate directive order in the in-memory AST.
+- Parent semantics:
+  - root-level leaf directives have `nil` parent,
+  - nested directives point to their enclosing directive wrapper (`http`, `server`, `location`, etc.).
+- Upstream lookup:
+  - `FindUpstreams()` is permissive and skips unexpected upstream directive types.
+  - `FindUpstreamsStrict()` returns a typed error when a matched `upstream` is not `*config.Upstream`.
+- Lua comment style policy:
+  - existing `--` comments stay `--`,
+  - nginx-style `#` comments are preserved where originally used and safe,
+  - formatter failures fall back to original Lua code.
+
 ## License
 [MIT License](LICENSE)

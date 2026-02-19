@@ -32,6 +32,9 @@ fixed bug in http context
 * make sure to run `make test` in the root of the repo to ensure that your code is
   properly formatted and that tests pass.
     * test must prove the feature presents and fail when you revert your changes
+* for parser/dumper safety changes, also run:
+  * `go test -race ./...`
+  * focused parser fuzz smoke run (optional but recommended): `go test -run=^$ -fuzz=FuzzParserParseNoPanic -fuzztime=5s ./parser`
 
 ## Submitting Changes
 
