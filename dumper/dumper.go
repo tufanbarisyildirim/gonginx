@@ -142,7 +142,7 @@ func DumpBlock(b config.IBlock, style *Style) string {
 	}
 
 	var buf bytes.Buffer
-	directives := b.GetDirectives()
+	directives := append([]config.IDirective(nil), b.GetDirectives()...)
 	if style.SortDirectives {
 		sort.SliceStable(directives, func(i, j int) bool {
 			return directives[i].GetName() < directives[j].GetName()
@@ -186,7 +186,7 @@ func WriteConfig(c *config.Config, style *Style, writeInclude bool) error {
 		for _, include := range includes {
 			i, ok := include.(*config.Include)
 			if !ok {
-				panic("bug in FindDirective")
+				return fmt.Errorf("include directive type mismatch: %T", include)
 			}
 
 			// no config parsed
@@ -211,9 +211,11 @@ func WriteConfig(c *config.Config, style *Style, writeInclude bool) error {
 	}
 	// create parent directories, if not exit
 	dir, _ := filepath.Split(c.FilePath)
-	err := os.MkdirAll(dir, 0755)
-	if err != nil {
-		return err
+	if dir != "" {
+		err := os.MkdirAll(dir, 0755)
+		if err != nil {
+			return err
+		}
 	}
 	return os.WriteFile(c.FilePath, []byte(DumpConfig(c, style)), 0644)
 }
