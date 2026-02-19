@@ -75,6 +75,10 @@ func (us *Upstream) GetDirectives() []IDirective {
 // NewUpstream creates a new Upstream from a directive.
 func NewUpstream(directive IDirective) (*Upstream, error) {
 	parameters := directive.GetParameters()
+	if len(parameters) == 0 {
+		return nil, errors.New("upstream directive requires a name parameter")
+	}
+
 	us := &Upstream{
 		UpstreamName: parameters[0].GetValue(), //first parameter of the directive is the upstream name
 	}

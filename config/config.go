@@ -1,5 +1,7 @@
 package config
 
+import "fmt"
+
 // Config represents a complete nginx configuration file.
 type Config struct {
 	*Block
@@ -55,10 +57,43 @@ func (c *Config) FindUpstreams() []*Upstream {
 	var upstreams []*Upstream
 	directives := c.Block.FindDirectives("upstream")
 	for _, directive := range directives {
-		//	up, _ := NewUpstream(directive)
-		upstreams = append(upstreams, directive.(*Upstream))
+		upstream, ok := directive.(*Upstream)
+		if !ok {
+			continue
+		}
+
+		upstreams = append(upstreams, upstream)
 	}
 	return upstreams
+}
+
+// UnexpectedUpstreamTypeError indicates a directive named "upstream" that is
+// not represented by *config.Upstream in the AST.
+type UnexpectedUpstreamTypeError struct {
+	Index int
+	Got   any
+}
+
+func (e *UnexpectedUpstreamTypeError) Error() string {
+	return fmt.Sprintf("unexpected upstream directive type at index %d: %T", e.Index, e.Got)
+}
+
+// FindUpstreamsStrict returns all upstream blocks or an error when a matched
+// "upstream" directive is not typed as *Upstream.
+func (c *Config) FindUpstreamsStrict() ([]*Upstream, error) {
+	var upstreams []*Upstream
+	directives := c.Block.FindDirectives("upstream")
+	for i, directive := range directives {
+		upstream, ok := directive.(*Upstream)
+		if !ok {
+			return nil, &UnexpectedUpstreamTypeError{
+				Index: i,
+				Got:   directive,
+			}
+		}
+		upstreams = append(upstreams, upstream)
+	}
+	return upstreams, nil
 }
 
 func init() {

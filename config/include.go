@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 )
 
 // Include represents an include directive.
@@ -81,19 +82,25 @@ func (c *Include) SetComment(comment []string) {
 func NewInclude(dir IDirective) (*Include, error) {
 	directive, ok := dir.(*Directive)
 	if !ok {
-		return nil, errors.New("type error")
+		return nil, errors.New("include directive type error")
 	}
+
+	if len(directive.Parameters) == 0 {
+		return nil, fmt.Errorf("include directive requires exactly 1 parameter, got %d", len(directive.Parameters))
+	}
+
+	if len(directive.Parameters) > 1 {
+		return nil, fmt.Errorf("include directive requires exactly 1 parameter, got %d", len(directive.Parameters))
+	}
+
+	if directive.Block != nil {
+		return nil, errors.New("include directive cannot have a block; missing semicolon?")
+	}
+
 	include := &Include{
 		Directive:   directive,
 		IncludePath: directive.Parameters[0].GetValue(),
 	}
 
-	if len(directive.Parameters) > 1 {
-		panic("include directive can not have multiple parameters")
-	}
-
-	if directive.Block != nil {
-		panic("include can not have a block, or missing semicolon at the end of include statement")
-	}
 	return include, nil
 }

@@ -1,8 +1,10 @@
 package parser
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/tufanbarisyildirim/gonginx/config"
@@ -189,6 +191,29 @@ func TestParser_UnknownDirective(t *testing.T) {
 	assert.Error(t, err, "unknown directive 'a_driective' on line 3, column 2")
 }
 
+func TestParser_UnclosedQuote_ReturnsError(t *testing.T) {
+	t.Parallel()
+
+	_, err := NewStringParser(`server {
+	set $a "unterminated
+}`).Parse()
+	assert.ErrorContains(t, err, "scanning quoted string")
+	assert.ErrorContains(t, err, "line")
+	assert.ErrorContains(t, err, "column")
+}
+
+func TestParser_UnclosedLuaBlock_ReturnsError(t *testing.T) {
+	t.Parallel()
+
+	_, err := NewStringParser(`location / {
+    content_by_lua_block {
+      local a = 1
+`).Parse()
+	assert.ErrorContains(t, err, "scanning lua code")
+	assert.ErrorContains(t, err, "line")
+	assert.ErrorContains(t, err, "column")
+}
+
 func TestParser_SkipComment(t *testing.T) {
 	t.Parallel()
 	_, err := NewParserFromLexer(lex(`
@@ -247,6 +272,194 @@ func TestParser_IncludeParserErrorSkip(t *testing.T) {
 	inc, ok := incs[0].(*config.Include)
 	assert.Assert(t, ok)
 	assert.Equal(t, len(inc.Configs), 0)
+}
+
+func TestParser_IncludeCycle_DoesNotLoop(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	mainConf := filepath.Join(dir, "main.conf")
+	aConf := filepath.Join(dir, "a.conf")
+	bConf := filepath.Join(dir, "b.conf")
+
+	err := os.WriteFile(mainConf, []byte("include a.conf;\n"), 0644)
+	assert.NilError(t, err)
+	err = os.WriteFile(aConf, []byte("include b.conf;\n"), 0644)
+	assert.NilError(t, err)
+	err = os.WriteFile(bConf, []byte("include a.conf;\n"), 0644)
+	assert.NilError(t, err)
+
+	p, err := NewParser(mainConf, WithIncludeParsing())
+	assert.NilError(t, err)
+	c, err := p.Parse()
+	assert.NilError(t, err)
+
+	topLevelIncludes := c.FindDirectives("include")
+	assert.Assert(t, len(topLevelIncludes) >= 1)
+
+	mainInclude, ok := c.GetDirectives()[0].(*config.Include)
+	assert.Assert(t, ok)
+	assert.Equal(t, len(mainInclude.Configs), 1)
+
+	nestedFromA := mainInclude.Configs[0].FindDirectives("include")
+	assert.Assert(t, len(nestedFromA) >= 1)
+
+	aToB, ok := nestedFromA[0].(*config.Include)
+	assert.Assert(t, ok)
+	assert.Equal(t, len(aToB.Configs), 1)
+
+	nestedFromB := aToB.Configs[0].FindDirectives("include")
+	assert.Assert(t, len(nestedFromB) >= 1)
+	bToA, ok := nestedFromB[0].(*config.Include)
+	assert.Assert(t, ok)
+	assert.Equal(t, len(bToA.Configs), 0)
+}
+
+func TestParser_IncludeDuplicate_UsesCache(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	mainConf := filepath.Join(dir, "main.conf")
+	aConf := filepath.Join(dir, "a.conf")
+
+	err := os.WriteFile(mainConf, []byte("include a.conf;\ninclude a.conf;\n"), 0644)
+	assert.NilError(t, err)
+	err = os.WriteFile(aConf, []byte("user www www;\n"), 0644)
+	assert.NilError(t, err)
+
+	p, err := NewParser(mainConf, WithIncludeParsing())
+	assert.NilError(t, err)
+	c, err := p.Parse()
+	assert.NilError(t, err)
+
+	assert.Equal(t, len(c.GetDirectives()), 2)
+	first, ok := c.GetDirectives()[0].(*config.Include)
+	assert.Assert(t, ok)
+	second, ok := c.GetDirectives()[1].(*config.Include)
+	assert.Assert(t, ok)
+
+	assert.Equal(t, len(first.Configs), 1)
+	assert.Equal(t, len(second.Configs), 1)
+	assert.Assert(t, first.Configs[0] == second.Configs[0])
+}
+
+func TestParser_IncludeCycle_NoFDExhaustion(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	mainConf := filepath.Join(dir, "main.conf")
+	aConf := filepath.Join(dir, "a.conf")
+	bConf := filepath.Join(dir, "b.conf")
+
+	err := os.WriteFile(mainConf, []byte("include a.conf;\n"), 0644)
+	assert.NilError(t, err)
+	err = os.WriteFile(aConf, []byte("include b.conf;\n"), 0644)
+	assert.NilError(t, err)
+	err = os.WriteFile(bConf, []byte("include a.conf;\n"), 0644)
+	assert.NilError(t, err)
+
+	for i := 0; i < 200; i++ {
+		p, parseErr := NewParser(mainConf, WithIncludeParsing())
+		assert.NilError(t, parseErr)
+
+		_, parseErr = p.Parse()
+		assert.NilError(t, parseErr)
+	}
+}
+
+func TestParser_IncludeCycle_ReturnsErrorWithOption(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	mainConf := filepath.Join(dir, "main.conf")
+	aConf := filepath.Join(dir, "a.conf")
+	bConf := filepath.Join(dir, "b.conf")
+
+	err := os.WriteFile(mainConf, []byte("include a.conf;\n"), 0644)
+	assert.NilError(t, err)
+	err = os.WriteFile(aConf, []byte("include b.conf;\n"), 0644)
+	assert.NilError(t, err)
+	err = os.WriteFile(bConf, []byte("include a.conf;\n"), 0644)
+	assert.NilError(t, err)
+
+	p, err := NewParser(mainConf, WithIncludeParsing(), WithIncludeCycleErr())
+	assert.NilError(t, err)
+
+	_, err = p.Parse()
+	assert.ErrorContains(t, err, "include cycle detected")
+}
+
+func TestParser_IncludeCycleErrorCanBeSkipped(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	mainConf := filepath.Join(dir, "main.conf")
+	aConf := filepath.Join(dir, "a.conf")
+	bConf := filepath.Join(dir, "b.conf")
+
+	err := os.WriteFile(mainConf, []byte("include a.conf;\n"), 0644)
+	assert.NilError(t, err)
+	err = os.WriteFile(aConf, []byte("include b.conf;\n"), 0644)
+	assert.NilError(t, err)
+	err = os.WriteFile(bConf, []byte("include a.conf;\n"), 0644)
+	assert.NilError(t, err)
+
+	p, err := NewParser(mainConf, WithIncludeParsing(), WithIncludeCycleErr(), WithSkipIncludeParsingErr())
+	assert.NilError(t, err)
+
+	_, err = p.Parse()
+	assert.NilError(t, err)
+}
+
+func TestParser_IncludeWrapperTypeMismatch(t *testing.T) {
+	t.Parallel()
+	p := NewStringParser("include a.conf;")
+	p.includeWrappers = map[string]func(*config.Directive) (config.IDirective, error){
+		"include": func(directive *config.Directive) (config.IDirective, error) {
+			return directive, nil
+		},
+	}
+
+	_, err := p.Parse()
+	assert.ErrorContains(t, err, "invalid include wrapper result type")
+}
+
+func TestParser_FileClosedOnParseError(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	confPath := filepath.Join(dir, "bad.conf")
+	err := os.WriteFile(confPath, []byte("server {\n"), 0644)
+	assert.NilError(t, err)
+
+	p, err := NewParser(confPath)
+	assert.NilError(t, err)
+
+	_, err = p.Parse()
+	assert.ErrorContains(t, err, "unexpected eof in block")
+	assert.Assert(t, errors.Is(p.Close(), os.ErrClosed))
+}
+
+func TestParser_IncludeParseError_NoFDLeak(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	mainConf := filepath.Join(dir, "main.conf")
+	aConf := filepath.Join(dir, "a.conf")
+
+	err := os.WriteFile(mainConf, []byte("include a.conf;\n"), 0644)
+	assert.NilError(t, err)
+	err = os.WriteFile(aConf, []byte("server {\n"), 0644)
+	assert.NilError(t, err)
+
+	for i := 0; i < 200; i++ {
+		p, parseErr := NewParser(mainConf, WithIncludeParsing())
+		assert.NilError(t, parseErr)
+
+		_, parseErr = p.Parse()
+		assert.Assert(t, parseErr != nil)
+		assert.Assert(t, !strings.Contains(parseErr.Error(), "too many open files"))
+	}
 }
 
 func Benchmark_ParseFullExample(t *testing.B) {
@@ -364,8 +577,8 @@ func TestParser_Issue20(t *testing.T) {
     server_name _;
     location / {
         content_by_lua_block {
-            # comment
-            local foo = "bar" # comment
+            -- comment
+            local foo = "bar" -- comment
         }
     }
     location = /random {
@@ -604,6 +817,7 @@ http {
 	includes := httpBlock.FindDirectives("include")
 
 	assert.Equal(t, len(includes), 1, "cannot find include directive in http block")
+	assert.Assert(t, includes[0].GetParent() == httpBlock, "include parent must be http")
 }
 
 func TestParser_ParentSubDirective4(t *testing.T) {
@@ -653,6 +867,42 @@ stream {
 	servers := conf.FindDirectives("server")
 	assert.Equal(t, len(servers), 1, "num of server error")
 
+}
+
+func TestParser_RootLevelLeafParentIsNil(t *testing.T) {
+	t.Parallel()
+
+	conf, err := NewStringParser(`user www www;
+worker_processes 5;`).Parse()
+	assert.NilError(t, err)
+
+	users := conf.FindDirectives("user")
+	assert.Equal(t, len(users), 1)
+	assert.Assert(t, users[0].GetParent() == nil)
+
+	workers := conf.FindDirectives("worker_processes")
+	assert.Equal(t, len(workers), 1)
+	assert.Assert(t, workers[0].GetParent() == nil)
+}
+
+func TestParser_NoSelfParentCycles(t *testing.T) {
+	t.Parallel()
+
+	conf, err := NewStringParser(`http {
+    include mime.types;
+    server {
+        listen 80;
+        location / {
+            proxy_pass http://backend/;
+        }
+    }
+}`).Parse()
+	assert.NilError(t, err)
+
+	all := collectDirectives(conf.Block)
+	for _, d := range all {
+		assert.Assert(t, d.GetParent() != d, "directive %s must not reference itself as parent", d.GetName())
+	}
 }
 
 func TestParser_KeepDataInMultiLine01(t *testing.T) {
@@ -716,4 +966,20 @@ local foo = if -- comment }
 local foo = if -- comment
     }
 }`, s)
+}
+
+func collectDirectives(block config.IBlock) []config.IDirective {
+	out := make([]config.IDirective, 0)
+	for _, d := range block.GetDirectives() {
+		out = append(out, d)
+		if include, ok := d.(*config.Include); ok {
+			for _, cfg := range include.Configs {
+				out = append(out, collectDirectives(cfg.Block)...)
+			}
+		}
+		if d.GetBlock() != nil {
+			out = append(out, collectDirectives(d.GetBlock())...)
+		}
+	}
+	return out
 }

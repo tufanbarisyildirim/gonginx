@@ -35,7 +35,7 @@ func (l *Location) GetParent() IDirective {
 func NewLocation(directive IDirective) (*Location, error) {
 	dir, ok := directive.(*Directive)
 	if !ok {
-		return nil, errors.New("no ")
+		return nil, errors.New("location directive type error")
 	}
 
 	if len(dir.Parameters) == 0 {

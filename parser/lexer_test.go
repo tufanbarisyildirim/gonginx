@@ -122,18 +122,17 @@ directive "with a quoted string\t \r\n \\ with some escaped thing s\" good.";
 	assert.Equal(t, len(actual), len(expect))
 }
 
-func TestScanner_LexPanicUnclosedQuote(t *testing.T) {
+func TestScanner_LexUnclosedQuoteError(t *testing.T) {
 	t.Parallel()
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("The code did not panic")
-		}
-	}()
 
-	lex(`
+	l := lex(`
 	server { 
 	directive "with an unclosed quote \t \r\n \\ with some escaped thing s\" good.;
-	`).all()
+	`)
+	_ = l.all()
+	assert.ErrorContains(t, l.Err, "quoted string")
+	assert.ErrorContains(t, l.Err, "line")
+	assert.ErrorContains(t, l.Err, "column")
 }
 
 func TestScanner_LexLuaCode(t *testing.T) {

@@ -18,6 +18,7 @@ type Option func(*Parser)
 type options struct {
 	parseInclude               bool
 	skipIncludeParsingErr      bool
+	includeCycleErr            bool
 	skipComments               bool
 	customDirectives           map[string]string
 	skipValidSubDirectiveBlock map[string]struct{}
@@ -28,6 +29,7 @@ func defaultOptions() options {
 	return options{
 		parseInclude:               false,
 		skipIncludeParsingErr:      false,
+		includeCycleErr:            false,
 		skipComments:               false,
 		customDirectives:           map[string]string{},
 		skipValidSubDirectiveBlock: map[string]struct{}{},
@@ -42,7 +44,8 @@ type Parser struct {
 	lexer             *lexer
 	currentToken      token.Token
 	followingToken    token.Token
-	parsedIncludes    map[*config.Include]*config.Config
+	parsedIncludes    map[string]*config.Config
+	includeStack      map[string]struct{}
 	statementParsers  map[string]func() (config.IDirective, error)
 	blockWrappers     map[string]func(*config.Directive) (config.IDirective, error)
 	directiveWrappers map[string]func(*config.Directive) (config.IDirective, error)
@@ -59,9 +62,15 @@ func WithSameOptions(p *Parser) Option {
 	}
 }
 
-func withParsedIncludes(parsedIncludes map[*config.Include]*config.Config) Option {
+func withParsedIncludes(parsedIncludes map[string]*config.Config) Option {
 	return func(p *Parser) {
 		p.parsedIncludes = parsedIncludes
+	}
+}
+
+func withIncludeStack(includeStack map[string]struct{}) Option {
+	return func(p *Parser) {
+		p.includeStack = includeStack
 	}
 }
 
@@ -75,6 +84,14 @@ func withConfigRoot(configRoot string) Option {
 func WithSkipIncludeParsingErr() Option {
 	return func(p *Parser) {
 		p.opts.skipIncludeParsingErr = true
+	}
+}
+
+// WithIncludeCycleErr returns an error when include cycle is detected.
+// Default behavior skips cyclic include branches.
+func WithIncludeCycleErr() Option {
+	return func(p *Parser) {
+		p.opts.includeCycleErr = true
 	}
 }
 
@@ -148,7 +165,8 @@ func NewParserFromLexer(lexer *lexer, opts ...Option) *Parser {
 	parser := &Parser{
 		lexer:          lexer,
 		opts:           defaultOptions(),
-		parsedIncludes: make(map[*config.Include]*config.Config),
+		parsedIncludes: make(map[string]*config.Config),
+		includeStack:   make(map[string]struct{}),
 		configRoot:     configRoot,
 	}
 
@@ -179,17 +197,38 @@ func (p *Parser) followingTokenIs(t token.Type) bool {
 }
 
 // Parse the gonginx.
-func (p *Parser) Parse() (*config.Config, error) {
+func (p *Parser) Parse() (_ *config.Config, err error) {
+	if p.file != nil {
+		defer func() {
+			closeErr := p.Close()
+			if closeErr == nil {
+				return
+			}
+
+			if err != nil {
+				err = errors.Join(err, closeErr)
+				return
+			}
+			err = closeErr
+		}()
+	}
+
 	parsedBlock, err := p.parseBlock(false, false)
 	if err != nil {
+		if p.lexer.Err != nil {
+			return nil, errors.Join(p.lexer.Err, err)
+		}
 		return nil, err
 	}
+	if p.lexer.Err != nil {
+		return nil, p.lexer.Err
+	}
+
 	c := &config.Config{
 		FilePath: p.lexer.file, //TODO: set filepath here,
 		Block:    parsedBlock,
 	}
-	err = p.Close()
-	return c, err
+	return c, nil
 }
 
 // ParseBlock parse a block statement
@@ -220,7 +259,9 @@ parsingLoop:
 				return nil, err
 			}
 			if s.GetBlock() == nil {
-				s.SetParent(s)
+				// Root-level leaf directives have no parent.
+				// Nested leaf directives get parent assignment when their containing block wrapper is processed.
+				s.SetParent(nil)
 			} else {
 				// each directive should have a parent directive, not a block
 				// find each directive in the block and set the parent directive
@@ -298,7 +339,12 @@ func (p *Parser) parseStatement(isSkipValidDirective bool) (config.IDirective, e
 				if err != nil {
 					return nil, err
 				}
-				return p.ParseInclude(include.(*config.Include))
+
+				inc, ok := include.(*config.Include)
+				if !ok {
+					return nil, fmt.Errorf("invalid include wrapper result type %T", include)
+				}
+				return p.ParseInclude(inc)
 			} else if dw, ok := p.directiveWrappers[d.Name]; ok {
 				return dw(d)
 			}
@@ -395,22 +441,9 @@ func (p *Parser) ParseInclude(include *config.Include) (config.IDirective, error
 		if err != nil && !p.opts.skipIncludeParsingErr {
 			return nil, err
 		}
-		for _, includePath := range includePaths {
-			if conf, ok := p.parsedIncludes[include]; ok {
-				// same file includes itself? don't blow up the parser
-				if conf == nil {
-					continue
-				}
-			} else {
-				p.parsedIncludes[include] = nil
-			}
 
-			parser, err := NewParser(includePath,
-				WithSameOptions(p),
-				withParsedIncludes(p.parsedIncludes),
-				withConfigRoot(p.configRoot),
-			)
-
+		for _, matchedPath := range includePaths {
+			canonicalPath, err := filepath.Abs(filepath.Clean(matchedPath))
 			if err != nil {
 				if p.opts.skipIncludeParsingErr {
 					continue
@@ -418,12 +451,48 @@ func (p *Parser) ParseInclude(include *config.Include) (config.IDirective, error
 				return nil, err
 			}
 
-			config, err := parser.Parse()
+			if _, inStack := p.includeStack[canonicalPath]; inStack {
+				if p.opts.includeCycleErr && !p.opts.skipIncludeParsingErr {
+					return nil, fmt.Errorf("include cycle detected for %s", canonicalPath)
+				}
+				// cyclic include graph, skip this branch and continue.
+				continue
+			}
+
+			if cached, ok := p.parsedIncludes[canonicalPath]; ok {
+				if cached != nil {
+					include.Configs = append(include.Configs, cached)
+				}
+				continue
+			}
+
+			p.includeStack[canonicalPath] = struct{}{}
+
+			parser, err := NewParser(canonicalPath,
+				WithSameOptions(p),
+				withParsedIncludes(p.parsedIncludes),
+				withIncludeStack(p.includeStack),
+				withConfigRoot(p.configRoot),
+			)
 			if err != nil {
+				delete(p.includeStack, canonicalPath)
+				if p.opts.skipIncludeParsingErr {
+					continue
+				}
 				return nil, err
 			}
+
+			config, err := parser.Parse()
+			delete(p.includeStack, canonicalPath)
+			if err != nil {
+				if p.opts.skipIncludeParsingErr {
+					continue
+				}
+				return nil, err
+			}
+
 			//TODO: link parent config or include direcitve?
-			p.parsedIncludes[include] = config
+			p.parsedIncludes[canonicalPath] = config
 			include.Configs = append(include.Configs, config)
 		}
 	}

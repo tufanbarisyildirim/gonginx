@@ -3,6 +3,7 @@ package parser
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"io"
 	"strings"
 
@@ -17,6 +18,7 @@ type lexer struct {
 	column     int
 	inLuaBlock bool
 	Latest     token.Token
+	Err        error
 }
 
 // lex initializes a lexer from string conetnt
@@ -34,6 +36,11 @@ func newLexer(r io.Reader) *lexer {
 
 // Scan gives you next token
 func (s *lexer) scan() token.Token {
+	if s.Err != nil {
+		s.Latest = s.NewToken(token.EOF).Lit("")
+		return s.Latest
+	}
+
 	s.Latest = s.getNextToken()
 	return s.Latest
 }
@@ -174,7 +181,8 @@ func (s *lexer) scanLuaCode() token.Token {
 	for {
 		ch := s.read()
 		if ch == rune(token.EOF) {
-			panic("unexpected end of file while scanning a string, maybe an unclosed lua code?")
+			s.setErrOnce("unexpected end of file while scanning lua code starting at line %d, column %d", ret.Line, ret.Column)
+			return s.NewToken(token.EOF).Lit("")
 		}
 		if ch == '#' {
 			code.WriteRune(ch)
@@ -214,7 +222,8 @@ func (s *lexer) scanQuotedString(delimiter rune) token.Token {
 		ch := s.read()
 
 		if ch == rune(token.EOF) {
-			panic("unexpected end of file while scanning a string, maybe an unclosed quote?")
+			s.setErrOnce("unexpected end of file while scanning quoted string starting at line %d, column %d", tok.Line, tok.Column)
+			return s.NewToken(token.EOF).Lit("")
 		}
 
 		if ch == '\\' && (s.peek() == delimiter) {
@@ -312,4 +321,12 @@ func isEndOfLine(ch rune) bool {
 
 func isLuaBlock(t token.Token) bool {
 	return t.Type == token.Keyword && strings.HasSuffix(t.Literal, "_by_lua_block")
+}
+
+func (s *lexer) setErrOnce(format string, args ...any) {
+	if s.Err != nil {
+		return
+	}
+
+	s.Err = fmt.Errorf(format, args...)
 }
