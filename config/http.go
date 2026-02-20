@@ -107,6 +107,23 @@ func (h *HTTP) FindDirectives(directiveName string) []IDirective {
 	return directives
 }
 
+// GetServerByServerName returns the first server that contains the given server_name.
+func (h *HTTP) GetServerByServerName(serverName string) *Server {
+	for _, server := range h.Servers {
+		if server == nil {
+			continue
+		}
+		for _, directive := range server.FindDirectives("server_name") {
+			for _, parameter := range directive.GetParameters() {
+				if parameter.GetValue() == serverName {
+					return server
+				}
+			}
+		}
+	}
+	return nil
+}
+
 // GetBlock returns the block itself.
 func (h *HTTP) GetBlock() IBlock {
 	return h

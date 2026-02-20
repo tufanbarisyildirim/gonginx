@@ -2,6 +2,9 @@ package config
 
 import (
 	"errors"
+	"fmt"
+	"strconv"
+	"strings"
 )
 
 // Server represents a server block.
@@ -97,6 +100,142 @@ func (s *Server) GetDirectives() []IDirective {
 		return []IDirective{}
 	}
 	return block.GetDirectives()
+}
+
+// GetLocations returns direct child location blocks in the server.
+func (s *Server) GetLocations() []*Location {
+	locations := make([]*Location, 0)
+	for _, directive := range s.GetDirectives() {
+		location, ok := directive.(*Location)
+		if !ok {
+			continue
+		}
+		locations = append(locations, location)
+	}
+	return locations
+}
+
+// GetListenPorts returns listen ports from direct child listen directives.
+// Non-port listen endpoints (for example unix sockets) are ignored.
+func (s *Server) GetListenPorts() []int {
+	ports := make([]int, 0)
+	for _, listen := range s.getListenDirectives() {
+		if len(listen.Parameters) == 0 {
+			continue
+		}
+		port, ok := parseListenPortValue(listen.Parameters[0].GetValue())
+		if !ok {
+			continue
+		}
+		ports = append(ports, port)
+	}
+	return ports
+}
+
+// SetListenPort updates the port of the listen directive at the given index.
+func (s *Server) SetListenPort(index int, port int) error {
+	if port < 1 || port > 65535 {
+		return fmt.Errorf("invalid listen port: %d", port)
+	}
+
+	listens := s.getListenDirectives()
+	if index < 0 || index >= len(listens) {
+		return fmt.Errorf("listen index out of range: %d", index)
+	}
+
+	listen := listens[index]
+	if len(listen.Parameters) == 0 {
+		listen.Parameters = append(listen.Parameters, Parameter{Value: strconv.Itoa(port)})
+		return nil
+	}
+
+	updated, err := formatListenEndpointWithPort(listen.Parameters[0].GetValue(), port)
+	if err != nil {
+		return err
+	}
+	listen.Parameters[0].SetValue(updated)
+	return nil
+}
+
+func (s *Server) getListenDirectives() []*Directive {
+	listens := make([]*Directive, 0)
+	for _, directive := range s.GetDirectives() {
+		listen, ok := directive.(*Directive)
+		if !ok {
+			continue
+		}
+		if listen.GetName() != "listen" {
+			continue
+		}
+		listens = append(listens, listen)
+	}
+	return listens
+}
+
+func parseListenPortValue(value string) (int, bool) {
+	value = strings.TrimSpace(value)
+	if value == "" || strings.HasPrefix(value, "unix:") {
+		return 0, false
+	}
+	if isDecimal(value) {
+		port, err := strconv.Atoi(value)
+		if err != nil {
+			return 0, false
+		}
+		return port, true
+	}
+	if strings.HasPrefix(value, "[") {
+		sep := strings.LastIndex(value, "]:")
+		if sep > 0 && isDecimal(value[sep+2:]) {
+			port, err := strconv.Atoi(value[sep+2:])
+			if err != nil {
+				return 0, false
+			}
+			return port, true
+		}
+	}
+	sep := strings.LastIndex(value, ":")
+	if sep > 0 && isDecimal(value[sep+1:]) {
+		port, err := strconv.Atoi(value[sep+1:])
+		if err != nil {
+			return 0, false
+		}
+		return port, true
+	}
+	return 0, false
+}
+
+func formatListenEndpointWithPort(value string, port int) (string, error) {
+	value = strings.TrimSpace(value)
+	if value == "" || isDecimal(value) {
+		return strconv.Itoa(port), nil
+	}
+	if strings.HasPrefix(value, "unix:") {
+		return "", fmt.Errorf("cannot set port on unix socket listen %q", value)
+	}
+	if strings.HasPrefix(value, "[") {
+		sep := strings.LastIndex(value, "]:")
+		if sep > 0 && isDecimal(value[sep+2:]) {
+			return value[:sep+2] + strconv.Itoa(port), nil
+		}
+	}
+	sep := strings.LastIndex(value, ":")
+	if sep > 0 && isDecimal(value[sep+1:]) {
+		return value[:sep+1] + strconv.Itoa(port), nil
+	}
+	return "", fmt.Errorf("unsupported listen value %q", value)
+}
+
+func isDecimal(value string) bool {
+	if value == "" {
+		return false
+	}
+	for i := 0; i < len(value); i++ {
+		if value[i] < '0' || value[i] > '9' {
+			return false
+		}
+	}
+	return true
 }
 
 // AddLocation appends a location block to the server.

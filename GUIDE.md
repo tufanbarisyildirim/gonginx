@@ -238,6 +238,47 @@ func main() {
 }
 ```
 
+### Query and update server listen/location data
+```go
+func main() {
+	p := parser.NewStringParser(`http{
+	server{
+		listen 80;
+		server_name example.com www.example.com;
+		location /api {
+			proxy_pass http://127.0.0.1:5000;
+		}
+	}
+}`)
+
+	conf, err := p.Parse()
+	if err != nil {
+		panic(err)
+	}
+
+	httpBlocks := conf.FindDirectives("http")
+	http, ok := httpBlocks[0].(*config.HTTP)
+	if !ok {
+		panic("http directive type mismatch")
+	}
+
+	server := http.GetServerByServerName("example.com")
+	if server == nil {
+		panic("server not found")
+	}
+
+	ports := server.GetListenPorts() // []int{80}
+	fmt.Println(ports)
+
+	if err := server.SetListenPort(0, 8080); err != nil {
+		panic(err)
+	}
+
+	locations := server.GetLocations()
+	fmt.Println(len(locations))
+}
+```
+
 ### Update directive
 
 ```go
@@ -550,6 +591,7 @@ type HTTP struct {
 }
 ```
 + ```func (h *HTTP) FindDirectives(directiveName string) []IDirective```
++ ```func (h *HTTP) GetServerByServerName(serverName string) *Server```
 
 #### Server (impl IDirective)
 ```go
@@ -560,6 +602,9 @@ type Server struct {
 }
 ```
 + ```func (s *Server) AddLocation(location *Location)```
++ ```func (s *Server) GetLocations() []*Location```
++ ```func (s *Server) GetListenPorts() []int```
++ ```func (s *Server) SetListenPort(index int, port int) error```
 ---
 ### Dumper
 Dumper is the package that holds styling configuration only. 
