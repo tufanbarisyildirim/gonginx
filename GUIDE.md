@@ -194,6 +194,50 @@ func main() {
 }
 ```
 
+### Add location in server
+```go
+func main() {
+	p := parser.NewStringParser(`http{
+	server{
+		listen 80;
+	}
+}`)
+
+	conf, err := p.Parse()
+	if err != nil {
+		panic(err)
+	}
+
+	servers := conf.FindDirectives("server")
+	if len(servers) == 0 {
+		panic("no server block found")
+	}
+
+	server, ok := servers[0].(*config.Server)
+	if !ok {
+		panic("server directive type mismatch")
+	}
+
+	server.AddLocation(&config.Location{
+		Directive: &config.Directive{
+			Name:       "location",
+			Parameters: []config.Parameter{{Value: "/api"}},
+			Block: &config.Block{
+				Directives: []config.IDirective{
+					&config.Directive{
+						Name:       "proxy_pass",
+						Parameters: []config.Parameter{{Value: "http://127.0.0.1:5000"}},
+					},
+				},
+			},
+		},
+		Match: "/api",
+	})
+
+	fmt.Println(dumper.DumpBlock(conf.Block, dumper.IndentedStyle))
+}
+```
+
 ### Update directive
 
 ```go
@@ -515,6 +559,7 @@ type Server struct {
 	Parent  IBlock
 }
 ```
++ ```func (s *Server) AddLocation(location *Location)```
 ---
 ### Dumper
 Dumper is the package that holds styling configuration only. 

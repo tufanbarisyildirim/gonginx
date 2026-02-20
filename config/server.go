@@ -98,3 +98,29 @@ func (s *Server) GetDirectives() []IDirective {
 	}
 	return block.GetDirectives()
 }
+
+// AddLocation appends a location block to the server.
+func (s *Server) AddLocation(location *Location) {
+	if location == nil {
+		return
+	}
+
+	if s.Block == nil {
+		s.Block = &Block{Directives: []IDirective{}}
+	}
+
+	block, ok := s.Block.(*Block)
+	if !ok {
+		block = &Block{
+			Directives: append([]IDirective(nil), s.Block.GetDirectives()...),
+		}
+		s.Block = block
+	}
+
+	location.SetParent(s)
+	if locationBlock := location.GetBlock(); locationBlock != nil {
+		locationBlock.SetParent(location)
+	}
+
+	block.Directives = append(block.Directives, location)
+}
