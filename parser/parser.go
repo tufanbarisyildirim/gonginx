@@ -444,8 +444,9 @@ func (p *Parser) ParseInclude(include *config.Include) (config.IDirective, error
 		}
 
 		for _, matchedPath := range includePaths {
-			// Keep parity with nginx include globbing: wildcard includes ignore hidden files.
-			if hasWildcard && pathHasHiddenSegment(matchedPath) {
+			// Keep parity with nginx include globbing: wildcard includes ignore hidden file matches.
+			// Explicit hidden path segments should still be allowed (e.g. ".conf.d/*").
+			if hasWildcard && pathHasHiddenBaseName(matchedPath) {
 				continue
 			}
 
@@ -509,17 +510,9 @@ func hasGlobMeta(path string) bool {
 	return strings.ContainsAny(path, "*?[")
 }
 
-func pathHasHiddenSegment(path string) bool {
-	cleaned := filepath.Clean(path)
-	for _, segment := range strings.Split(cleaned, string(filepath.Separator)) {
-		if len(segment) == 0 || segment == "." || segment == ".." {
-			continue
-		}
-		if strings.HasPrefix(segment, ".") {
-			return true
-		}
-	}
-	return false
+func pathHasHiddenBaseName(path string) bool {
+	base := filepath.Base(filepath.Clean(path))
+	return strings.HasPrefix(base, ".")
 }
 
 // Close closes the file handler and releases the resources
