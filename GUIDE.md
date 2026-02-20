@@ -543,8 +543,12 @@ type Style struct {
 	StartIndent       int
 	Indent            int
 	Debug             bool
+	DisableLuaFormatting bool
+	LuaFormatter         LuaFormatterFunc
 }
 ```
++ `func (s *Style) WithLuaFormatting(enabled bool) *Style`
++ `func (s *Style) WithLuaFormatter(formatter LuaFormatterFunc) *Style`
 #### Styles by default
 + NoIndentStyle
 ```go

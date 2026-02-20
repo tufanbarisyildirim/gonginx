@@ -69,3 +69,46 @@ local foo = if -- comment`
 
 	assert.Equal(t, got, original)
 }
+
+func TestDumpLuaBlock_DisableFormatting(t *testing.T) {
+	t.Parallel()
+
+	original := "local  x=1\nreturn x\n"
+
+	block := &config.Block{
+		IsLuaBlock:  true,
+		LiteralCode: original,
+	}
+
+	style := (&Style{
+		StartIndent: 8,
+		Indent:      4,
+	}).WithLuaFormatting(false)
+
+	got := DumpLuaBlock(block, style)
+
+	assert.Equal(t, got, strings.TrimRight(original, "\n"))
+}
+
+func TestDumpLuaBlock_UsesCustomFormatter(t *testing.T) {
+	t.Parallel()
+
+	block := &config.Block{
+		IsLuaBlock:  true,
+		LiteralCode: "return 1",
+	}
+
+	called := false
+	style := (&Style{
+		StartIndent: 4,
+		Indent:      4,
+	}).WithLuaFormatter(func(_ string, _ *Style) (string, error) {
+		called = true
+		return "return 42", nil
+	})
+
+	got := DumpLuaBlock(block, style)
+
+	assert.Assert(t, called)
+	assert.Equal(t, got, "    return 42")
+}

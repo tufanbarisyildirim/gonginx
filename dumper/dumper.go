@@ -48,11 +48,13 @@ var (
 
 // Style dumping style
 type Style struct {
-	SortDirectives    bool
-	SpaceBeforeBlocks bool
-	StartIndent       int
-	Indent            int
-	Debug             bool
+	SortDirectives       bool
+	SpaceBeforeBlocks    bool
+	StartIndent          int
+	Indent               int
+	Debug                bool
+	DisableLuaFormatting bool
+	LuaFormatter         LuaFormatterFunc
 }
 
 // NewStyle create new style
@@ -69,12 +71,27 @@ func NewStyle() *Style {
 // Iterate interate the indentation for sub blocks
 func (s *Style) Iterate() *Style {
 	newStyle := &Style{
-		SortDirectives:    s.SortDirectives,
-		SpaceBeforeBlocks: s.SpaceBeforeBlocks,
-		StartIndent:       s.StartIndent + s.Indent,
-		Indent:            s.Indent,
+		SortDirectives:       s.SortDirectives,
+		SpaceBeforeBlocks:    s.SpaceBeforeBlocks,
+		StartIndent:          s.StartIndent + s.Indent,
+		Indent:               s.Indent,
+		Debug:                s.Debug,
+		DisableLuaFormatting: s.DisableLuaFormatting,
+		LuaFormatter:         s.LuaFormatter,
 	}
 	return newStyle
+}
+
+// WithLuaFormatting toggles Lua formatting during dump.
+func (s *Style) WithLuaFormatting(enabled bool) *Style {
+	s.DisableLuaFormatting = !enabled
+	return s
+}
+
+// WithLuaFormatter sets a custom Lua formatter implementation.
+func (s *Style) WithLuaFormatter(formatter LuaFormatterFunc) *Style {
+	s.LuaFormatter = formatter
+	return s
 }
 
 // DumpDirective convert a directive to a string

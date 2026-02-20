@@ -14,12 +14,19 @@ const hashCommentSentinel = "__GONGINX_HASH_COMMENT__"
 
 var hashCommentRestoreRegex = regexp.MustCompile(`--\s*` + hashCommentSentinel + `\s*`)
 
+// LuaFormatterFunc lets callers override Lua formatting implementation.
+type LuaFormatterFunc func(code string, style *Style) (string, error)
+
 // DumpLuaBlock convert a lua block to a string
 func DumpLuaBlock(b config.IBlock, style *Style) (luaCode string) {
 	luaCode = b.GetCodeBlock()
 
 	if luaCode == "" {
 		return ""
+	}
+
+	if style.DisableLuaFormatting {
+		return strings.TrimRight(luaCode, "\n")
 	}
 
 	converted := convertHashComments(luaCode)
@@ -34,6 +41,10 @@ func DumpLuaBlock(b config.IBlock, style *Style) (luaCode string) {
 }
 
 func formatLuaCode(luaCode string, style *Style) (formatted string, err error) {
+	if style.LuaFormatter != nil {
+		return style.LuaFormatter(luaCode, style)
+	}
+
 	defer func() {
 		// luaformatter may panic if lua code is not valid.
 		if r := recover(); r != nil {
