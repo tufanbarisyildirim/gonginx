@@ -437,12 +437,18 @@ func (p *Parser) ParseInclude(include *config.Include) (config.IDirective, error
 		if !filepath.IsAbs(includePath) {
 			includePath = filepath.Join(p.configRoot, include.IncludePath)
 		}
+		hasWildcard := hasGlobMeta(includePath)
 		includePaths, err := filepath.Glob(includePath)
 		if err != nil && !p.opts.skipIncludeParsingErr {
 			return nil, err
 		}
 
 		for _, matchedPath := range includePaths {
+			// Keep parity with nginx include globbing: wildcard includes ignore hidden files.
+			if hasWildcard && pathHasHiddenSegment(matchedPath) {
+				continue
+			}
+
 			canonicalPath, err := filepath.Abs(filepath.Clean(matchedPath))
 			if err != nil {
 				if p.opts.skipIncludeParsingErr {
@@ -497,6 +503,23 @@ func (p *Parser) ParseInclude(include *config.Include) (config.IDirective, error
 		}
 	}
 	return include, nil
+}
+
+func hasGlobMeta(path string) bool {
+	return strings.ContainsAny(path, "*?[")
+}
+
+func pathHasHiddenSegment(path string) bool {
+	cleaned := filepath.Clean(path)
+	for _, segment := range strings.Split(cleaned, string(filepath.Separator)) {
+		if len(segment) == 0 || segment == "." || segment == ".." {
+			continue
+		}
+		if strings.HasPrefix(segment, ".") {
+			return true
+		}
+	}
+	return false
 }
 
 // Close closes the file handler and releases the resources

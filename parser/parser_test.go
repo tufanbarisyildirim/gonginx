@@ -244,6 +244,65 @@ include events.conf;
 include http.conf;`, s)
 }
 
+func TestParser_IncludeGlobSkipsHiddenFiles(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	includeDir := filepath.Join(dir, "conf.d")
+	mainConf := filepath.Join(dir, "nginx.conf")
+
+	err := os.MkdirAll(includeDir, 0755)
+	assert.NilError(t, err)
+	err = os.WriteFile(mainConf, []byte("include conf.d/*;\n"), 0644)
+	assert.NilError(t, err)
+	err = os.WriteFile(filepath.Join(includeDir, "visible.conf"), []byte("user www www;\n"), 0644)
+	assert.NilError(t, err)
+	err = os.WriteFile(filepath.Join(includeDir, ".hidden.conf"), []byte("this_is_invalid_directive;\n"), 0644)
+	assert.NilError(t, err)
+
+	p, err := NewParser(mainConf, WithIncludeParsing())
+	assert.NilError(t, err)
+
+	c, err := p.Parse()
+	assert.NilError(t, err)
+
+	includes := c.FindDirectives("include")
+	assert.Equal(t, len(includes), 1)
+	inc, ok := includes[0].(*config.Include)
+	assert.Assert(t, ok)
+	assert.Equal(t, len(inc.Configs), 1)
+	assert.Equal(t, filepath.Base(inc.Configs[0].FilePath), "visible.conf")
+}
+
+func TestParser_IncludeExplicitHiddenFile(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	includeDir := filepath.Join(dir, "conf.d")
+	mainConf := filepath.Join(dir, "nginx.conf")
+	hiddenConf := filepath.Join(includeDir, ".hidden.conf")
+
+	err := os.MkdirAll(includeDir, 0755)
+	assert.NilError(t, err)
+	err = os.WriteFile(mainConf, []byte("include conf.d/.hidden.conf;\n"), 0644)
+	assert.NilError(t, err)
+	err = os.WriteFile(hiddenConf, []byte("user nginx;\n"), 0644)
+	assert.NilError(t, err)
+
+	p, err := NewParser(mainConf, WithIncludeParsing())
+	assert.NilError(t, err)
+
+	c, err := p.Parse()
+	assert.NilError(t, err)
+
+	includes := c.FindDirectives("include")
+	assert.Equal(t, len(includes), 1)
+	inc, ok := includes[0].(*config.Include)
+	assert.Assert(t, ok)
+	assert.Equal(t, len(inc.Configs), 1)
+	assert.Equal(t, filepath.Base(inc.Configs[0].FilePath), ".hidden.conf")
+}
+
 func TestParser_IncludeParserError(t *testing.T) {
 	t.Parallel()
 
